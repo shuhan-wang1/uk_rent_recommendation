@@ -4,6 +4,13 @@ import asyncio
 from recommender import find_apartments
 import json
 
+# ================== 测试开关 ==================
+# 设置为 True 时，仅处理 5 个房源以节省时间和API费用
+# 设置为 False 时，将处理所有找到的房源
+IS_TEST_MODE = True
+TEST_PROPERTY_LIMIT = 5
+# ============================================
+
 if __name__ == "__main__":
     user_query = """
     Hi, I would like to find some apartment near UCL, Gower Street, London.
@@ -14,8 +21,12 @@ if __name__ == "__main__":
     good access to supermarkets and parks.
     """
     
-    # 异步执行主函数
-    results = asyncio.run(find_apartments(user_query))
+    # 异步执行主函数，并传入测试参数
+    results = asyncio.run(find_apartments(
+        user_query=user_query, 
+        is_test=IS_TEST_MODE, 
+        test_limit=TEST_PROPERTY_LIMIT
+    ))
     
     # 打印最终输出
     print("\n==============================================")
