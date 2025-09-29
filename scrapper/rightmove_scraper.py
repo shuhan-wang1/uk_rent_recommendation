@@ -8,11 +8,16 @@ import random
 import re
 from bs4 import BeautifulSoup
 
-# 核心函数1：通过API获取基础信息
-def scrape_rightmove_api(session, location_identifier, radius, min_price, max_price, min_bedrooms, max_bedrooms):
+# 在函数签名中添加 limit 参数
+def scrape_rightmove_api(session, location_identifier, radius, min_price, max_price, min_bedrooms, max_bedrooms, limit=None):
     all_properties = []
     page_index = 0
     while True:
+        # 在发起请求前检查是否已达到抓取上限
+        if limit is not None and len(all_properties) >= limit:
+            print(f"    - Scraper limit of {limit} reached. Stopping API requests.")
+            break
+
         api_url = "https://www.rightmove.co.uk/api/_search"
         params = {
             'locationIdentifier': location_identifier, 'minBedrooms': min_bedrooms,
@@ -29,6 +34,9 @@ def scrape_rightmove_api(session, location_identifier, radius, min_price, max_pr
             if not properties_on_page:
                 break
             for prop in properties_on_page:
+                # 每次添加前再次检查，以精确控制数量
+                if limit is not None and len(all_properties) >= limit:
+                    break
                 if 'house share' in prop.get('propertyTypeFullDescription', '').lower() or 'retirement' in prop.get('propertyTypeFullDescription', '').lower():
                     continue
                 all_properties.append({
@@ -38,6 +46,11 @@ def scrape_rightmove_api(session, location_identifier, radius, min_price, max_pr
                     'URL': 'https://www.rightmove.co.uk' + prop.get('propertyUrl', ''),
                     'Available From': '待查询'
                 })
+            
+            # 如果内层循环因为达到 limit 而中断，外层循环也需要中断
+            if limit is not None and len(all_properties) >= limit:
+                break
+
             page_index += 24
             time.sleep(random.uniform(0.5, 1.5))
         except requests.exceptions.RequestException as e:
@@ -46,9 +59,9 @@ def scrape_rightmove_api(session, location_identifier, radius, min_price, max_pr
         except json.JSONDecodeError:
             print("    - API响应JSON解码错误。")
             break
+    # 返回的是已经限制了数量的列表
     return all_properties
 
-# 核心函数2：访问URL获取入住日期
 def enrich_properties_with_movein_date(session, properties_list):
     if not properties_list:
         return []
@@ -74,66 +87,46 @@ def enrich_properties_with_movein_date(session, properties_list):
         time.sleep(random.uniform(2.0, 5.0))
     return enriched_properties
 
-# 工具函数：保存到CSV
 def save_to_csv(properties, filename, mode='w', include_header=True):
-    if not properties:
-        return
+    if not properties: return
     headers = properties[0].keys()
     try:
         with open(filename, mode, newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=headers)
-            if include_header:
-                writer.writeheader()
+            if include_header: writer.writeheader()
             writer.writerows(properties)
     except IOError as e:
         print(f"写入CSV文件 '{filename}' 时出错: {e}")
 
-# 【新】封装后的主函数：执行一次完整的查找任务并返回结果
-def find_properties(location_identifier, radius, min_price, max_price, min_bedrooms=0, max_bedrooms=1):
-    """
-    执行一次完整的房源查找和信息丰富化任务。
-    
-    Returns:
-        list: 一个包含所有找到的房源信息的字典列表。
-    """
+# 在函数签名中添加 limit 参数
+def find_properties(location_identifier, radius, min_price, max_price, min_bedrooms=0, max_bedrooms=1, limit=None):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     }
     session = requests.Session()
     session.headers.update(headers)
     
-    # 步骤 1: 通过API获取基础信息
-    scraped_properties = scrape_rightmove_api(session, location_identifier, radius, min_price, max_price, min_bedrooms, max_bedrooms)
+    # 步骤 1: 调用API获取基础信息，并传入 limit
+    scraped_properties = scrape_rightmove_api(session, location_identifier, radius, min_price, max_price, min_bedrooms, max_bedrooms, limit=limit)
     if not scraped_properties:
         return []
     
-    # 步骤 2: 访问每个URL获取入住日期
+    # 步骤 2: 访问每个URL获取入住日期 (处理的已经是限制后的列表)
     final_properties = enrich_properties_with_movein_date(session, scraped_properties)
     
     return final_properties
 
-# 当此脚本被直接运行时，执行以下示例代码
 if __name__ == '__main__':
     print("--- 正在以独立模式运行 rightmove_scraper.py 示例 ---")
-    
-    EXAMPLE_LOCATION = 'STATION^8414' # Russell Square Station
-    EXAMPLE_RADIUS = 0.5
-    EXAMPLE_MIN_PRICE = 1800
-    EXAMPLE_MAX_PRICE = 2500
-    EXAMPLE_OUTPUT_FILE = 'single_search_results.csv'
-    
     found_properties = find_properties(
-        location_identifier=EXAMPLE_LOCATION,
-        radius=EXAMPLE_RADIUS,
-        min_price=EXAMPLE_MIN_PRICE,
-        max_price=EXAMPLE_MAX_PRICE
+        location_identifier='STATION^8414', radius=0.5,
+        min_price=1800, max_price=2500,
+        limit=5 # 示例：直接运行时也只抓取5个
     )
-    
     if found_properties:
         print(f"\n查找完成，共找到 {len(found_properties)} 个房源。")
-        save_to_csv(found_properties, EXAMPLE_OUTPUT_FILE)
-        print(f"结果已保存到 {EXAMPLE_OUTPUT_FILE}")
+        save_to_csv(found_properties, 'single_search_results.csv')
+        print(f"结果已保存到 single_search_results.csv")
     else:
         print("\n在此次示例查找中未找到任何房源。")
-
-    print("--- 示例运行结束 ---")   
+    print("--- 示例运行结束 ---")
