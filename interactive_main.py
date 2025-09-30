@@ -15,7 +15,7 @@ from location_resolver import get_best_location_id  # NEW IMPORT
 
 # Global test switch
 IS_TEST_MODE = True
-TEST_PROPERTY_LIMIT = 50
+TEST_PROPERTY_LIMIT = 25
 
 # REMOVED: The old LOCATION_TO_ID_MAP is no longer needed!
 

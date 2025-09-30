@@ -1,4 +1,4 @@
-# ollama_interface.py - Fix timeout issue and missing functions
+# ollama_interface.py - Fixed version with better logging and URL handling
 
 import json
 import re
@@ -18,7 +18,7 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 200) -> s
         "options": {
             "temperature": 0.3,
             "top_p": 0.9,
-            "num_predict": 300,  # Reduced from 512
+            "num_predict": 300,
         }
     }
     
@@ -26,205 +26,261 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 200) -> s
         payload["system"] = system_prompt
     
     try:
-        response = requests.post(url, json=payload, timeout=timeout)  # Increased timeout
+        response = requests.post(url, json=payload, timeout=timeout)
         response.raise_for_status()
         result = response.json()
         return result.get("response", "")
     except requests.exceptions.Timeout:
-        print(f"Ollama timeout after {timeout}s - model might be slow")
+        print(f"⚠️  Ollama timeout after {timeout}s - model might be slow")
         return None
     except Exception as e:
-        print(f"Ollama API error: {e}")
+        print(f"❌ Ollama API error: {e}")
         return None
 
 def extract_first_json(text: str) -> dict | None:
-    """Extracts the first valid JSON object from a string."""
+    """Extracts the first valid JSON object from a string - improved version"""
     if not text:
         return None
+    
+    # Strategy 1: Try parsing the entire text as-is (most common for Ollama)
+    try:
+        return json.loads(text.strip())
+    except (json.JSONDecodeError, TypeError):
+        pass
+    
+    # Strategy 2: Look for markdown JSON blocks
     match = re.search(r'```json\s*(\{.*?\})\s*```', text, re.DOTALL)
     if match:
         try:
             return json.loads(match.group(1))
         except json.JSONDecodeError:
-            return None
-    # Fallback for when markdown is not used
-    try:
-        return json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        return None
+            pass
+    
+    # Strategy 3: Find JSON object with proper brace matching
+    # This handles nested objects correctly
+    brace_count = 0
+    start_idx = -1
+    
+    for i, char in enumerate(text):
+        if char == '{':
+            if brace_count == 0:
+                start_idx = i
+            brace_count += 1
+        elif char == '}':
+            brace_count -= 1
+            if brace_count == 0 and start_idx != -1:
+                # Found a complete JSON object
+                try:
+                    json_str = text[start_idx:i+1]
+                    return json.loads(json_str)
+                except json.JSONDecodeError:
+                    # Keep looking for another object
+                    start_idx = -1
+                    continue
+    
+    return None
 
 def clarify_and_extract_criteria(user_query: str) -> dict:
-    """
-    MODIFIED: This prompt is now more advanced.
-    It not only extracts core criteria but also:
-    1.  Identifies specific points of interest (POIs) like 'gym' or 'cafe'.
-    2.  Attempts to map vague descriptions like 'lively area' to concrete search locations.
-    3.  Structures the output to be more machine-readable for downstream tasks.
-    """
+    """Extract criteria from user query"""
     prompt = f"""
-    You are an expert UK rental assistant. Your job is to analyze a user's request and structure it into a detailed, actionable JSON object.
-    The user's request is: "{user_query}"
+You are an expert UK rental assistant. Your job is to analyze a user's request and structure it into a detailed, actionable JSON object.
+The user's request is: "{user_query}"
 
-    You MUST return a single valid JSON object.
+You MUST return a single valid JSON object.
 
-    1.  **Core Criteria Analysis**:
-        - "destination" (string): A specific address, landmark, or station in the UK.
-        - "max_budget" (integer): The maximum monthly rent in GBP.
-        - "max_travel_time" (integer): The maximum commute time in minutes.
+1.  **Core Criteria Analysis**:
+    - "destination" (string): A specific address, landmark, or station in the UK.
+    - "max_budget" (integer): The maximum monthly rent in GBP.
+    - "max_travel_time" (integer): The maximum commute time in minutes.
 
-    2.  **Soft Preferences & Keywords**:
-        - "soft_preferences" (string): A summary of the user's qualitative needs (e.g., "modern, quiet, good for young professionals").
-        - "property_tags" (list of strings): Extract specific keywords about the property itself from the query, like "balcony", "newly renovated", "garden", "natural light".
-        - "amenities_of_interest" (list of strings): Identify specific nearby places or amenities the user cares about. Examples: "gym", "cafe", "library", "park", "supermarket", "pub".
+2.  **Soft Preferences & Keywords**:
+    - "soft_preferences" (string): A summary of the user's qualitative needs (e.g., "modern, quiet, good for young professionals").
+    - "property_tags" (list of strings): Extract specific keywords about the property itself from the query, like "balcony", "newly renovated", "garden", "natural light".
+    - "amenities_of_interest" (list of strings): Identify specific nearby places or amenities the user cares about. Examples: "gym", "cafe", "library", "park", "supermarket", "pub".
 
-    3.  **Location Intelligence**:
-        - "area_vibe" (string): Note any descriptions of the desired area, like "lively area", "quiet residential area", "family-friendly".
-        - "suggested_search_locations" (list of strings): Based on the 'area_vibe' or a vague destination, suggest up to 3 specific UK areas, neighborhoods, or stations that would be good starting points. Consider the entire UK, not just London. For example:
-        * If searching near "Manchester city center" with "lively" preference → ["Manchester City Centre", "Northern Quarter", "Spinningfields"]
-        * If searching near "Edinburgh" with "student-friendly" → ["Marchmont", "Newington", "Bruntsfield"]
-        * If searching in "Birmingham" with "quiet residential" → ["Harborne", "Moseley", "Kings Heath"]
-        * If searching in "Bristol" with "trendy" → ["Clifton", "Stokes Croft", "Bedminster"]
-        - "city_context" (string): Identify which UK city or region the search is focused on (e.g., "London", "Manchester", "Edinburgh", "Birmingham", "Bristol", "Leeds", "Glasgow", "Liverpool").
+3.  **Location Intelligence**:
+    - "area_vibe" (string): Note any descriptions of the desired area, like "lively area", "quiet residential area", "family-friendly".
+    - "suggested_search_locations" (list of strings): Based on the 'area_vibe' or a vague destination, suggest up to 3 specific UK areas, neighborhoods, or stations.
+    - "city_context" (string): Identify which UK city or region the search is focused on (e.g., "London", "Manchester", "Edinburgh").
 
-    4.  **Decision & Response Structure**:
-        - **Status "success"**: If "destination", "max_budget", AND "max_travel_time" are all clearly stated.
-        - **Status "clarification_needed"**: If any of the three CORE CRITERIA are missing or ambiguous.
+4.  **Decision & Response Structure**:
+    - **Status "success"**: If "destination", "max_budget", AND "max_travel_time" are all clearly stated.
+    - **Status "clarification_needed"**: If any of the three CORE CRITERIA are missing or ambiguous.
 
-    **Example for a successful query**: "Find me a modern 1-bed flat near Manchester University. My budget is £1200. I need to get there in under 25 mins. I like quiet neighborhoods."
-    ```json
-    {{
-      "status": "success",
-      "data": {{
-        "destination": "Manchester University, Oxford Road, Manchester",
-        "max_budget": 1200,
-        "max_travel_time": 25,
-        "soft_preferences": "Wants a modern flat in a quiet neighborhood.",
-        "property_tags": ["modern"],
-        "amenities_of_interest": [],
-        "area_vibe": "quiet neighborhood",
-        "suggested_search_locations": ["Fallowfield", "Victoria Park", "Withington"],
-        "city_context": "Manchester"
-      }}
-    }}
-    ```
-
-    **Example for a query needing clarification**: "I want a cheap flat somewhere central."
-    ```json
-    {{
-        "status": "clarification_needed",
-        "data": {{
-            "question": "I can certainly help with that! To find the best options, could you please tell me a specific destination you'll be commuting to (like an office address or station), your maximum monthly budget, and your desired maximum commute time?"
-        }}
-    }}
-    ```
-
-    Return ONLY the JSON object.
-    """
+Return ONLY the JSON object.
+"""
     response_text = call_ollama(prompt)
     parsed_json = extract_first_json(response_text)
     if parsed_json:
         return parsed_json
     else:
-        return {{"status": "error", "data": {{"message": "Could not parse JSON from Ollama."}}}}
+        return {"status": "error", "data": {"message": "Could not parse JSON from Ollama."}}
 
 
 def refine_criteria_with_answer(original_query: str, user_answer: str) -> dict:
-    combined_query = f"My original request was: '{{original_query}}'. In response to your question, here is more information: '{{user_answer}}'."
-    print(f"\n[Ollama] Refining criteria with combined query: {{combined_query}}")
+    combined_query = f"My original request was: '{original_query}'. In response to your question, here is more information: '{user_answer}'."
+    print(f"\n[Ollama] Refining criteria with combined query: {combined_query}")
     return clarify_and_extract_criteria(combined_query)
 
 
 def extract_tags_from_description(description: str) -> dict:
-    """
-    NEW FUNCTION: Uses Ollama to extract structured tags from a property's free-text description.
-    This helps in objectively comparing properties based on features not always in structured data.
-    """
+    """Extract structured tags from property description"""
+    # Handle non-string descriptions
+    if not isinstance(description, str):
+        description = str(description) if description else ""
+    
+    if not description.strip():
+        return {
+            "renovation_status": None,
+            "features": [],
+            "natural_light": None,
+            "noise_level": None,
+            "summary": "No description available"
+        }
+    
     prompt = f"""
-    You are a property data analysis expert. Your task is to extract specific features from the following property description and return a structured JSON object.
+You are a property data analysis expert. Extract features from this property description as JSON.
 
-    Property Description:
-    "{{description}}"
+Property Description:
+"{description}"
 
-    Analyze the text and extract the following attributes. If an attribute is not mentioned, use `null`.
-    - "renovation_status": (string) e.g., "newly_renovated", "modern", "needs_refurbishment", "well_maintained".
-    - "features": (list of strings) e.g., "balcony", "garden", "parking", "concierge", "bills_included", "furnished", "unfurnished".
-    - "natural_light": (string) e.g., "excellent", "good", "average", "not_mentioned". Infer this from phrases like "bright and airy", "large windows", "sun-drenched".
-    - "noise_level": (string) e.g., "quiet_street", "ex-local_authority", "purpose_built", "standard". Infer this from context.
-    - "summary": (string) A very brief, one-sentence summary of the property's key selling points.
+Extract these attributes (use null if not mentioned):
+- "renovation_status": e.g., "newly_renovated", "modern", "needs_refurbishment"
+- "features": list like ["balcony", "garden", "parking", "furnished"]
+- "natural_light": "excellent", "good", "average", or "not_mentioned"
+- "noise_level": "quiet_street", "purpose_built", or "standard"
+- "summary": Brief one-sentence summary
 
-    Return ONLY the JSON object. Example output:
-    ```json
-    {{
-      "renovation_status": "modern",
-      "features": ["balcony", "furnished"],
-      "natural_light": "excellent",
-      "noise_level": "quiet_street",
-      "summary": "A modern, furnished apartment with a balcony and excellent natural light on a quiet street."
-    }}
-    ```
-    """
-    response_text = call_ollama(prompt)
-    parsed_json = extract_first_json(response_text)
-    if parsed_json:
-        return parsed_json
-    else:
-        return {{}}
+Return ONLY the JSON object.
+"""
+    
+    try:
+        response_text = call_ollama(prompt, timeout=3000)
+        if not response_text:
+            return {}
+        
+        parsed_json = extract_first_json(response_text)
+        if parsed_json:
+            return parsed_json
+        else:
+            return {}
+    except Exception as e:
+        print(f"Error extracting tags from description: {e}")
+        return {}
+
+
+def _get_property_url(prop: dict) -> str:
+    """Helper to get URL from property dict with multiple fallbacks"""
+    # Try different possible keys
+    for key in ['URL', 'url', 'Url', 'link', 'Link']:
+        if key in prop and prop[key]:
+            return prop[key]
+    return ''
+
 
 def generate_recommendations(properties_data: list[dict], user_query: str, soft_preferences: str) -> dict | None:
-    """
-    SIMPLIFIED for faster generation
-    """
+    """Generate personalized property recommendations using Ollama"""
+    
+    print(f"\n🤖 [RECOMMENDATION ENGINE] Starting...")
+    print(f"   Properties to analyze: {len(properties_data)}")
+    print(f"   User preferences: {soft_preferences[:100]}...")
+    
     if not properties_data:
+        print("   ⚠️  No properties to recommend")
         return {"recommendations": []}
     
-    # Only use top 5 properties
+    # Use top 5 properties only for faster processing
     top_props = properties_data[:5]
+    print(f"   Analyzing top {len(top_props)} properties")
     
-    system_prompt = """You are a helpful UK rental assistant. Be concise."""
+    # Debug: Print what keys are available
+    if top_props:
+        print(f"   Available keys in property dict: {list(top_props[0].keys())}")
     
-    # Extremely simplified property data
+    # Build simplified property data for LLM
     simple_props = []
     for i, prop in enumerate(top_props):
-        simple_props.append({
+        url = _get_property_url(prop)
+        simple_prop = {
             'id': i + 1,
-            'address': prop.get('Address', 'Unknown')[:50],  # Truncate
+            'address': prop.get('Address', 'Unknown')[:60],
             'price': prop.get('Price', 'N/A'),
-            'url': prop.get('URL', ''),
+            'url': url,
             'travel': f"{prop.get('travel_time_minutes', 'N/A')} min",
             'crimes': prop.get('crime_data_summary', {}).get('total_crimes_6m', 0),
-        })
+            'crime_trend': prop.get('crime_data_summary', {}).get('crime_trend', 'unknown'),
+        }
+        simple_props.append(simple_prop)
+        print(f"   Property {i+1}: {simple_prop['address'][:40]}... | £{simple_prop['price']} | {simple_prop['travel']} | {simple_prop['crimes']} crimes")
+    
+    system_prompt = "You are an expert London rental assistant. Provide detailed, personalized recommendations."
     
     prompt = f"""
-User needs: {user_query[:100]}
+User is looking for: {user_query}
+User preferences: {soft_preferences}
 
-Properties (rank by travel time and crime):
-{json.dumps(simple_props, indent=1)}
+Available properties ranked by travel time:
+{json.dumps(simple_props, indent=2)}
 
-Return top 3 as JSON:
+Create recommendations for the top 3 properties. For EACH property write:
+1. Why it matches their needs (mention travel time, safety, price)
+2. Specific benefits (e.g., "Only 6 mins to UCL with low crime rate")
+3. Trade-offs if any
+
+Return as JSON with this EXACT format:
 {{
   "recommendations": [
-    {{"rank": 1, "address": "...", "price": "...", "travel_time": "...", "explanation": "Good location, low crime.", "url": "..."}}
+    {{
+      "rank": 1,
+      "address": "Full address here",
+      "price": "£1500 pcm",
+      "travel_time": "6 minutes",
+      "explanation": "This property is excellent for your needs because [detailed reason]. The area has only 45 crimes in 6 months (low crime) and the commute is very short. [More specific details]",
+      "url": "https://..."
+    }}
   ]
 }}
 
-JSON only:
+Be specific and detailed in explanations. Return ONLY the JSON.
 """
     
-    response_text = call_ollama(prompt, system_prompt, timeout=90)  # 90s timeout
+    print(f"\n   Calling Ollama LLM (timeout: 120s)...")
+    response_text = call_ollama(prompt, system_prompt, timeout=5000)
     
     if not response_text:
+        print("   ❌ Ollama timeout or error - using fallback recommendations")
         return create_fallback_recommendations(properties_data)
     
+    print(f"   ✓ Got response from Ollama ({len(response_text)} chars)")
+    
+    # Try to parse JSON
     parsed = extract_first_json(response_text)
     
     if parsed and 'recommendations' in parsed:
+        print(f"   ✓ Successfully parsed {len(parsed['recommendations'])} recommendations")
+        
+        # Ensure URLs are set correctly
+        for rec in parsed['recommendations']:
+            if not rec.get('url') or rec.get('url') == '':
+                # Find matching property and get its URL
+                rec_address = rec.get('address', '')
+                for prop in properties_data:
+                    if rec_address in prop.get('Address', ''):
+                        rec['url'] = _get_property_url(prop)
+                        break
+        
         return parsed
-    
-    return create_fallback_recommendations(properties_data)
+    else:
+        print(f"   ⚠️  Could not parse JSON from Ollama response")
+        print(f"   Raw response: {response_text[:200]}...")
+        print("   Using fallback recommendations")
+        return create_fallback_recommendations(properties_data)
 
 
 def create_fallback_recommendations(properties_data: list[dict]) -> dict:
-    """Fast rule-based recommendations"""
+    """Fast rule-based recommendations when LLM fails"""
+    print("   🔧 Creating fallback recommendations...")
+    
     sorted_props = sorted(
         properties_data[:10],
         key=lambda x: (
@@ -235,16 +291,36 @@ def create_fallback_recommendations(properties_data: list[dict]) -> dict:
     
     recommendations = []
     for i, prop in enumerate(sorted_props[:5]):
-        crime_count = prop.get('crime_data_summary', {}).get('total_crimes_6m', 0)
-        crime_desc = "low crime area" if crime_count < 50 else "moderate crime" if crime_count < 100 else "higher crime area"
+        crime_data = prop.get('crime_data_summary', {})
+        crime_count = crime_data.get('total_crimes_6m', 0)
+        crime_trend = crime_data.get('crime_trend', 'unknown')
+        travel_time = prop.get('travel_time_minutes', 'N/A')
+        
+        # More detailed crime description
+        if crime_count < 50:
+            crime_desc = f"very safe area ({crime_count} crimes in 6 months, {crime_trend} trend)"
+        elif crime_count < 100:
+            crime_desc = f"moderately safe area ({crime_count} crimes in 6 months, {crime_trend} trend)"
+        else:
+            crime_desc = f"area with higher crime rate ({crime_count} crimes in 6 months, {crime_trend} trend)"
+        
+        # Build detailed explanation
+        explanation = f"This property offers an excellent {travel_time}-minute commute to your destination. "
+        explanation += f"The location is a {crime_desc}. "
+        explanation += f"Priced at {prop.get('Price', 'N/A')}, it represents good value within your budget. "
+        
+        # Add cost of living info if available
+        if prop.get('cost_of_living'):
+            explanation += f"Local amenities are readily available. "
         
         recommendations.append({
             'rank': i + 1,
             'address': prop.get('Address', 'Unknown'),
             'price': prop.get('Price', 'N/A'),
-            'travel_time': f"{prop.get('travel_time_minutes', 'N/A')} minutes",
-            'explanation': f"Commute time of {prop.get('travel_time_minutes', 'N/A')} minutes with {crime_count} crimes reported in 6 months ({crime_desc}). Good option for your needs.",
-            'url': prop.get('URL', '')
+            'travel_time': f"{travel_time} minutes",
+            'explanation': explanation,
+            'url': _get_property_url(prop)
         })
     
+    print(f"   ✓ Created {len(recommendations)} fallback recommendations")
     return {'recommendations': recommendations}
