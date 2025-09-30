@@ -13,7 +13,6 @@ def scrape_rightmove_api(session, location_identifier, radius, min_price, max_pr
     all_properties = []
     page_index = 0
     while True:
-        # 在发起请求前检查是否已达到抓取上限
         if limit is not None and len(all_properties) >= limit:
             print(f"    - Scraper limit of {limit} reached. Stopping API requests.")
             break
@@ -26,7 +25,7 @@ def scrape_rightmove_api(session, location_identifier, radius, min_price, max_pr
             'sortType': '6', 'numberOfPropertiesPerPage': 24,
         }
         try:
-            print(f"    - 请求 API 页面 {page_index // 24 + 1}...")
+            print(f"    - Requesting API page {page_index // 24 + 1}...")
             response = session.get(api_url, params=params, timeout=10)
             response.raise_for_status()
             data = response.json()
@@ -34,32 +33,48 @@ def scrape_rightmove_api(session, location_identifier, radius, min_price, max_pr
             if not properties_on_page:
                 break
             for prop in properties_on_page:
-                # 每次添加前再次检查，以精确控制数量
                 if limit is not None and len(all_properties) >= limit:
                     break
                 if 'house share' in prop.get('propertyTypeFullDescription', '').lower() or 'retirement' in prop.get('propertyTypeFullDescription', '').lower():
                     continue
+                
+                # --- NEW: Extract images ---
+                images = []
+                property_images = prop.get('propertyImages', {})
+                if property_images:
+                    # Get main image
+                    main_image = property_images.get('mainImageSrc', '')
+                    if main_image:
+                        images.append(main_image)
+                    
+                    # Get additional images (usually up to 5-10)
+                    image_list = property_images.get('images', [])
+                    for img in image_list[:10]:  # Limit to 10 images
+                        img_url = img.get('srcUrl', '')
+                        if img_url and img_url not in images:
+                            images.append(img_url)
+                
                 all_properties.append({
                     'Price': prop.get('price', {}).get('displayPrices', [{}])[0].get('displayPrice', 'N/A'),
                     'Address': prop.get('displayAddress', 'N/A').replace('\n', ' '),
                     'Description': prop.get('propertyTypeFullDescription', 'N/A'),
                     'URL': 'https://www.rightmove.co.uk' + prop.get('propertyUrl', ''),
-                    'Available From': '待查询'
+                    'Available From': 'To Be Checked',
+                    'Images': images  # NEW: Image URLs array
                 })
             
-            # 如果内层循环因为达到 limit 而中断，外层循环也需要中断
             if limit is not None and len(all_properties) >= limit:
                 break
 
             page_index += 24
             time.sleep(random.uniform(0.5, 1.5))
         except requests.exceptions.RequestException as e:
-            print(f"    - API请求错误: {e}")
+            print(f"    - API request error: {e}")
             break
         except json.JSONDecodeError:
-            print("    - API响应JSON解码错误。")
+            print("    - API response JSON decode error.")
             break
-    # 返回的是已经限制了数量的列表
+    
     return all_properties
 
 def enrich_properties_with_movein_date(session, properties_list):

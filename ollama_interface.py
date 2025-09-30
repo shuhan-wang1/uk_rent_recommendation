@@ -5,10 +5,10 @@ import re
 import requests
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-MODEL_NAME = "llama3.2"
+MODEL_NAME = "llama3.2:1b"
 
-def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 200) -> str:
-    """Call Ollama with longer timeout"""
+def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 60) -> str:
+    """Call Ollama with better defaults"""
     url = f"{OLLAMA_BASE_URL}/api/generate"
     
     payload = {
@@ -18,7 +18,7 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 200) -> s
         "options": {
             "temperature": 0.3,
             "top_p": 0.9,
-            "num_predict": 300,
+            "num_predict": 1500,  # ← CHANGE FROM 300 to 1500
         }
     }
     
@@ -31,33 +31,35 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 200) -> s
         result = response.json()
         return result.get("response", "")
     except requests.exceptions.Timeout:
-        print(f"⚠️  Ollama timeout after {timeout}s - model might be slow")
+        print(f"⚠️  Ollama timeout after {timeout}s")
         return None
     except Exception as e:
         print(f"❌ Ollama API error: {e}")
         return None
 
 def extract_first_json(text: str) -> dict | None:
-    """Extracts the first valid JSON object from a string - improved version"""
+    """Extracts the first valid JSON object from a string"""
     if not text:
         return None
     
-    # Strategy 1: Try parsing the entire text as-is (most common for Ollama)
+    # Strategy 1: Try parsing the entire text directly
     try:
-        return json.loads(text.strip())
-    except (json.JSONDecodeError, TypeError):
+        # Handle unicode escapes properly
+        cleaned_text = text.strip()
+        return json.loads(cleaned_text)
+    except (json.JSONDecodeError, TypeError) as e:
+        print(f"   JSON parse error: {str(e)[:100]}")
         pass
     
-    # Strategy 2: Look for markdown JSON blocks
-    match = re.search(r'```json\s*(\{.*?\})\s*```', text, re.DOTALL)
+    # Strategy 2: Extract JSON from markdown blocks
+    match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
     if match:
         try:
             return json.loads(match.group(1))
         except json.JSONDecodeError:
             pass
     
-    # Strategy 3: Find JSON object with proper brace matching
-    # This handles nested objects correctly
+    # Strategy 3: Find complete JSON object with brace matching
     brace_count = 0
     start_idx = -1
     
@@ -69,52 +71,101 @@ def extract_first_json(text: str) -> dict | None:
         elif char == '}':
             brace_count -= 1
             if brace_count == 0 and start_idx != -1:
-                # Found a complete JSON object
                 try:
                     json_str = text[start_idx:i+1]
-                    return json.loads(json_str)
+                    parsed = json.loads(json_str)
+                    # Validate it has the expected structure
+                    if 'recommendations' in parsed:
+                        return parsed
                 except json.JSONDecodeError:
-                    # Keep looking for another object
                     start_idx = -1
                     continue
     
     return None
 
+def retry_with_simple_prompt(user_query: str) -> dict:
+    """Ultra-simple prompt for stubborn models"""
+    
+    prompt = f"""User says: "{user_query}"
+
+Fill this JSON with values from their request:
+
+{{
+  "status": "success",
+  "destination": "PUT_DESTINATION_HERE",
+  "max_budget": PUT_NUMBER_HERE,
+  "max_travel_time": PUT_NUMBER_HERE,
+  "soft_preferences": "PUT_PREFERENCES_HERE",
+  "city_context": "London"
+}}
+
+Replace the placeholders with actual values. Return only the JSON."""
+
+    response_text = call_ollama(prompt, timeout=30)
+    
+    if response_text:
+        parsed = extract_first_json(response_text)
+        if parsed and "$schema" not in parsed:
+            return parsed
+    
+    # Ultimate fallback
+    return {
+        "status": "clarification_needed",
+        "data": {
+            "question": "Could you specify your destination, budget, and maximum commute time?"
+        }
+    }
+
 def clarify_and_extract_criteria(user_query: str) -> dict:
-    """Extract criteria from user query"""
-    prompt = f"""
-You are an expert UK rental assistant. Your job is to analyze a user's request and structure it into a detailed, actionable JSON object.
-The user's request is: "{user_query}"
+    """Extract criteria from user query with clearer instructions"""
+    
+    system_prompt = """You are a UK rental search assistant. Extract information from user queries and return ONLY a JSON object with the extracted data. Never return schemas or explanations."""
+    
+    prompt = f"""Extract rental criteria from this request: "{user_query}"
 
-You MUST return a single valid JSON object.
+Return ONLY this JSON structure with actual values filled in:
 
-1.  **Core Criteria Analysis**:
-    - "destination" (string): A specific address, landmark, or station in the UK.
-    - "max_budget" (integer): The maximum monthly rent in GBP.
-    - "max_travel_time" (integer): The maximum commute time in minutes.
+{{
+  "status": "success",
+  "destination": "University College London",
+  "max_budget": 1500,
+  "max_travel_time": 30,
+  "soft_preferences": "cares about safety and security",
+  "property_tags": [],
+  "amenities_of_interest": ["police station", "well-lit streets"],
+  "area_vibe": "safe, secure area",
+  "suggested_search_locations": ["Bloomsbury", "King's Cross", "Camden"],
+  "city_context": "London"
+}}
 
-2.  **Soft Preferences & Keywords**:
-    - "soft_preferences" (string): A summary of the user's qualitative needs (e.g., "modern, quiet, good for young professionals").
-    - "property_tags" (list of strings): Extract specific keywords about the property itself from the query, like "balcony", "newly renovated", "garden", "natural light".
-    - "amenities_of_interest" (list of strings): Identify specific nearby places or amenities the user cares about. Examples: "gym", "cafe", "library", "park", "supermarket", "pub".
+Rules:
+1. If destination, max_budget, AND max_travel_time are ALL clear → set "status": "success"
+2. If any of those 3 are missing → set "status": "clarification_needed" and add "question": "What information is missing?"
+3. Extract actual values from the user's request
+4. If user mentions safety/crime → add it to soft_preferences and amenities_of_interest
+5. Suggest 3 neighborhoods near the destination for suggested_search_locations
 
-3.  **Location Intelligence**:
-    - "area_vibe" (string): Note any descriptions of the desired area, like "lively area", "quiet residential area", "family-friendly".
-    - "suggested_search_locations" (list of strings): Based on the 'area_vibe' or a vague destination, suggest up to 3 specific UK areas, neighborhoods, or stations.
-    - "city_context" (string): Identify which UK city or region the search is focused on (e.g., "London", "Manchester", "Edinburgh").
+Return ONLY the JSON object, nothing else."""
 
-4.  **Decision & Response Structure**:
-    - **Status "success"**: If "destination", "max_budget", AND "max_travel_time" are all clearly stated.
-    - **Status "clarification_needed"**: If any of the three CORE CRITERIA are missing or ambiguous.
-
-Return ONLY the JSON object.
-"""
-    response_text = call_ollama(prompt)
+    response_text = call_ollama(prompt, system_prompt, timeout=60)
+    
+    if not response_text:
+        return {"status": "error", "data": {"message": "Ollama timeout"}}
+    
+    print(f"[DEBUG] Raw Ollama response: {response_text[:500]}")
+    
     parsed_json = extract_first_json(response_text)
+    
     if parsed_json:
+        # Validate it's not a schema
+        if "$schema" in parsed_json or "properties" in parsed_json:
+            print("[ERROR] Model returned schema instead of data. Retrying with simpler prompt...")
+            return retry_with_simple_prompt(user_query)
+        
         return parsed_json
     else:
-        return {"status": "error", "data": {"message": "Could not parse JSON from Ollama."}}
+        print("[ERROR] Could not parse JSON from Ollama")
+        return {"status": "error", "data": {"message": "Could not parse response"}}
 
 
 def refine_criteria_with_answer(original_query: str, user_answer: str) -> dict:
@@ -179,7 +230,7 @@ def _get_property_url(prop: dict) -> str:
 
 
 def generate_recommendations(properties_data: list[dict], user_query: str, soft_preferences: str) -> dict | None:
-    """Generate personalized property recommendations using Ollama"""
+    """Generate personalized property recommendations - UPDATED to include images"""
     
     print(f"\n🤖 [RECOMMENDATION ENGINE] Starting...")
     print(f"   Properties to analyze: {len(properties_data)}")
@@ -201,17 +252,21 @@ def generate_recommendations(properties_data: list[dict], user_query: str, soft_
     simple_props = []
     for i, prop in enumerate(top_props):
         url = _get_property_url(prop)
+        travel_time = prop.get('travel_time_minutes', 'N/A')
+        images = prop.get('Images', [])  # NEW: Get images
+        
         simple_prop = {
             'id': i + 1,
             'address': prop.get('Address', 'Unknown')[:60],
             'price': prop.get('Price', 'N/A'),
             'url': url,
-            'travel': f"{prop.get('travel_time_minutes', 'N/A')} min",
+            'travel_time_minutes': travel_time,
             'crimes': prop.get('crime_data_summary', {}).get('total_crimes_6m', 0),
             'crime_trend': prop.get('crime_data_summary', {}).get('crime_trend', 'unknown'),
+            'images': images,  # NEW: Include images
         }
         simple_props.append(simple_prop)
-        print(f"   Property {i+1}: {simple_prop['address'][:40]}... | £{simple_prop['price']} | {simple_prop['travel']} | {simple_prop['crimes']} crimes")
+        print(f"   Property {i+1}: {simple_prop['address'][:40]}... | {len(images)} images")
     
     system_prompt = "You are an expert London rental assistant. Provide detailed, personalized recommendations."
     
@@ -267,6 +322,7 @@ Be specific and detailed in explanations. Return ONLY the JSON.
                 for prop in properties_data:
                     if rec_address in prop.get('Address', ''):
                         rec['url'] = _get_property_url(prop)
+                        rec['images'] = prop.get('Images', [])  # NEW: Add images
                         break
         
         return parsed

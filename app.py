@@ -7,6 +7,7 @@ import json
 import traceback
 from ollama_interface import clarify_and_extract_criteria
 from interactive_main import find_apartments_interactive
+from user_session import add_to_favorites, get_favorites, _session_data
 
 app = Flask(__name__, template_folder='.')
 CORS(app)
@@ -85,5 +86,47 @@ def api_search():
         traceback.print_exc()
         return jsonify({"error": "An internal server error occurred"}), 500
 
+@app.route('/api/favorites', methods=['POST'])
+def add_favorite():
+    """Add a property to favorites"""
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    
+    try:
+        add_to_favorites(data)
+        return jsonify({"success": True, "message": "Added to favorites"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/favorites', methods=['GET'])
+def get_favorites_list():
+    """Get all favorited properties"""
+    try:
+        favorites = get_favorites()
+        return jsonify({"favorites": favorites})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/favorites/<path:url>', methods=['DELETE'])
+def remove_favorite(url):
+    """Remove a property from favorites"""
+    try:
+        if url in _session_data['favorites']:
+            del _session_data['favorites'][url]
+            return jsonify({"success": True, "message": "Removed from favorites"})
+        return jsonify({"error": "Property not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/history', methods=['GET'])
+def get_search_history():
+    """Get search history"""
+    try:
+        history = _session_data.get('search_history', [])
+        return jsonify({"history": history})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
