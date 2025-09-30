@@ -29,7 +29,7 @@ def extract_postcode(address: str) -> str | None:
 
 def get_live_properties(location_id: str, radius: float, min_price: int, max_price: int, limit: int | None = None) -> list[dict]:
     """
-    This function is now cleaner, focusing solely on the Rightmove scraper.
+    Updated to preserve image data from scrapers
     """
     print("\n--- Starting Live Property Scraping ---")
     
@@ -37,7 +37,6 @@ def get_live_properties(location_id: str, radius: float, min_price: int, max_pri
         print(f"/!\\ Scraper limit set to {limit} properties. /!\\")
 
     print(f"-> Searching on Rightmove (ID: {location_id})...")
-    # The find_on_rightmove function already handles the limit.
     rm_properties = find_on_rightmove(
         location_identifier=location_id, radius=radius,
         min_price=min_price, max_price=max_price,
@@ -45,6 +44,9 @@ def get_live_properties(location_id: str, radius: float, min_price: int, max_pri
     )
     for prop in rm_properties: 
         prop['Platform'] = 'Rightmove'
+        # Ensure Images key exists
+        if 'Images' not in prop:
+            prop['Images'] = []
     print(f"   -> Found {len(rm_properties)} properties on Rightmove.")
 
     all_properties = rm_properties
@@ -53,7 +55,7 @@ def get_live_properties(location_id: str, radius: float, min_price: int, max_pri
     if not all_properties:
         return []
 
-    # Basic data cleaning and parsing is done here.
+    # Process properties
     processed_properties = []
     for prop in all_properties:
         prop['parsed_price'] = parse_price(prop.get('Price'))
