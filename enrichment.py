@@ -8,7 +8,9 @@ from maps_service import (
     get_environmental_data  # Import new function
 )
 from web_search import search_cost_of_living
-from gemini_interface import extract_tags_from_description # Import new function
+# Switched from gemini_interface to ollama_interface
+# from gemini_interface import extract_tags_from_description # Import new function
+from ollama_interface import extract_tags_from_description
 
 async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
     """

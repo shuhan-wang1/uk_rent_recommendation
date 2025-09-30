@@ -5,9 +5,12 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import json
 import traceback
+# Switching to ollama_interface for local, free LLM usage
+# from gemini_interface import clarify_and_extract_criteria
+from ollama_interface import clarify_and_extract_criteria
 
-from gemini_interface import clarify_and_extract_criteria 
 from interactive_main import find_apartments_interactive
+
 
 app = Flask(__name__, template_folder='.')
 CORS(app)
