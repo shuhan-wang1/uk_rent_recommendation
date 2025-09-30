@@ -3,7 +3,9 @@
 import asyncio
 import json
 from data_loader import get_live_properties, filter_by_budget
-from gemini_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
+# Switched from gemini_interface to ollama_interface
+# from gemini_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
+from ollama_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
 from enrichment import enrich_property_data
 from maps_service import calculate_travel_time
 from user_session import add_to_favorites, print_favorites, add_to_history
