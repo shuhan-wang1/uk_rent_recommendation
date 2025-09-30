@@ -31,24 +31,30 @@ def api_search():
     print(f"Received query from UI: {user_query}")
 
     try:
-        # Step 1: Use Gemini to extract criteria.
+        # Step 1: Use Ollama to extract criteria
         response = clarify_and_extract_criteria(user_query)
 
+        # Handle clarification needed
+        if response.get('status') == 'clarification_needed':
+            return jsonify(response), 200  # Return 200, not 400, so UI can display it
+
+        # Handle error status
+        if response.get('status') == 'error':
+            return jsonify({"error": response.get('data', {}).get('message', 'Unknown error')}), 400
+
+        # Handle success
         if response.get('status') != 'success':
             return jsonify({"error": "Could not understand the request. Please be more specific."}), 400
 
         criteria = response['data']
-        print(f"Gemini extracted criteria: {json.dumps(criteria, indent=2)}")
+        print(f"Extracted criteria: {json.dumps(criteria, indent=2)}")
 
-        # Step 2: Run the apartment finding logic.
-        # This function is now guaranteed to return a tuple.
+        # Step 2: Run the apartment finding logic
         recommendations, final_candidates = asyncio.run(find_apartments_interactive(criteria))
         
-        # FIX: Check if the recommendations object is valid before returning.
         if recommendations and 'recommendations' in recommendations:
             return jsonify(recommendations)
         else:
-            # If no recommendations were generated, return a valid JSON structure with an empty list.
             return jsonify({"recommendations": []})
 
     except Exception as e:
