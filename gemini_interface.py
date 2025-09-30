@@ -65,29 +65,24 @@ def refine_criteria_with_answer(original_query: str, user_answer: str) -> dict:
 def generate_recommendations(properties_data: list[dict], user_query: str, soft_preferences: str) -> dict | None:
     """
     根据最终候选房源和用户的软偏好生成排名和解释。
-    (PROMPT 已更新以处理新的犯罪数据)
+    (PROMPT 已更新以处理新的犯罪数据并包含URL)
     """
     prompt = f"""
     You are a helpful London apartment recommendation assistant.
     The user's original request was: "{user_query}"
     The user's key preferences are: "{soft_preferences}"
 
-    Here is a list of available apartments. Crucially, each property now includes a `crime_data_summary` object from the official police API.
-    `crime_data_summary` contains `total_crimes` and a `category_breakdown` for the most recent available month.
+    Here is a list of available apartments. Each property includes a URL.
+    `crime_data_summary` contains `total_crimes` and a `category_breakdown`.
     {json.dumps(properties_data, indent=2)}
 
     Your task is to:
     1.  Analyze the provided list of apartments.
     2.  Rank the top 3 to 5 apartments that are MOST SUITABLE for the user.
-    3.  For each recommended apartment, provide a detailed, personalized explanation.
-        - **Crucially, you MUST now use the `crime_data_summary` to give a concrete, data-driven assessment of safety.**
-        - If the user expressed concern about crime, directly address it using the new data. For example: "Regarding your concern for safety, the area around this property reported a total of [total_crimes] crimes last month, with the most common incidents being [category_breakdown]. You can use this official data to help your decision."
-        - If the total crime number is low (e.g., under 30 for a specific spot in London), you can frame it positively. If it's high (e.g., over 100), you should mention it as a potential trade-off.
-        - If the crime data has an "error" key, you should state that "Official crime data for this exact location could not be retrieved." Do NOT say it's unavailable.
-        - Continue to use all other data points (travel time, nearby places, price) to support your explanation, directly referencing the user's preferences.
+    3.  For each recommended apartment, provide a detailed, personalized explanation using all available data (travel time, crime data, nearby places, price).
 
     Return your answer as a single, valid JSON object with a key "recommendations".
-    Each item in the "recommendations" list should be an object with the keys: "rank", "address", "price", "travel_time", and "explanation".
+    Each item in the "recommendations" list MUST be an object with these exact keys: "rank", "address", "price", "travel_time", "explanation", and "url".
 
     Return ONLY the JSON object.
     """
