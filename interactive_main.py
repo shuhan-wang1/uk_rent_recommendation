@@ -7,28 +7,30 @@ from data_loader import get_live_properties, filter_by_budget
 # from gemini_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
 from ollama_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
 from enrichment import enrich_property_data
-from maps_service import calculate_travel_time
+# from maps_service import calculate_travel_time
+from free_maps_service import calculate_travel_time
+
 from user_session import add_to_favorites, print_favorites, add_to_history
 from location_resolver import get_best_location_id  # NEW IMPORT
 
 # Global test switch
 IS_TEST_MODE = True
-TEST_PROPERTY_LIMIT = 5
+TEST_PROPERTY_LIMIT = 50
 
 # REMOVED: The old LOCATION_TO_ID_MAP is no longer needed!
 
 
 async def find_apartments_interactive(criteria: dict):
     """
-    This is the core search and recommendation flow.
-    NOW WORKS FOR ANY UK CITY - fully dynamic location resolution.
+    TWO-STAGE APPROACH:
+    1. Quick filter using estimated travel times
+    2. Accurate calculation only for top candidates
     """
+    from location_resolver import get_best_location_id
     
-    # Extract location suggestions from Gemini
     suggested_locations = criteria.get('suggested_search_locations', [])
     city_context = criteria.get('city_context', 'London')
     
-    # Dynamically resolve the best location ID and radius
     search_location_id, search_radius = get_best_location_id(
         suggested_locations, 
         fallback_city=city_context
@@ -42,7 +44,7 @@ async def find_apartments_interactive(criteria: dict):
     
     all_properties = get_live_properties(
         location_id=search_location_id,
-        radius=search_radius,  # Now dynamic!
+        radius=search_radius,
         min_price=1000,
         max_price=criteria.get('max_budget', 2000) + 200,
         limit=scraper_limit
@@ -54,44 +56,76 @@ async def find_apartments_interactive(criteria: dict):
     if not budget_filtered:
         return (None, [])
 
-    print("\nStep 3: Concurrently enriching data and filtering by travel time...")
+    # STAGE 1: Quick filter using simple distance estimation
+    print("\nStep 3a: Quick filtering by estimated travel time...")
+    from free_maps_service import estimate_travel_time_simple
+    
     max_travel_time = criteria.get('max_travel_time', 40)
+    quick_candidates = []
+    
+    for prop in budget_filtered:
+        estimated_time = estimate_travel_time_simple(
+            prop.get('Address', ''), 
+            criteria.get('destination')
+        )
+        
+        if estimated_time and estimated_time <= max_travel_time + 10:  # Add 10 min buffer
+            prop['estimated_time'] = estimated_time
+            quick_candidates.append(prop)
+    
+    print(f" -> {len(quick_candidates)} properties pass quick filter")
+    
+    if not quick_candidates:
+        print("No properties within estimated travel time.")
+        return (None, [])
+    
+    # STAGE 2: Accurate travel times for top candidates only
+    print("\nStep 3b: Getting accurate travel times for top candidates...")
+    
+    # Sort by estimated time and take top 15
+    quick_candidates.sort(key=lambda x: x.get('estimated_time', 999))
+    top_candidates = quick_candidates[:15]
     
     loop = asyncio.get_running_loop()
     travel_time_tasks = [
-        loop.run_in_executor(None, calculate_travel_time, prop.get('Address', ''), criteria.get('destination'))
-        for prop in budget_filtered
+        loop.run_in_executor(
+            None, 
+            calculate_travel_time, 
+            prop.get('Address', ''), 
+            criteria.get('destination')
+        )
+        for prop in top_candidates
     ]
+    
     travel_times = await asyncio.gather(*travel_time_tasks, return_exceptions=True)
     
     enrichment_candidates = []
-    for prop, travel_time in zip(budget_filtered, travel_times):
-        if isinstance(travel_time, Exception) or travel_time is None:
-            print(f" - Skipping {prop.get('Address')} due to travel time calculation error.")
-            continue
-            
-        if travel_time <= max_travel_time:
+    for prop, travel_time in zip(top_candidates, travel_times):
+        if isinstance(travel_time, Exception):
+            travel_time = prop.get('estimated_time')  # Use estimate if accurate fails
+        
+        if travel_time and travel_time <= max_travel_time:
             prop['travel_time_minutes'] = travel_time
             enrichment_candidates.append(prop)
+            print(f"   ✓ {prop.get('Address')[:50]}... ({travel_time} mins)")
     
     if not enrichment_candidates:
-        print("No properties found that match your travel time criteria.")
+        print("No properties found within accurate travel time.")
         return (None, [])
 
-    print(f"\n -> Found {len(enrichment_candidates)} candidates. Starting deep enrichment...")
+    print(f"\n -> Found {len(enrichment_candidates)} final candidates. Starting enrichment...")
     
     enrichment_tasks = [enrich_property_data(prop, criteria) for prop in enrichment_candidates]
     final_candidates = await asyncio.gather(*enrichment_tasks)
     
-    print(f"\nStep 4: Found {len(final_candidates)} final candidates. Generating recommendations...")
-    soft_preferences = criteria.get("soft_preferences", "User did not specify any soft preferences.")
+    print(f"\nStep 4: Generating recommendations...")
+    soft_preferences = criteria.get("soft_preferences", "")
     
     recommendations_json = generate_recommendations(final_candidates, json.dumps(criteria), soft_preferences)
     
     add_to_history(criteria, len(final_candidates))
     
     return recommendations_json, final_candidates
-
 
 # The main_loop() function remains the same - no changes needed!
 

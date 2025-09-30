@@ -1,15 +1,13 @@
 # enrichment.py
 
 import asyncio
-from maps_service import (
+from free_maps_service import (
     calculate_travel_time, 
     find_nearby_places, 
     get_crime_data_by_location,
-    get_environmental_data  # Import new function
+    get_environmental_data
 )
 from web_search import search_cost_of_living
-# Switched from gemini_interface to ollama_interface
-# from gemini_interface import extract_tags_from_description # Import new function
 from ollama_interface import extract_tags_from_description
 
 async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
@@ -40,7 +38,7 @@ async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
         'amenities_nearby': loop.run_in_executor(None, find_nearby_places, address, amenities),
         'crime_data_summary': loop.run_in_executor(None, get_crime_data_by_location, address),
         'environmental_data': loop.run_in_executor(None, get_environmental_data, address),
-        'description_tags': loop.run_in_executor(None, extract_tags_from_description, description),
+        'description_tags': loop.run_in_executor(None, extract_tags_from_description, description if isinstance(description, str) else ""),
         # Add multiple travel modes
         'travel_time_transit': loop.run_in_executor(None, calculate_travel_time, address, destination, "transit"),
         'travel_time_cycling': loop.run_in_executor(None, calculate_travel_time, address, destination, "bicycling"),

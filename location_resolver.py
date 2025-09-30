@@ -9,17 +9,21 @@ from cache_service import get_from_cache, set_to_cache, create_cache_key
 
 UK_LOCATIONS = {
     # 只使用大区域，这些ID更稳定
-    'manchester': ('REGION^904', 3.0),  # Greater Manchester - 这个是确定的
-    'london': ('REGION^87490', 5.0),     # Greater London - 确定的
-    'birmingham': ('REGION^376', 3.0),   # Birmingham - 确定的
-    'edinburgh': ('REGION^552', 3.0),    # Edinburgh - 确定的
-    'glasgow': ('REGION^617', 3.0),      # Glasgow - 确定的
-    'bristol': ('REGION^398', 3.0),      # Bristol - 确定的
-    'leeds': ('REGION^764', 3.0),        # Leeds - 确定的
-    'liverpool': ('REGION^790', 3.0),    # Liverpool - 确定的
-    'sheffield': ('REGION^1203', 3.0),   # Sheffield - 确定的
-    'newcastle': ('REGION^920', 3.0),    # Newcastle - 确定的
-    'nottingham': ('REGION^952', 3.0),   # Nottingham - 确定的
+    # LONDON - UCL Area
+    'london': ('REGION^87490', 5.0),
+    'university college london': ('STATION^3314', 1.0),  # Euston is very close to UCL
+    'ucl': ('STATION^3314', 1.0),
+    'bloomsbury': ('STATION^3317', 1.0),  # Russell Square
+    'euston': ('STATION^3314', 1.0),
+    'king\'s cross': ('STATION^4988', 1.0),
+    'kings cross': ('STATION^4988', 1.0),
+    'camden': ('REGION^424', 1.0),
+    'islington': ('REGION^705', 3.0),
+    'soho': ('REGION^1232', 1.0),
+    'shoreditch': ('REGION^1203', 1.0),
+    'london bridge': ('STATION^5459', 1.0),
+    'richmond': ('REGION^1127', 3.0),
+    'hampstead': ('REGION^641', 1.0),
 }
 
 def find_location_match(location_name: str) -> tuple[str, float] | None:
