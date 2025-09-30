@@ -35,25 +35,31 @@ def clarify_and_extract_criteria(user_query: str) -> dict:
 
     3.  **Location Intelligence**:
         - "area_vibe" (string): Note any descriptions of the desired area, like "lively area", "quiet residential area", "family-friendly".
-        - "suggested_search_locations" (list of strings): Based on the 'area_vibe' or a vague destination, suggest up to 3 specific, well-known London areas or tube stations that would be good starting points. For example, if the user says "lively and central", you might suggest ["Soho", "Shoreditch", "London Bridge"]. If they say "quiet and green", you might suggest ["Richmond", "Hampstead"].
+        - "suggested_search_locations" (list of strings): Based on the 'area_vibe' or a vague destination, suggest up to 3 specific UK areas, neighborhoods, or stations that would be good starting points. Consider the entire UK, not just London. For example:
+        * If searching near "Manchester city center" with "lively" preference → ["Manchester City Centre", "Northern Quarter", "Spinningfields"]
+        * If searching near "Edinburgh" with "student-friendly" → ["Marchmont", "Newington", "Bruntsfield"]
+        * If searching in "Birmingham" with "quiet residential" → ["Harborne", "Moseley", "Kings Heath"]
+        * If searching in "Bristol" with "trendy" → ["Clifton", "Stokes Croft", "Bedminster"]
+        - "city_context" (string): Identify which UK city or region the search is focused on (e.g., "London", "Manchester", "Edinburgh", "Birmingham", "Bristol", "Leeds", "Glasgow", "Liverpool").
 
     4.  **Decision & Response Structure**:
         - **Status "success"**: If "destination", "max_budget", AND "max_travel_time" are all clearly stated.
         - **Status "clarification_needed"**: If any of the three CORE CRITERIA are missing or ambiguous.
 
-    **Example for a successful query**: "Find me a modern 1-bed flat with a balcony near Google's office in King's Cross. My budget is £2000. I need to get there in under 20 mins. I like going to the gym and quiet cafes."
+    **Example for a successful query**: "Find me a modern 1-bed flat near Manchester University. My budget is £1200. I need to get there in under 25 mins. I like quiet neighborhoods."
     ```json
     {{
       "status": "success",
       "data": {{
-        "destination": "Google, 6 Pancras Square, London",
-        "max_budget": 2000,
-        "max_travel_time": 20,
-        "soft_preferences": "Wants a modern flat, likes gyms and quiet cafes.",
-        "property_tags": ["modern", "balcony"],
-        "amenities_of_interest": ["gym", "cafe"],
-        "area_vibe": null,
-        "suggested_search_locations": []
+        "destination": "Manchester University, Oxford Road, Manchester",
+        "max_budget": 1200,
+        "max_travel_time": 25,
+        "soft_preferences": "Wants a modern flat in a quiet neighborhood.",
+        "property_tags": ["modern"],
+        "amenities_of_interest": [],
+        "area_vibe": "quiet neighborhood",
+        "suggested_search_locations": ["Fallowfield", "Victoria Park", "Withington"],
+        "city_context": "Manchester"
       }}
     }}
     ```
@@ -81,11 +87,11 @@ def clarify_and_extract_criteria(user_query: str) -> dict:
             return json.loads(response.text)
     except (json.JSONDecodeError, Exception) as e:
         print(f"Error parsing JSON from Gemini (clarify_and_extract): {e}")
-        return {"status": "error", "data": {"message": str(e)}}
+        return {{"status": "error", "data": {{"message": str(e)}}}}
 
 def refine_criteria_with_answer(original_query: str, user_answer: str) -> dict:
-    combined_query = f"My original request was: '{original_query}'. In response to your question, here is more information: '{user_answer}'."
-    print(f"\n[Gemini] Refining criteria with combined query: {combined_query}")
+    combined_query = f"My original request was: '{{original_query}}'. In response to your question, here is more information: '{{user_answer}}'."
+    print(f"\n[Gemini] Refining criteria with combined query: {{combined_query}}")
     return clarify_and_extract_criteria(combined_query)
 
 def extract_tags_from_description(description: str) -> dict:
@@ -97,7 +103,7 @@ def extract_tags_from_description(description: str) -> dict:
     You are a property data analysis expert. Your task is to extract specific features from the following property description and return a structured JSON object.
 
     Property Description:
-    "{description}"
+    "{{description}}"
 
     Analyze the text and extract the following attributes. If an attribute is not mentioned, use `null`.
     - "renovation_status": (string) e.g., "newly_renovated", "modern", "needs_refurbishment", "well_maintained".
@@ -126,7 +132,7 @@ def extract_tags_from_description(description: str) -> dict:
             return json.loads(response.text)
     except (json.JSONDecodeError, Exception) as e:
         print(f"Error extracting tags from description: {e}")
-        return {}
+        return {{}}
 
 
 def generate_recommendations(properties_data: list[dict], user_query: str, soft_preferences: str) -> dict | None:

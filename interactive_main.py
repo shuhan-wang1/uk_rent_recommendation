@@ -7,58 +7,48 @@ from gemini_interface import clarify_and_extract_criteria, generate_recommendati
 from enrichment import enrich_property_data
 from maps_service import calculate_travel_time
 from user_session import add_to_favorites, print_favorites, add_to_history
+from location_resolver import get_best_location_id  # NEW IMPORT
 
 # Global test switch
 IS_TEST_MODE = True
 TEST_PROPERTY_LIMIT = 5
 
-# --- FIX START ---
-# Updated the map with a more precise and correct location ID for the UCL area.
-# EUSTON SQUARE is a station right next to UCL. We will also update Bloomsbury's ID.
-LOCATION_TO_ID_MAP = {
-    "bloomsbury": "STATION^3317", # Corrected ID for Euston Square, representing Bloomsbury/UCL area
-    "euston": "STATION^3314",
-    "fitzrovia": "REGION^541",
-    "king's cross": "STATION^4988",
-    "soho": "REGION^1232",
-    "shoreditch": "REGION^1203",
-    "london bridge": "STATION^5459",
-    "richmond": "REGION^1127",
-    "hampstead": "REGION^641",
-}
-# --- FIX END ---
+# REMOVED: The old LOCATION_TO_ID_MAP is no longer needed!
 
 
 async def find_apartments_interactive(criteria: dict):
     """
     This is the core search and recommendation flow.
-    MODIFIED: This function now robustly returns a tuple (recommendations, candidates) in all cases.
-    OPTIMIZED: It now uses Gemini's suggested locations for a much more relevant search.
+    NOW WORKS FOR ANY UK CITY - fully dynamic location resolution.
     """
-    SEARCH_RADIUS = 5 # For a station, we can use a smaller, more focused radius like 0.5 miles
     
+    # Extract location suggestions from Gemini
     suggested_locations = criteria.get('suggested_search_locations', [])
-    search_location_id = "REGION^87490" # Default to London if no suggestions
+    city_context = criteria.get('city_context', 'London')
     
-    if suggested_locations:
-        first_suggestion = suggested_locations[0].lower()
-        found_id = LOCATION_TO_ID_MAP.get(first_suggestion)
-        if found_id:
-            search_location_id = found_id
-            print(f"\n[INFO] Gemini suggested searching in '{first_suggestion.title()}', using ID: {search_location_id}")
-        else:
-            print(f"\n[WARN] Could not find a location ID for '{first_suggestion.title()}', defaulting to general London search.")
+    # Dynamically resolve the best location ID and radius
+    search_location_id, search_radius = get_best_location_id(
+        suggested_locations, 
+        fallback_city=city_context
+    )
+    
+    print(f"\n[INFO] Searching in: {city_context}")
+    print(f"[INFO] Using Location ID: {search_location_id} with radius: {search_radius} miles")
 
     print("\nStep 2: Performing live property search and filtering...")
     scraper_limit = TEST_PROPERTY_LIMIT if IS_TEST_MODE else None
     
     all_properties = get_live_properties(
-        location_id=search_location_id, radius=SEARCH_RADIUS,
-        min_price=1000, max_price=criteria.get('max_budget', 2000) + 200,
+        location_id=search_location_id,
+        radius=search_radius,  # Now dynamic!
+        min_price=1000,
+        max_price=criteria.get('max_budget', 2000) + 200,
         limit=scraper_limit
     )
+    
     budget_filtered = filter_by_budget(all_properties, criteria.get('max_budget', 2000))
     print(f" -> Found {len(budget_filtered)} properties within budget.")
+    
     if not budget_filtered:
         return (None, [])
 
@@ -89,7 +79,6 @@ async def find_apartments_interactive(criteria: dict):
     print(f"\n -> Found {len(enrichment_candidates)} candidates. Starting deep enrichment...")
     
     enrichment_tasks = [enrich_property_data(prop, criteria) for prop in enrichment_candidates]
-    
     final_candidates = await asyncio.gather(*enrichment_tasks)
     
     print(f"\nStep 4: Found {len(final_candidates)} final candidates. Generating recommendations...")
@@ -100,6 +89,9 @@ async def find_apartments_interactive(criteria: dict):
     add_to_history(criteria, len(final_candidates))
     
     return recommendations_json, final_candidates
+
+
+# The main_loop() function remains the same - no changes needed!
 
 
 async def main_loop():
