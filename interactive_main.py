@@ -12,61 +12,94 @@ from user_session import add_to_favorites, print_favorites, add_to_history
 IS_TEST_MODE = True
 TEST_PROPERTY_LIMIT = 5
 
+# --- FIX START ---
+# Updated the map with a more precise and correct location ID for the UCL area.
+# EUSTON SQUARE is a station right next to UCL. We will also update Bloomsbury's ID.
+LOCATION_TO_ID_MAP = {
+    "bloomsbury": "STATION^3317", # Corrected ID for Euston Square, representing Bloomsbury/UCL area
+    "euston": "STATION^3314",
+    "fitzrovia": "REGION^541",
+    "king's cross": "STATION^4988",
+    "soho": "REGION^1232",
+    "shoreditch": "REGION^1203",
+    "london bridge": "STATION^5459",
+    "richmond": "REGION^1127",
+    "hampstead": "REGION^641",
+}
+# --- FIX END ---
+
+
 async def find_apartments_interactive(criteria: dict):
     """
     This is the core search and recommendation flow.
     MODIFIED: This function now robustly returns a tuple (recommendations, candidates) in all cases.
+    OPTIMIZED: It now uses Gemini's suggested locations for a much more relevant search.
     """
-    LOCATION_ID_FOR_SEARCH = "REGION^87490"  # London
-    SEARCH_RADIUS = 5
+    SEARCH_RADIUS = 5 # For a station, we can use a smaller, more focused radius like 0.5 miles
+    
+    suggested_locations = criteria.get('suggested_search_locations', [])
+    search_location_id = "REGION^87490" # Default to London if no suggestions
+    
+    if suggested_locations:
+        first_suggestion = suggested_locations[0].lower()
+        found_id = LOCATION_TO_ID_MAP.get(first_suggestion)
+        if found_id:
+            search_location_id = found_id
+            print(f"\n[INFO] Gemini suggested searching in '{first_suggestion.title()}', using ID: {search_location_id}")
+        else:
+            print(f"\n[WARN] Could not find a location ID for '{first_suggestion.title()}', defaulting to general London search.")
 
     print("\nStep 2: Performing live property search and filtering...")
     scraper_limit = TEST_PROPERTY_LIMIT if IS_TEST_MODE else None
     
     all_properties = get_live_properties(
-        location_id=LOCATION_ID_FOR_SEARCH, radius=SEARCH_RADIUS,
+        location_id=search_location_id, radius=SEARCH_RADIUS,
         min_price=1000, max_price=criteria.get('max_budget', 2000) + 200,
         limit=scraper_limit
     )
     budget_filtered = filter_by_budget(all_properties, criteria.get('max_budget', 2000))
     print(f" -> Found {len(budget_filtered)} properties within budget.")
     if not budget_filtered:
-        # FIX: Always return a tuple
         return (None, [])
 
     print("\nStep 3: Concurrently enriching data and filtering by travel time...")
-    max_travel_time = criteria.get('max_travel_time', 30)
+    max_travel_time = criteria.get('max_travel_time', 40)
     
     loop = asyncio.get_running_loop()
     travel_time_tasks = [
         loop.run_in_executor(None, calculate_travel_time, prop.get('Address', ''), criteria.get('destination'))
         for prop in budget_filtered
     ]
-    travel_times = await asyncio.gather(*travel_time_tasks)
+    travel_times = await asyncio.gather(*travel_time_tasks, return_exceptions=True)
     
     enrichment_candidates = []
     for prop, travel_time in zip(budget_filtered, travel_times):
-        # Ensure travel_time is not None before comparing
-        if travel_time is not None and travel_time <= max_travel_time:
+        if isinstance(travel_time, Exception) or travel_time is None:
+            print(f" - Skipping {prop.get('Address')} due to travel time calculation error.")
+            continue
+            
+        if travel_time <= max_travel_time:
             prop['travel_time_minutes'] = travel_time
             enrichment_candidates.append(prop)
     
     if not enrichment_candidates:
         print("No properties found that match your travel time criteria.")
-        # FIX: Always return a tuple
         return (None, [])
 
     print(f"\n -> Found {len(enrichment_candidates)} candidates. Starting deep enrichment...")
-    enrichment_tasks = [enrich_property_data(prop, criteria.get('destination')) for prop in enrichment_candidates]
+    
+    enrichment_tasks = [enrich_property_data(prop, criteria) for prop in enrichment_candidates]
+    
     final_candidates = await asyncio.gather(*enrichment_tasks)
     
     print(f"\nStep 4: Found {len(final_candidates)} final candidates. Generating recommendations...")
     soft_preferences = criteria.get("soft_preferences", "User did not specify any soft preferences.")
-    recommendations = generate_recommendations(final_candidates, json.dumps(criteria), soft_preferences)
+    
+    recommendations_json = generate_recommendations(final_candidates, json.dumps(criteria), soft_preferences)
     
     add_to_history(criteria, len(final_candidates))
     
-    return recommendations, final_candidates
+    return recommendations_json, final_candidates
 
 
 async def main_loop():
@@ -105,7 +138,6 @@ async def main_loop():
             criteria = response['data']
             print(f"\nGreat! I will start searching with the following criteria: \n{json.dumps(criteria, indent=2)}")
             
-            # The function now safely returns a tuple
             recommendations, final_candidates = await find_apartments_interactive(criteria)
             
             if recommendations and 'recommendations' in recommendations:
@@ -120,11 +152,11 @@ async def main_loop():
                     print(f"Travel Time: {rec.get('travel_time', 'N/A')} minutes")
                     print("\nExplanation:")
                     print(rec.get('explanation', 'No explanation provided.'))
+                    print(f"URL: {rec.get('url', 'N/A')}")
                 print("----------------------------------------------")
                 
-                # Feedback loop
                 while True:
-                    fav_input = input("\nEnter the RANK number of a property to add to favorites, or type 'search again' or 'exit'.\n> ")
+                    fav_input = input("\nEnter the RANK number to add to favorites, or 'search again'/'exit'.\n> ")
                     if fav_input.lower() in ['search again', 'new search', 'refine search']:
                         criteria = None
                         break
@@ -134,7 +166,7 @@ async def main_loop():
                         rank_to_fav = int(fav_input)
                         selected_rec = next((r for r in recs if r.get('rank') == rank_to_fav), None)
                         if selected_rec:
-                            full_prop_data = next((p for p in final_candidates if p.get('Address') == selected_rec.get('address')), None)
+                            full_prop_data = next((p for p in final_candidates if p.get('URL') == selected_rec.get('url')), None)
                             if full_prop_data:
                                 add_to_favorites(full_prop_data)
                             else:

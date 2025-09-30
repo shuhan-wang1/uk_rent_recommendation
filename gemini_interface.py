@@ -3,93 +3,171 @@
 import google.generativeai as genai
 from config import GEMINI_API_KEY
 import json
+import re
 
 genai.configure(api_key=GEMINI_API_KEY)
+# 建议使用更高版本的模型以获得更好的性能和JSON输出能力
 model = genai.GenerativeModel('gemini-2.0-flash-lite')
 
-# ... (clarify_and_extract_criteria 和 refine_criteria_with_answer 函数保持不变) ...
 def clarify_and_extract_criteria(user_query: str) -> dict:
+    """
+    MODIFIED: This prompt is now more advanced.
+    It not only extracts core criteria but also:
+    1.  Identifies specific points of interest (POIs) like 'gym' or 'cafe'.
+    2.  Attempts to map vague descriptions like 'lively area' to concrete search locations.
+    3.  Structures the output to be more machine-readable for downstream tasks.
+    """
     prompt = f"""
-    You are an expert rental assistant. Your job is to analyze a user's request and determine if you have enough information to perform a search, or if you need to ask a clarifying question.
+    You are an expert UK rental assistant. Your job is to analyze a user's request and structure it into a detailed, actionable JSON object.
     The user's request is: "{user_query}"
+
     You MUST return a single valid JSON object.
-    1.  First, analyze the query for the following CORE CRITERIA:
-        - "destination": A specific address or landmark in the UK.
-        - "max_budget": The maximum monthly rent in GBP.
-        - "max_travel_time": The maximum commute time in minutes.
-    2.  Next, identify any SOFT PREFERENCES, like:
-        - "property_style": e.g., "modern", "newly renovated", "with a balcony", "quiet".
-        - "area_vibe": e.g., "lively area", "family-friendly", "good for young professionals".
-        - "priorities": What is most important? e.g., "low budget is key", "fast commute is a must".
-    3.  Based on your analysis, decide the "status":
-        - If "destination", "max_budget", AND "max_travel_time" are clearly stated, the status is "success".
-        - If any of the CORE CRITERIA are missing or ambiguous (e.g., "near the city centre", "cheap", "not too far"), the status is "clarification_needed".
-    4.  Structure your response:
-        - If status is "success":
-          Return a JSON object with "status": "success" and a "data" object containing all extracted core criteria and soft preferences.
-          Example:
-          {{
-            "status": "success",
-            "data": {{
-              "destination": "UCL, Gower Street, London",
-              "max_budget": 1800,
-              "max_travel_time": 30,
-              "soft_preferences": "Looking for a modern, quiet apartment. Good access to supermarkets and parks is important. Crime rate is a concern."
-            }}
-          }}
-        - If status is "clarification_needed":
-          Return a JSON object with "status": "clarification_needed" and a "data" object containing a single key "question" with a friendly, specific question to ask the user.
-          Example for query "Find me a flat near central London":
-          {{
-            "status": "clarification_needed",
-            "data": {{
-              "question": "I can certainly help with that! To get started, could you please provide a more specific destination, like a station or an address? Also, what is your maximum monthly budget and desired commute time?"
-            }}
-          }}
+
+    1.  **Core Criteria Analysis**:
+        - "destination" (string): A specific address, landmark, or station in the UK.
+        - "max_budget" (integer): The maximum monthly rent in GBP.
+        - "max_travel_time" (integer): The maximum commute time in minutes.
+
+    2.  **Soft Preferences & Keywords**:
+        - "soft_preferences" (string): A summary of the user's qualitative needs (e.g., "modern, quiet, good for young professionals").
+        - "property_tags" (list of strings): Extract specific keywords about the property itself from the query, like "balcony", "newly renovated", "garden", "natural light".
+        - "amenities_of_interest" (list of strings): Identify specific nearby places or amenities the user cares about. Examples: "gym", "cafe", "library", "park", "supermarket", "pub".
+
+    3.  **Location Intelligence**:
+        - "area_vibe" (string): Note any descriptions of the desired area, like "lively area", "quiet residential area", "family-friendly".
+        - "suggested_search_locations" (list of strings): Based on the 'area_vibe' or a vague destination, suggest up to 3 specific, well-known London areas or tube stations that would be good starting points. For example, if the user says "lively and central", you might suggest ["Soho", "Shoreditch", "London Bridge"]. If they say "quiet and green", you might suggest ["Richmond", "Hampstead"].
+
+    4.  **Decision & Response Structure**:
+        - **Status "success"**: If "destination", "max_budget", AND "max_travel_time" are all clearly stated.
+        - **Status "clarification_needed"**: If any of the three CORE CRITERIA are missing or ambiguous.
+
+    **Example for a successful query**: "Find me a modern 1-bed flat with a balcony near Google's office in King's Cross. My budget is £2000. I need to get there in under 20 mins. I like going to the gym and quiet cafes."
+    ```json
+    {{
+      "status": "success",
+      "data": {{
+        "destination": "Google, 6 Pancras Square, London",
+        "max_budget": 2000,
+        "max_travel_time": 20,
+        "soft_preferences": "Wants a modern flat, likes gyms and quiet cafes.",
+        "property_tags": ["modern", "balcony"],
+        "amenities_of_interest": ["gym", "cafe"],
+        "area_vibe": null,
+        "suggested_search_locations": []
+      }}
+    }}
+    ```
+
+    **Example for a query needing clarification**: "I want a cheap flat somewhere central."
+    ```json
+    {{
+        "status": "clarification_needed",
+        "data": {{
+            "question": "I can certainly help with that! To find the best options, could you please tell me a specific destination you'll be commuting to (like an office address or station), your maximum monthly budget, and your desired maximum commute time?"
+        }}
+    }}
+    ```
+
     Return ONLY the JSON object.
     """
     try:
         response = model.generate_content(prompt)
-        cleaned_response = response.text.strip().replace('```json', '').replace('```', '').strip()
-        return json.loads(cleaned_response)
+        # A more robust way to clean potential markdown formatting
+        cleaned_response = re.search(r'```json\s*(\{.*?\})\s*```', response.text, re.DOTALL)
+        if cleaned_response:
+            return json.loads(cleaned_response.group(1))
+        else:
+            # Fallback for when the model doesn't use markdown
+            return json.loads(response.text)
     except (json.JSONDecodeError, Exception) as e:
         print(f"Error parsing JSON from Gemini (clarify_and_extract): {e}")
         return {"status": "error", "data": {"message": str(e)}}
 
 def refine_criteria_with_answer(original_query: str, user_answer: str) -> dict:
-    combined_query = f"Original request was: '{original_query}'. My answer to your clarification question is: '{user_answer}'."
+    combined_query = f"My original request was: '{original_query}'. In response to your question, here is more information: '{user_answer}'."
     print(f"\n[Gemini] Refining criteria with combined query: {combined_query}")
     return clarify_and_extract_criteria(combined_query)
+
+def extract_tags_from_description(description: str) -> dict:
+    """
+    NEW FUNCTION: Uses Gemini to extract structured tags from a property's free-text description.
+    This helps in objectively comparing properties based on features not always in structured data.
+    """
+    prompt = f"""
+    You are a property data analysis expert. Your task is to extract specific features from the following property description and return a structured JSON object.
+
+    Property Description:
+    "{description}"
+
+    Analyze the text and extract the following attributes. If an attribute is not mentioned, use `null`.
+    - "renovation_status": (string) e.g., "newly_renovated", "modern", "needs_refurbishment", "well_maintained".
+    - "features": (list of strings) e.g., "balcony", "garden", "parking", "concierge", "bills_included", "furnished", "unfurnished".
+    - "natural_light": (string) e.g., "excellent", "good", "average", "not_mentioned". Infer this from phrases like "bright and airy", "large windows", "sun-drenched".
+    - "noise_level": (string) e.g., "quiet_street", "ex-local_authority", "purpose_built", "standard". Infer this from context.
+    - "summary": (string) A very brief, one-sentence summary of the property's key selling points.
+
+    Return ONLY the JSON object. Example output:
+    ```json
+    {{
+      "renovation_status": "modern",
+      "features": ["balcony", "furnished"],
+      "natural_light": "excellent",
+      "noise_level": "quiet_street",
+      "summary": "A modern, furnished apartment with a balcony and excellent natural light on a quiet street."
+    }}
+    ```
+    """
+    try:
+        response = model.generate_content(prompt)
+        cleaned_response = re.search(r'```json\s*(\{.*?\})\s*```', response.text, re.DOTALL)
+        if cleaned_response:
+            return json.loads(cleaned_response.group(1))
+        else:
+            return json.loads(response.text)
+    except (json.JSONDecodeError, Exception) as e:
+        print(f"Error extracting tags from description: {e}")
+        return {}
 
 
 def generate_recommendations(properties_data: list[dict], user_query: str, soft_preferences: str) -> dict | None:
     """
-    根据最终候选房源和用户的软偏好生成排名和解释。
-    (PROMPT 已更新以处理新的犯罪数据并包含URL)
+    MODIFIED: The prompt is now significantly more powerful.
+    It instructs the model to act as a persona (a helpful assistant) and to use ALL the newly
+    enriched data points (environment, crime trends, amenities, extracted tags) to create a
+    holistic and deeply personalized recommendation. It also explicitly asks for the URL.
     """
     prompt = f"""
-    You are a helpful London apartment recommendation assistant.
+    You are Alex, a helpful and insightful London apartment recommendation assistant.
     The user's original request was: "{user_query}"
     The user's key preferences are: "{soft_preferences}"
 
-    Here is a list of available apartments. Each property includes a URL.
-    `crime_data_summary` contains `total_crimes` and a `category_breakdown`.
+    Here is a list of final candidate apartments. Each property has been enriched with detailed data including travel times, crime statistics (including trends), nearby amenities, environmental quality, and tags extracted from its description.
     {json.dumps(properties_data, indent=2)}
 
     Your task is to:
-    1.  Analyze the provided list of apartments.
-    2.  Rank the top 3 to 5 apartments that are MOST SUITABLE for the user.
-    3.  For each recommended apartment, provide a detailed, personalized explanation using all available data (travel time, crime data, nearby places, price).
+    1.  **Adopt the Persona of Alex**: Write a friendly, engaging, and trustworthy analysis.
+    2.  **Deeply Analyze**: Go beyond just listing facts. Synthesize all the provided data points to form a compelling narrative for why each property is a good match. For example, connect a low crime trend with the user's preference for a 'quiet area', or highlight the number of nearby gyms if they are interested in fitness.
+    3.  **Rank the Top 3-5 Apartments**: The ranking should be based on the best overall fit for the user's stated and inferred needs.
+    4.  **Provide Detailed Explanations**: For each recommended apartment, your explanation MUST be personalized and justify the ranking by referencing multiple data points like:
+        - The **commute time** and its convenience.
+        - The **crime data**, paying special attention to the **crime_trend**.
+        - The specific **amenities_nearby** that match the user's interests.
+        - The **environmental quality** (air quality, green space).
+        - Key **description_tags** like 'newly_renovated' or 'balcony'.
+        - How the price fits within their budget.
 
     Return your answer as a single, valid JSON object with a key "recommendations".
-    Each item in the "recommendations" list MUST be an object with these exact keys: "rank", "address", "price", "travel_time", "explanation", and "url".
+    Each item in the list MUST have these exact keys: "rank", "address", "price", "travel_time", "explanation", and "url".
 
     Return ONLY the JSON object.
     """
     try:
         response = model.generate_content(prompt)
-        cleaned_response = response.text.strip().replace('```json', '').replace('```', '').strip()
-        return json.loads(cleaned_response)
+        cleaned_response = re.search(r'```json\s*(\{.*?\})\s*```', response.text, re.DOTALL)
+        if cleaned_response:
+            return json.loads(cleaned_response.group(1))
+        else:
+            return json.loads(response.text)
     except (json.JSONDecodeError, Exception) as e:
         print(f"Error parsing JSON from Gemini recommendation response: {e}")
         return None
