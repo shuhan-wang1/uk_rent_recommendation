@@ -147,8 +147,12 @@ def get_crime_data_by_location(address: str) -> dict | None:
 
     print(f"  -> [API Call] Getting official crime data for: {address}")
     location = _get_coordinates(address)
+    
     if not location:
-        return {"error": "Could not geocode address."}
+        print(f"     ❌ Could not geocode address: {address}")
+        return {"error": "Could not geocode address.", "total_crimes_6m": "Unknown"}
+    
+    print(f"     ✓ Coordinates: {location['lat']}, {location['lng']}")
 
     base_date = datetime.now().replace(day=1) - pd.DateOffset(months=2)
     dates_to_fetch = [(base_date - pd.DateOffset(months=i)).strftime('%Y-%m') for i in range(6)]
@@ -157,19 +161,36 @@ def get_crime_data_by_location(address: str) -> dict | None:
     for date_str in dates_to_fetch:
         api_url = f"https://data.police.uk/api/crimes-at-location?date={date_str}&lat={location['lat']}&lng={location['lng']}"
         try:
+            print(f"     → Fetching {date_str}...")
             response = requests.get(api_url, timeout=5)
             response.raise_for_status()
             crimes = response.json()
+            
             if crimes:
+                print(f"       ✓ Found {len(crimes)} crimes in {date_str}")
                 all_crimes.extend(crimes)
-        except:
+            else:
+                print(f"       • No crimes in {date_str}")
+        except requests.exceptions.Timeout:
+            print(f"       ⚠️  Timeout for {date_str}")
+            continue
+        except requests.exceptions.RequestException as e:
+            print(f"       ❌ API error for {date_str}: {e}")
             continue
 
     if not all_crimes:
-        summary = {"total_crimes_6m": 0, "crime_trend": "stable", "category_breakdown": "No crime data reported."}
+        print(f"     ⚠️  WARNING: No crime data found for any month!")
+        summary = {
+            "total_crimes_6m": "Unknown", 
+            "crime_trend": "unknown", 
+            "category_breakdown": "Crime data unavailable",
+            "error": "No data returned from UK Police API"
+        }
         set_to_cache(cache_key, summary)
         return summary
 
+    print(f"     ✓ TOTAL: {len(all_crimes)} crimes across 6 months")
+    
     crimes_by_month = Counter(crime['month'] for crime in all_crimes)
     sorted_months = sorted(crimes_by_month.keys())
     counts = [crimes_by_month[m] for m in sorted_months]

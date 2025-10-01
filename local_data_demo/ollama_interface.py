@@ -5,7 +5,7 @@ import re
 import requests
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-MODEL_NAME = "llama3.2:1b"  # Change to your model (qwen2.5:1.5b, llama3.2:3b, etc.)
+MODEL_NAME = "gemma3:12b"  # Change to your model (qwen2.5:1.5b, llama3.2:3b, etc.)
 
 def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 6000) -> str:
     """Call Ollama with better defaults"""
@@ -153,7 +153,7 @@ YOUR TASK: Extract rental criteria and return ONLY the JSON below (NO explanatio
 RULES:
 1. destination: Be specific (e.g., "University College London" not just "London")
 2. max_budget: Extract numeric value (e.g., 5000 for "£5000/month")
-3. max_travel_time: Extract minutes (e.g., 180 for "180min" or "3 hours")
+3. max_travel_time: Extract minutes ONLY. "40 min" = 40, "1 hour" = 60, "90 minutes" = 90
 4. If unlimited travel time, set to 999
 5. suggested_search_locations: List nearby areas for the destination
 6. soft_preferences: Extract SPECIFIC user concerns like "concerned about crime", "want safe area", "need quiet location", "prefer modern", etc. This is IMPORTANT!
@@ -273,7 +273,7 @@ def generate_recommendations(properties_data: list[dict], user_query: str, soft_
         images = prop.get('Images', [])
 
         simple_prop = {
-            'id': i + 1,
+            'id': i + 1,  # This is the key for matching
             'address': prop.get('Address', 'Unknown')[:70],
             'price': prop.get('Price', 'N/A'),
             'url': url,
@@ -287,62 +287,90 @@ def generate_recommendations(properties_data: list[dict], user_query: str, soft_
 
     system_prompt = """You are an expert London rental assistant. Provide HIGHLY DISTINCTIVE recommendations. 
     Each property should have unique selling points. Avoid generic phrases.
-    Focus on SPECIFIC differences: exact commute times, safety statistics, price advantages, unique features."""
+    Focus on SPECIFIC differences: exact commute times, safety statistics, price advantages, unique features.
+    
+    CRITICAL: You MUST keep properties in the EXACT order provided. Use the 'id' field as the rank."""
 
     prompt = f"""User is looking for: {user_query}
 Preferences: {soft_preferences}
 
-Properties ranked by commute time:
+Properties (ALREADY RANKED - DO NOT REORDER):
 {json.dumps(simple_props, indent=2)}
 
-Create recommendations for top 3 properties. Make each recommendation DISTINCTIVE and SPECIFIC:
+Create recommendations for top 3 properties IN THE EXACT ORDER PROVIDED.
 
-1. Start with THE KEY ADVANTAGE (shortest commute, best price, safest area, etc.)
-2. Include EXACT numbers (commute minutes, crime count, price)
-3. Highlight ONE unique feature per property
-4. Compare to other options when relevant
-5. Use varied language - don't repeat phrases
+CRITICAL RULES - YOU MUST FOLLOW THESE:
+1. Use the EXACT travel_time_minutes from the data (e.g., if it says 20, write "20 minutes")
+2. Use the EXACT crimes number from the data (e.g., if crimes=170, write "170 reported crimes")
+3. NEVER say "0 crimes" unless the crimes field is actually 0
+4. NEVER make up numbers - only use the data provided
+5. Start each explanation with the KEY ADVANTAGE
+6. Include EXACT statistics from the data
 
-Example of GOOD recommendation:
-"**Best commute choice**: This property offers the fastest journey at just 13 minutes to UCL, saving you 7 minutes daily compared to other options. Located in a low-crime area with only 45 incidents in 6 months. At £2,500 pcm, it's premium-priced but worth it for the time saved."
+Example of CORRECT explanation:
+"This property offers a 20-minute commute to UCL. The area has 170 reported crimes in the last 6 months, with most incidents being theft-related. At £2,500 pcm, it's premium-priced but offers immediate access to Carnaby Street."
 
-Example of BAD recommendation:
-"This property offers a short commute to UCL. Priced at £2,500 pcm, offering premium pricing."
+Example of WRONG explanation:
+"This property has a short commute. The area is very safe with 0 crimes reported." ❌
 
-Return as JSON:
+Return ONLY this JSON format:
 {{
   "recommendations": [
     {{
       "rank": 1,
-      "address": "Full address",
+      "address": "Full address from id:1",
       "price": "£X pcm",
       "travel_time": "X minutes",
-      "explanation": "Distinctive, specific explanation with exact numbers",
-      "url": "https://..."
+      "explanation": "Start with key advantage. Include EXACT numbers: X minute commute, Y crimes reported. Mention specific features.",
+      "url": "url from id:1"
     }}
   ]
-}}
-
-Return ONLY the JSON."""
+}}"""
 
     response_text = call_ollama(prompt, system_prompt, timeout=6000)
 
     if not response_text:
-        return create_fallback_recommendations(properties_data)
+        return create_fallback_recommendations(properties_data, soft_preferences)
 
     parsed = extract_first_json(response_text)
 
     if parsed and 'recommendations' in parsed:
-        # Ensure accurate travel times and images
+        print("\n[DEBUG] Fixing travel times and images...")
+        
+        # Match by address (more reliable than URL)
         for rec in parsed['recommendations']:
-            original_prop = next((p for p in properties_data if rec.get('url') and p.get('URL') and rec['url'] in p['URL']), None)
+            rank = rec.get('rank', 0)
+            rec_address = rec.get('address', '').lower().strip()
+            
+            # Find matching property by address substring
+            original_prop = None
+            for prop in properties_data:
+                prop_address = prop.get('Address', '').lower().strip()
+                if rec_address[:30] in prop_address or prop_address[:30] in rec_address:
+                    original_prop = prop
+                    break
+            
+            # Fallback to rank-based matching
+            if not original_prop and 1 <= rank <= len(properties_data):
+                original_prop = properties_data[rank - 1]
+            
             if original_prop:
                 tt_mins = original_prop.get('travel_time_minutes')
-                rec['travel_time'] = f"{tt_mins} minutes" if tt_mins is not None else "N/A"
+                rec['travel_time'] = f"{tt_mins} minutes" if isinstance(tt_mins, (int, float)) else "N/A"
                 rec['images'] = original_prop.get('Images', [])
+                rec['url'] = original_prop.get('URL', rec.get('url', ''))
+                rec['address'] = original_prop.get('Address', rec.get('address', ''))
+                
+                print(f"  ✓ Rank {rank}: {rec['address'][:40]} - {rec['travel_time']}")
+            else:
+                print(f"  ⚠️  Could not match rank {rank}")
+                rec['travel_time'] = "N/A"
+                rec['images'] = []
+        
         return parsed
     else:
-        return create_fallback_recommendations(properties_data)
+        print("[WARN] Could not parse JSON, using fallback")
+        return create_fallback_recommendations(properties_data, soft_preferences)
 
 def create_fallback_recommendations(properties_data: list[dict], soft_preferences: str = "") -> dict:
     """High-quality, context-aware recommendations that address user concerns"""

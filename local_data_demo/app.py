@@ -1,19 +1,43 @@
-# app.py - Enhanced with Web Search for Chat
+# app.py - Enhanced with RAG as per Claude's instructions
 
 import asyncio
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import json
 import traceback
-from ollama_interface import clarify_and_extract_criteria, call_ollama
-from interactive_main import find_apartments_interactive
+from ollama_interface import clarify_and_extract_criteria, generate_recommendations, call_ollama
 from user_session import add_to_favorites, get_favorites, _session_data
 from web_search import get_search_snippets
 from free_maps_service import get_crime_data_by_location
 import re
 
+# RAG Imports from new files
+from data_loader import load_mock_properties_from_csv
+from rag_coordinator import RAGCoordinator
+from enrichment import enrich_property_data
+
 app = Flask(__name__, template_folder='.')
 CORS(app)
+
+# --- RAG Setup as per markdown ---
+# Initialize the coordinator and build the index at startup
+print("[STARTUP] Initializing RAG Coordinator...")
+try:
+    rag_coordinator = RAGCoordinator()
+except Exception as e:
+    print(f"❌ FATAL ERROR during RAG initialization:")
+    print(f"   Error type: {type(e).__name__}")
+    print(f"   Error message: {str(e)}")
+    import traceback
+    traceback.print_exc()
+    raise  # Re-raise to see full stack trace
+rag_coordinator = RAGCoordinator()
+all_properties = load_mock_properties_from_csv()
+if all_properties:
+    print("[STARTUP] Building FAISS index for property embeddings... (This may take a moment)") # <-- ADDED THIS LINE
+    rag_coordinator.property_store.build_index(all_properties)
+    print("✓ [STARTUP] FAISS index built successfully. Starting server...") # <-- ADDED THIS LINE
+# ------------------------------------
 
 # Store last search results for chat context
 last_search_results = []
@@ -23,9 +47,33 @@ def index():
     """Serves the main HTML page."""
     return render_template('apartment-finder-ui.html')
 
+def generate_recommendations_with_rag(properties: list[dict], user_query: str, past_conversations: list[str], area_knowledge: list[dict]) -> dict | None:
+    """
+    Generates recommendations using the original function but enriches the prompt
+    with context from the RAG system, as described in the markdown.
+    """
+    # Create a richer context for the recommendation engine
+    # This context will be passed as 'soft_preferences' to the existing function
+    contextual_prompt = f"""
+    User's original query: "{user_query}"
+    Relevant information from past conversations:
+    - {" ".join(past_conversations)}
+
+    Additional context about the target search area:
+    - {json.dumps(area_knowledge, indent=2)}
+    """
+    
+    # Call the original recommendation function from ollama_interface
+    # The 'user_query' is still passed for core criteria, and the new contextual_prompt
+    # enriches the 'soft_preferences' part.
+    return generate_recommendations(properties, user_query, contextual_prompt)
+
+
 @app.route('/api/search', methods=['POST'])
-def api_search():
-    """API endpoint that replicates the logic from interactive_main.py."""
+async def api_search():
+    """
+    API endpoint enhanced with the RAG workflow.
+    """
     global last_search_results
     
     data = request.get_json()
@@ -36,43 +84,89 @@ def api_search():
     print(f"Received query from UI: {user_query}")
 
     try:
-        response = clarify_and_extract_criteria(user_query)
-        print(f"[DEBUG] Ollama response: {json.dumps(response, indent=2)}")
+        # 1. Extract criteria
+        criteria_response = clarify_and_extract_criteria(user_query)
+        print(f"[DEBUG] Ollama criteria response: {json.dumps(criteria_response, indent=2)}")
 
-        if response.get('status') == 'clarification_needed':
-            return jsonify(response), 200
+        if criteria_response.get('status') != 'success':
+            return jsonify(criteria_response), 200
 
-        if response.get('status') == 'error':
-            error_msg = response.get('data', {}).get('message', 'Unknown error') if isinstance(response.get('data'), dict) else 'Unknown error'
-            return jsonify({"error": error_msg}), 400
+        criteria = criteria_response
 
-        criteria = None
+        # 2. RAG-enhanced retrieval
+        print("\nStep 2: Performing RAG-enhanced retrieval...")
+        ranked_properties, past_context, area_info = rag_coordinator.enhanced_search(
+            user_query, criteria
+        )
+        print(f" -> Found {len(ranked_properties)} semantically similar properties.")
         
-        if response.get('status') and 'success' in response.get('status'):
-            criteria = {k: v for k, v in response.items() if k != 'status'}
-            print("[DEBUG] Extracted criteria from top-level response")
+        # 3. CALCULATE TRAVEL TIMES for top candidates
+        print("\nStep 3: Calculating travel times for top candidates...")
+        top_candidates = ranked_properties[:15]  # Check more to ensure we get 5 within time limit
         
-        if not criteria:
-            print(f"[ERROR] Could not extract criteria from response")
-            return jsonify({"error": "Could not understand the request. Please be more specific."}), 400
-
-        required_fields = ['destination', 'max_budget', 'max_travel_time']
-        missing_fields = [f for f in required_fields if f not in criteria]
+        destination = criteria.get('destination', 'University College London')
+        max_travel_time = criteria.get('max_travel_time', 40)
         
-        if missing_fields:
-            print(f"[ERROR] Missing required fields: {missing_fields}")
+        # Calculate travel times concurrently
+        from travel_service import calculate_travel_time
+        loop = asyncio.get_event_loop()
+        
+        travel_time_tasks = [
+            loop.run_in_executor(
+                None,
+                calculate_travel_time,
+                prop.get('Address', ''),
+                destination
+            )
+            for prop in top_candidates
+        ]
+        
+        travel_times = await asyncio.gather(*travel_time_tasks, return_exceptions=True)
+        
+        # Filter by travel time and add to properties
+        candidates_with_travel = []
+        for prop, travel_time in zip(top_candidates, travel_times):
+            if isinstance(travel_time, Exception):
+                print(f"  ⚠️  Travel time error for {prop.get('Address', '')[:50]}: {travel_time}")
+                continue
+            
+            if travel_time and travel_time <= max_travel_time:
+                prop['travel_time_minutes'] = travel_time
+                candidates_with_travel.append(prop)
+                print(f"  ✓ {prop.get('Address', '')[:50]}: {travel_time} mins")
+            else:
+                print(f"  ✗ {prop.get('Address', '')[:50]}: {travel_time} mins (too far)")
+        
+        if not candidates_with_travel:
             return jsonify({
-                "status": "clarification_needed",
-                "data": {
-                    "question": f"To find the best apartments, please provide: {', '.join(missing_fields)}"
-                }
-            }), 200
-
-        print(f"✓ Extracted criteria: {json.dumps(criteria, indent=2)}")
-
-        recommendations, final_candidates = asyncio.run(find_apartments_interactive(criteria))
+                "recommendations": [],
+                "message": "No properties found within your travel time requirement."
+            })
         
-        # Store results for chat context
+        # 4. Enrich top 5 with web data
+        print(f"\nStep 4: Enriching top {min(5, len(candidates_with_travel))} candidates...")
+        top_5 = candidates_with_travel[:5]
+        enriched_candidates = await asyncio.gather(*[
+            enrich_property_data(prop, criteria) for prop in top_5
+        ])
+        
+        # 5. Generate recommendations with context from RAG
+        print("\nStep 5: Generating recommendations with RAG context...")
+        recommendations = generate_recommendations_with_rag(
+            properties=enriched_candidates,
+            user_query=user_query,
+            past_conversations=past_context,
+            area_knowledge=area_info
+        )
+        
+        # 6. Store conversation for future retrieval
+        print("\nStep 6: Storing interaction in conversation memory...")
+        rag_coordinator.conversation_memory.add_interaction(
+            user_query, 
+            json.dumps(recommendations),
+            metadata=criteria
+        )
+        
         if recommendations and 'recommendations' in recommendations:
             last_search_results = recommendations['recommendations']
             return jsonify(recommendations)
@@ -87,9 +181,7 @@ def api_search():
 
 def markdown_to_html(text):
     """Convert markdown-style formatting to HTML"""
-    # Bold text
     text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
-    # Line breaks
     text = text.replace('\n', '<br>')
     return text
 
@@ -104,7 +196,6 @@ def api_chat():
     context = data.get('context', {})
     
     try:
-        # Your updated list of keywords
         search_keywords = ['cost of living', 'crime rate', 'crime', 'safe', 'safety', 'area like', 'neighborhood', 'transport', 'schools', 'restaurants','supermarkets','vibe','vibrant','bus','tube','train']
         needs_search = any(keyword in user_message.lower() for keyword in search_keywords)
         
@@ -143,9 +234,6 @@ Web search results about the area:
 {search_results}
 Please provide a helpful answer based on these search results."""
             
-            # **NEW CATCH-ALL BLOCK**
-            # If the query needs a search but isn't one of the specific cases above,
-            # perform a general search.
             else:
                 search_query = f"{user_message} near {address}"
                 search_results = get_search_snippets(search_query, max_results=4)
@@ -176,6 +264,7 @@ Please provide a helpful, detailed response."""
         print(f"❌ Chat error: {e}")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 @app.route('/api/favorites', methods=['POST'])
 def add_favorite():
     """Add a property to favorites"""
