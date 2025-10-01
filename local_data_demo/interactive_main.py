@@ -8,7 +8,8 @@ from data_loader import get_live_properties, filter_by_budget
 from ollama_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
 from enrichment import enrich_property_data
 # from maps_service import calculate_travel_time
-from free_maps_service import calculate_travel_time
+# from free_maps_service import calculate_travel_time
+from travel_service import calculate_travel_time
 
 from user_session import add_to_favorites, print_favorites, add_to_history
 from location_resolver import get_best_location_id  # NEW IMPORT
