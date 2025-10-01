@@ -5,7 +5,7 @@ import re
 import requests
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-MODEL_NAME = "qwen3:1.7b"  # Change to your model (qwen2.5:1.5b, llama3.2:3b, etc.)
+MODEL_NAME = "llama3.2:1b"  # Change to your model (qwen2.5:1.5b, llama3.2:3b, etc.)
 
 def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 6000) -> str:
     """Call Ollama with better defaults"""
@@ -110,7 +110,7 @@ User request: "{user_query}"
 
 Fill in the values. Return ONLY the JSON object, nothing else."""
 
-    response_text = call_ollama(prompt, timeout=30)
+    response_text = call_ollama(prompt, timeout=60000)
     
     if response_text:
         parsed = extract_first_json(response_text)
@@ -240,7 +240,7 @@ Extract features as JSON (no explanation):
 JSON OUTPUT:"""
     
     try:
-        response_text = call_ollama(prompt, timeout=120)
+        response_text = call_ollama(prompt, timeout=6000)
         if response_text:
             return extract_first_json(response_text) or {}
         return {}
@@ -256,99 +256,93 @@ def _get_property_url(prop: dict) -> str:
     return ''
 
 def generate_recommendations(properties_data: list[dict], user_query: str, soft_preferences: str) -> dict | None:
-    """Generate personalized property recommendations - V7 with user concern addressing"""
+    """Generate personalized property recommendations - V3 with distinctive details"""
 
     print(f"\n🤖 [RECOMMENDATION ENGINE] Starting...")
     print(f"   Properties to analyze: {len(properties_data)}")
-    print(f"   User concerns: {soft_preferences if soft_preferences else 'None specified'}")
 
     if not properties_data:
         return {"recommendations": []}
 
-    # For small models, use rule-based recommendations which are more reliable
-    USE_LLM = True  # Changed to False - rule-based is better for small models
+    top_props = properties_data[:5]
     
-    if not USE_LLM:
-        print("   Using intelligent rule-based recommendations")
-        return create_fallback_recommendations(properties_data, soft_preferences)
-    
-    # LLM code remains for future use with larger models
-    num_properties = min(5, len(properties_data))
-    top_props = properties_data[:num_properties]
     simple_props = []
-    
     for i, prop in enumerate(top_props):
         url = _get_property_url(prop)
         travel_time = prop.get('travel_time_minutes', 'N/A')
-        crime_data = prop.get('crime_data_summary', {})
-        
-        simple_props.append({
+        images = prop.get('Images', [])
+
+        simple_prop = {
             'id': i + 1,
-            'address': prop.get('Address', 'Unknown'),
+            'address': prop.get('Address', 'Unknown')[:70],
             'price': prop.get('Price', 'N/A'),
             'url': url,
-            'travel_time': travel_time,
-            'crimes_6mo': crime_data.get('total_crimes_6m', 0),
-            'crime_trend': crime_data.get('crime_trend', 'unknown'),
-            'top_crimes': crime_data.get('top_crime_types', [])[:2]
-        })
+            'travel_time_minutes': travel_time,
+            'crimes': prop.get('crime_data_summary', {}).get('total_crimes_6m', 0),
+            'crime_trend': prop.get('crime_data_summary', {}).get('crime_trend', 'unknown'),
+            'images': images,
+            'description': prop.get('Description', '')[:200]
+        }
+        simple_props.append(simple_prop)
 
-    num_recommendations = min(3, num_properties)
+    system_prompt = """You are an expert London rental assistant. Provide HIGHLY DISTINCTIVE recommendations. 
+    Each property should have unique selling points. Avoid generic phrases.
+    Focus on SPECIFIC differences: exact commute times, safety statistics, price advantages, unique features."""
 
-    system_prompt = f"""You are a rental property expert. The user cares about: {soft_preferences or 'general quality'}.
-Address these concerns explicitly in your recommendations."""
+    prompt = f"""User is looking for: {user_query}
+Preferences: {soft_preferences}
 
-    prompt = f"""User looking for: {user_query}
-User's specific concerns: {soft_preferences or 'None'}
-
-Properties (with safety data):
+Properties ranked by commute time:
 {json.dumps(simple_props, indent=2)}
 
-Create {num_recommendations} recommendations. ADDRESS THE USER'S CONCERNS EXPLICITLY.
-If they asked about crime, mention crime statistics. If they want modern, mention condition.
+Create recommendations for top 3 properties. Make each recommendation DISTINCTIVE and SPECIFIC:
 
-Return ONLY this JSON:
+1. Start with THE KEY ADVANTAGE (shortest commute, best price, safest area, etc.)
+2. Include EXACT numbers (commute minutes, crime count, price)
+3. Highlight ONE unique feature per property
+4. Compare to other options when relevant
+5. Use varied language - don't repeat phrases
+
+Example of GOOD recommendation:
+"**Best commute choice**: This property offers the fastest journey at just 13 minutes to UCL, saving you 7 minutes daily compared to other options. Located in a low-crime area with only 45 incidents in 6 months. At £2,500 pcm, it's premium-priced but worth it for the time saved."
+
+Example of BAD recommendation:
+"This property offers a short commute to UCL. Priced at £2,500 pcm, offering premium pricing."
+
+Return as JSON:
 {{
   "recommendations": [
     {{
       "rank": 1,
-      "address": "exact address from data",
-      "price": "exact price from data",
+      "address": "Full address",
+      "price": "£X pcm",
       "travel_time": "X minutes",
-      "explanation": "Address user's concerns first, then other benefits",
-      "url": "exact url from data"
+      "explanation": "Distinctive, specific explanation with exact numbers",
+      "url": "https://..."
     }}
   ]
 }}
 
-JSON OUTPUT:"""
+Return ONLY the JSON."""
 
-    response_text = call_ollama(prompt, system_prompt, timeout=120)
+    response_text = call_ollama(prompt, system_prompt, timeout=6000)
 
     if not response_text:
-        return create_fallback_recommendations(properties_data, soft_preferences)
+        return create_fallback_recommendations(properties_data)
 
     parsed = extract_first_json(response_text)
 
     if parsed and 'recommendations' in parsed:
-        actual_recs = parsed['recommendations'][:num_properties]
-        
-        for rec in actual_recs:
-            original_prop = next(
-                (p for p in properties_data 
-                 if rec.get('url') and p.get('URL') and rec['url'] in p['URL']), 
-                None
-            )
+        # Ensure accurate travel times and images
+        for rec in parsed['recommendations']:
+            original_prop = next((p for p in properties_data if rec.get('url') and p.get('URL') and rec['url'] in p['URL']), None)
             if original_prop:
                 tt_mins = original_prop.get('travel_time_minutes')
                 rec['travel_time'] = f"{tt_mins} minutes" if tt_mins is not None else "N/A"
                 rec['images'] = original_prop.get('Images', [])
-                rec['price'] = original_prop.get('Price', rec.get('price'))
-                rec['address'] = original_prop.get('Address', rec.get('address'))
-        
-        return {'recommendations': actual_recs}
+        return parsed
     else:
-        return create_fallback_recommendations(properties_data, soft_preferences)
+        return create_fallback_recommendations(properties_data)
 
 def create_fallback_recommendations(properties_data: list[dict], soft_preferences: str = "") -> dict:
     """High-quality, context-aware recommendations that address user concerns"""
