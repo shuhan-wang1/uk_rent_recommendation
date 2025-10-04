@@ -277,9 +277,180 @@ def _calculate_travel_time_simple(origin_address: str, destination_address: str,
 estimate_travel_time_simple = _calculate_travel_time_simple
 
 
+# free_maps_service.py - 在文件末尾添加这些函数
+
 def find_nearby_places(address: str, amenities_of_interest: list[str], radius: int = 1500) -> dict:
-    """Simplified - returns empty dict, can be enhanced later if needed"""
-    return {f"{amenity}_in_{radius}m": 0 for amenity in amenities_of_interest}
+    """
+    ENHANCED: Now uses OpenStreetMap Overpass API (FREE, no limits)
+    Returns actual counts and details of nearby amenities.
+    """
+    cache_key = create_cache_key('find_nearby_places_osm_v1', address, tuple(sorted(amenities_of_interest)), radius)
+    cached_result = get_from_cache(cache_key)
+    if cached_result:
+        print(f"  -> [Cache HIT] Nearby places for: {address}")
+        return cached_result
+
+    print(f"  -> [OSM API] Getting nearby places for: {address}")
+    
+    location = _get_coordinates(address)
+    if not location:
+        return {f"{poi}_in_{radius}m": 0 for poi in amenities_of_interest}
+
+    # Map common amenity names to OSM tags
+    osm_tag_map = {
+        'supermarket': 'shop=supermarket',
+        'grocery_or_supermarket': 'shop=supermarket|shop=convenience',
+        'gym': 'leisure=fitness_centre',
+        'park': 'leisure=park',
+        'restaurant': 'amenity=restaurant',
+        'cafe': 'amenity=cafe',
+        'pharmacy': 'amenity=pharmacy',
+        'school': 'amenity=school',
+        'hospital': 'amenity=hospital',
+        'library': 'amenity=library',
+        'pub': 'amenity=pub',
+    }
+    
+    poi_summary = {}
+    
+    for amenity in amenities_of_interest:
+        osm_query = osm_tag_map.get(amenity, f'amenity={amenity}')
+        count = _query_overpass(location['lat'], location['lng'], radius, osm_query)
+        poi_summary[f"{amenity}_in_{radius}m"] = count
+    
+    set_to_cache(cache_key, poi_summary)
+    return poi_summary
+
+
+def _query_overpass(lat: float, lng: float, radius: int, osm_tags: str) -> int:
+    """
+    Query OpenStreetMap using Overpass API (completely free)
+    
+    Example OSM tags:
+    - 'shop=supermarket' -> supermarkets
+    - 'amenity=restaurant' -> restaurants
+    - 'leisure=park' -> parks
+    """
+    
+    # Overpass API endpoint (public, free, no key needed)
+    url = "https://overpass-api.de/api/interpreter"
+    
+    # Build Overpass QL query
+    # This searches for nodes and ways with the specified tags within radius
+    query = f"""
+    [out:json][timeout:10];
+    (
+      node[{osm_tags}](around:{radius},{lat},{lng});
+      way[{osm_tags}](around:{radius},{lat},{lng});
+    );
+    out count;
+    """
+    
+    try:
+        time.sleep(1)  # Rate limiting: be nice to the free API
+        response = requests.post(url, data={'data': query}, timeout=15)
+        
+        if response.status_code == 200:
+            data = response.json()
+            # Overpass returns count in the tags section
+            count = len(data.get('elements', []))
+            print(f"    ✓ Found {count} items matching '{osm_tags}'")
+            return count
+        else:
+            print(f"    ⚠️  Overpass API returned {response.status_code}")
+            return 0
+    except Exception as e:
+        print(f"    ⚠️  Overpass query failed: {e}")
+        return 0
+
+
+def get_nearby_supermarkets_detailed(address: str, radius: int = 1000) -> list[dict]:
+    """
+    BONUS FUNCTION: Get detailed list of supermarkets (names, addresses, distances)
+    Uses OpenStreetMap Overpass API (FREE)
+    
+    Returns: List of dicts like [{'name': 'Tesco', 'address': '...', 'distance_m': 450}, ...]
+    """
+    cache_key = create_cache_key('supermarkets_detailed_v1', address, radius)
+    cached_result = get_from_cache(cache_key)
+    if cached_result:
+        return cached_result
+    
+    location = _get_coordinates(address)
+    if not location:
+        return []
+    
+    url = "https://overpass-api.de/api/interpreter"
+    
+    # Query for supermarkets with details
+    query = f"""
+    [out:json][timeout:15];
+    (
+      node["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
+      way["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
+      node["shop"="convenience"](around:{radius},{location['lat']},{location['lng']});
+    );
+    out center;
+    """
+    
+    try:
+        time.sleep(1)
+        response = requests.post(url, data={'data': query}, timeout=15)
+        
+        if response.status_code != 200:
+            print(f"  [Overpass] API error {response.status_code}")
+            return []
+        
+        data = response.json()
+        supermarkets = []
+        
+        for element in data.get('elements', [])[:10]:  # Limit to top 10
+            tags = element.get('tags', {})
+            
+            # Get coordinates
+            if element['type'] == 'node':
+                shop_lat = element['lat']
+                shop_lng = element['lon']
+            else:  # way (building polygon)
+                center = element.get('center', {})
+                shop_lat = center.get('lat')
+                shop_lng = center.get('lon')
+            
+            if not shop_lat or not shop_lng:
+                continue
+            
+            # Calculate distance
+            distance_km = _calculate_straight_line_distance(
+                location['lat'], location['lng'],
+                shop_lat, shop_lng
+            )
+            distance_m = int(distance_km * 1000)
+            
+            # Extract info
+            name = tags.get('name', 'Unnamed Shop')
+            shop_type = tags.get('shop', 'supermarket')
+            street = tags.get('addr:street', '')
+            housenumber = tags.get('addr:housenumber', '')
+            
+            supermarkets.append({
+                'name': name,
+                'type': shop_type,
+                'address': f"{housenumber} {street}".strip() or "Address not available",
+                'distance_m': distance_m,
+                'lat': shop_lat,
+                'lng': shop_lng
+            })
+        
+        # Sort by distance
+        supermarkets.sort(key=lambda x: x['distance_m'])
+        
+        print(f"  ✓ Found {len(supermarkets)} supermarkets via OpenStreetMap")
+        set_to_cache(cache_key, supermarkets)
+        return supermarkets
+        
+    except Exception as e:
+        print(f"  ❌ Overpass detailed query failed: {e}")
+        return []
 
 
 def get_crime_data_by_location(address: str) -> dict | None:

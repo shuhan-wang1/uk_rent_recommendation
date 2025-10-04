@@ -187,7 +187,7 @@ def markdown_to_html(text):
 
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
-    """Enhanced chat endpoint with web search and context awareness"""
+    """Enhanced chat endpoint with FREE supermarket search (OpenStreetMap)"""
     data = request.get_json()
     if not data or not data.get('message'):
         return jsonify({"error": "Message is required"}), 400
@@ -196,61 +196,132 @@ def api_chat():
     context = data.get('context', {})
     
     try:
-        search_keywords = ['cost of living', 'crime rate', 'crime', 'safe', 'safety', 'area like', 'neighborhood', 'transport', 'schools', 'restaurants','supermarkets','vibe','vibrant','bus','tube','train']
+        search_keywords = ['cost of living', 'crime rate', 'crime', 'safe', 'safety', 
+                          'area like', 'neighborhood', 'transport', 'schools', 
+                          'restaurants', 'supermarket', 'shop', 'store', 'grocery',
+                          'vibe', 'vibrant', 'bus', 'tube', 'train']
         needs_search = any(keyword in user_message.lower() for keyword in search_keywords)
         
         system_prompt = """You are Alex, a friendly and knowledgeable UK rental assistant. 
-        You help users understand property listings, compare options, and make informed decisions.
-        Be conversational, helpful, and specific. Use the information provided to give detailed answers.
-        When discussing properties, reference specific details like address, price, and travel time."""
+        CRITICAL RULES:
+        1. ONLY use data from the provided search results
+        2. NEVER invent store names, distances, or locations
+        3. If data is incomplete, say "Based on available data..." and be honest
+        4. Always verify before claiming something is "nearby" """
         
         prompt = user_message
         
         if needs_search and context.get('property'):
             address = context['property'].get('address', '')
             
-            if 'cost of living' in user_message.lower():
-                search_results = get_search_snippets(f"cost of living near {address} London", max_results=3)
-                prompt = f"""The user is asking: "{user_message}"
-Property: {address}
-Web search results about cost of living:
-{search_results}
-Please provide a helpful answer based on these search results."""
+            # SUPERMARKET QUERY - Now uses FREE OpenStreetMap API
+            if any(word in user_message.lower() for word in ['supermarket', 'shop', 'store', 'grocery']):
+                print(f"  [FREE SUPERMARKET SEARCH] Using OpenStreetMap for: {address}")
+                
+                # Import the FREE function
+                from free_maps_service import get_nearby_supermarkets_detailed
+                
+                # Get detailed supermarket list (completely free!)
+                supermarkets = get_nearby_supermarkets_detailed(address, radius=1000)
+                
+                if supermarkets:
+                    # Format the data nicely
+                    supermarket_text = "\n".join([
+                        f"- {shop['name']} ({shop['type']}) - {shop['address']} - {shop['distance_m']}m away"
+                        for shop in supermarkets[:8]  # Top 8
+                    ])
+                    
+                    prompt = f"""The user asked: "{user_message}"
+Property address: {address}
+
+VERIFIED SUPERMARKETS from OpenStreetMap (within 1km):
+{supermarket_text}
+
+Total found: {len(supermarkets)}
+
+INSTRUCTIONS:
+1. List the supermarkets exactly as shown above
+2. Include their names, types, and distances
+3. Do NOT add any stores not in this list
+4. If user asks about specific chains, check if they're in the list
+
+Provide a helpful, friendly response using ONLY this verified data."""
+
+                else:
+                    prompt = f"""The user asked: "{user_message}"
+Property address: {address}
+
+OpenStreetMap search result: NO supermarkets found within 1km.
+
+Respond honestly: "I searched OpenStreetMap and couldn't find any supermarkets within 1km of this address. The nearest shops might be slightly further away. Would you like me to search within a 2km radius instead?" """
             
+            # TRANSPORT/TUBE QUERY
+            elif any(word in user_message.lower() for word in ['tube', 'train', 'station', 'transport']):
+                search_results = get_search_snippets(
+                    f"nearest tube underground station to {address} London",
+                    max_results=5
+                )
+                prompt = f"""The user asked: "{user_message}"
+Property: {address}
+
+Web search results about nearest stations:
+{search_results}
+
+CRITICAL RULES:
+1. The STREET NAME does not determine the station name
+2. "Kentish Town Road" does NOT mean "Kentish Town station" - check search results!
+3. Only mention stations explicitly found in search results
+4. Start with: "According to web search..."
+5. If unclear, say: "The search results suggest... but I recommend verifying"
+
+Answer based ONLY on the search results above."""
+            
+            # CRIME QUERY
             elif any(word in user_message.lower() for word in ['crime', 'safe', 'safety']):
                 crime_data = get_crime_data_by_location(address)
-                prompt = f"""The user is asking: "{user_message}"
+                prompt = f"""The user asked: "{user_message}"
 Property: {address}
-Crime statistics for this area:
-- Total crimes in last 6 months: {crime_data.get('total_crimes_6m', 'Unknown')}
+
+Official UK Police data:
+- Total crimes (last 6 months): {crime_data.get('total_crimes_6m', 'Unknown')}
 - Crime trend: {crime_data.get('crime_trend', 'Unknown')}
-Please provide a helpful answer based on these statistics."""
+- Top crime types: {crime_data.get('top_crime_types', [])}
+
+Provide a balanced, factual response using this official data."""
             
+            # COST OF LIVING QUERY
+            elif 'cost of living' in user_message.lower():
+                search_results = get_search_snippets(f"cost of living near {address} London", max_results=3)
+                prompt = f"""User: "{user_message}"
+Property: {address}
+Web results: {search_results}
+Answer based on these results."""
+            
+            # AREA/NEIGHBORHOOD QUERY
             elif any(word in user_message.lower() for word in ['area like', 'neighborhood', 'vibe', 'vibrant']):
                 search_results = get_search_snippets(f"{address} London area guide neighborhood", max_results=3)
-                prompt = f"""The user is asking: "{user_message}"
+                prompt = f"""User: "{user_message}"
 Property: {address}
-Web search results about the area:
-{search_results}
-Please provide a helpful answer based on these search results."""
+Area information: {search_results}
+Describe the area based on these results."""
             
+            # GENERIC SEARCH
             else:
                 search_query = f"{user_message} near {address}"
                 search_results = get_search_snippets(search_query, max_results=4)
-                prompt = f"""The user is asking: "{user_message}"
+                prompt = f"""User: "{user_message}"
 Property: {address}
-Here is what a web search found:
-{search_results}
-Please use these search results to give a helpful and factual answer."""
+Search results: {search_results}
+Answer based on available information."""
 
         elif context.get('property'):
             prop = context['property']
-            prompt = f"""The user is asking about this property:
+            prompt = f"""User asking about:
 Address: {prop.get('address', 'N/A')}
 Price: {prop.get('price', 'N/A')}
 Travel Time: {prop.get('travel_time', 'N/A')}
-User's question: {user_message}
-Please provide a helpful, detailed response."""
+Question: {user_message}
+Provide helpful information."""
         
         response_text = call_ollama(prompt, system_prompt=system_prompt, timeout=300000)
         
@@ -264,7 +335,6 @@ Please provide a helpful, detailed response."""
         print(f"❌ Chat error: {e}")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
 @app.route('/api/favorites', methods=['POST'])
 def add_favorite():
     """Add a property to favorites"""

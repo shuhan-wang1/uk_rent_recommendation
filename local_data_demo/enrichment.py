@@ -1,4 +1,4 @@
-# enrichment.py - OPTIMIZED VERSION (removes slow tag extraction)
+# enrichment.py - FIXED VERSION
 
 import asyncio
 from travel_service import calculate_travel_time
@@ -8,10 +8,11 @@ from maps_service import (
     get_environmental_data
 )
 from web_search import search_cost_of_living
-# Don't import extract_tags_from_description - it's too slow and not used
+
 async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
     """
-    OPTIMIZED: Central hub for data enrichment.
+    FIXED: Central hub for data enrichment.
+    Now properly preserves nested crime data structure.
     """
     enriched_prop = property_dict.copy()
     address = enriched_prop.get('Address')
@@ -42,11 +43,12 @@ async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
             print(f"    ⚠️  Failed to get '{key}': {value}")
             enriched_prop[key] = {"error": str(value)}
         else:
-            # ADD THIS DEBUG LINE
+            # CRITICAL FIX: Keep crime data nested, don't flatten
             if key == 'crime_data_summary':
                 print(f"    -> Crime data: {value}")
-            
-            if isinstance(value, dict):
+                enriched_prop['crime_data_summary'] = value  # ✅ Keep nested!
+            elif isinstance(value, dict) and key not in ['amenities_nearby', 'environmental_data']:
+                # For other dict results, we can flatten
                 enriched_prop.update(value)
             else:
                 enriched_prop[key] = value
