@@ -1,0 +1,204 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near London Bridge, budget £1800pm, 20 min commute max",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links, central",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "restaurants", "shops"],
+      "area_vibe": "vibrant, central, historic",
+      "suggested_search_locations": ["Bermondsey", "Southwark", "Tower Bridge"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Canary Wharf, £450pw, 10 min tube",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 450,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf",
+      "max_budget": 1949,
+      "max_travel_time": 10,
+      "soft_preferences": "modern, good amenities",
+      "property_tags": ["2-bedroom", "apartment", "modern"],
+      "amenities_of_interest": ["DLR", "gym", "shopping centres"],
+      "area_vibe": "business district, modern, high-rise",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a nice place in Shoreditch",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Shoreditch",
+      "city_context": "London",
+      "clarification_questions": [
+        "What is your budget per month?",
+        "How many bedrooms do you need?",
+        "Are there any specific amenities or transport links you need to be near?",
+        "What does 'nice' mean to you (e.g., modern, period, quiet, lively)?"
+      ]
+    }
+  },
+  {
+    "user_query": "1 bed apartmnet near MediaCityUK, max £1000pm, 5 mile commut",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1000,
+      "original_distance_miles": 5,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "MediaCityUK",
+      "max_budget": 1000,
+      "max_travel_time": 25,
+      "soft_preferences": "modern, good public transport",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["tram links", "restaurants", "entertainment"],
+      "area_vibe": "modern, media hub, vibrant",
+      "suggested_search_locations": ["Salford Quays", "Ordsall", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Flat for students near Edinburgh Uni, £300 per week, max 20 mins walk",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_weekly": 300,
+      "original_time_minutes": 20,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 1300,
+      "max_travel_time": 20,
+      "soft_preferences": "student-friendly, walkable, multiple occupancy",
+      "property_tags": ["student-friendly", "flat", "2-bedroom+", "HMO possible"],
+      "amenities_of_interest": ["university", "libraries", "pubs", "cafes"],
+      "area_vibe": "historic, student-centric, lively",
+      "suggested_search_locations": ["Marchmont", "Newington", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Family home in Richmond, at least 3 beds, budget around £3000 a month, 45 mins to Waterloo",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Waterloo Station",
+      "max_budget": 3000,
+      "max_travel_time": 45,
+      "soft_preferences": "family-friendly, green spaces, good schools",
+      "property_tags": ["3-bedroom+", "house", "garden"],
+      "amenities_of_interest": ["parks", "schools", "train station"],
+      "area_vibe": "leafy, suburban, affluent",
+      "suggested_search_locations": ["Richmond", "East Sheen", "Twickenham"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio apt in city centre B'ham, £750pm, walk to New Street",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 750,
+      "original_time_preference": "walkable",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 750,
+      "max_travel_time": 15,
+      "soft_preferences": "central, convenient",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "shopping", "restaurants"],
+      "area_vibe": "urban, convenient, lively",
+      "suggested_search_locations": ["City Centre Birmingham", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Looking for a 2 bedroom apartment in Didsbury",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Didsbury",
+      "property_tags": ["2-bedroom", "apartment"],
+      "city_context": "Manchester",
+      "clarification_questions": [
+        "What is your budget per month?",
+        "What is your maximum commute time or preferred distance to amenities?",
+        "Are there any specific amenities or features you're looking for (e.g., garden, parking, tram access)?"
+      ]
+    }
+  },
+  {
+    "user_query": "Need a place near Bristol Temple Meads, 1 bed or studio, £900 per month, max 3km cycle",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 900,
+      "original_distance_km": 3,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads",
+      "max_budget": 900,
+      "max_travel_time": 18,
+      "soft_preferences": "cycle-friendly, good transport links",
+      "property_tags": ["1-bedroom", "studio", "flat"],
+      "amenities_of_interest": ["train station", "cycle paths", "cafes", "restaurants"],
+      "area_vibe": "central, good transport, developing",
+      "suggested_search_locations": ["Redcliffe", "Old Market", "Temple Quarter"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Something nice and cheap in London",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "city_context": "London",
+      "clarification_questions": [
+        "What is your specific budget range per month for 'cheap'?",
+        "What does 'nice' mean to you (e.g., modern, period, quiet, lively, good views)?",
+        "How many bedrooms do you need?",
+        "Are there any specific areas of London you are interested in, or any commute requirements?"
+      ]
+    }
+  }
+]
+```

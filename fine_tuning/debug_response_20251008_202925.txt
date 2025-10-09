@@ -1,0 +1,212 @@
+```json
+[
+  {
+    "user_query": "I am seeking a two-bedroom apartment in close proximity to the British Museum, with a maximum budget of £2500 per month. Commute time should not exceed 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, Great Russell Street, London WC1B 3DG",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "quiet, culturally rich area",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["museums", "theatres", "restaurants"],
+      "area_vibe": "historic, cultural, central London",
+      "suggested_search_locations": ["Bloomsbury", "Covent Garden", "Fitzrovia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 1 bed flat near Piccadilly, max £900pw, 15 min walk.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 900,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Piccadilly, Manchester M60 7RA",
+      "max_budget": 3897,
+      "max_travel_time": 15,
+      "soft_preferences": "vibrant nightlife, good transport links",
+      "property_tags": ["1-bedroom", "flat", "city-centre"],
+      "amenities_of_interest": ["bars", "restaurants", "shops"],
+      "area_vibe": "bustling, modern city centre",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Deansgate"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I require a spacious three-bedroom property in London, suitable for a family. Proximity to reputable schools is a primary concern.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "family-friendly, good schools, safe neighborhood",
+      "property_tags": ["3-bedroom", "house", "family-home"],
+      "amenities_of_interest": ["schools", "parks", "community centres"],
+      "area_vibe": "family-oriented, suburban",
+      "suggested_search_locations": ["Richmond", "Wimbledon", "Dulwich"],
+      "city_context": "London",
+      "clarification_questions": ["What is your maximum budget per month?", "What is your preferred travel time to schools or work?", "Are there specific areas or schools you are interested in?"]
+    }
+  },
+  {
+    "user_query": "Looking for a cosy studio near Edinburgh Uni, under £700pm. Gotta be close, like 10 mins max.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 700,
+      "original_time_minutes": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Old College, South Bridge, Edinburgh EH8 9YL",
+      "max_budget": 700,
+      "max_travel_time": 10,
+      "soft_preferences": "student-friendly, close to amenities",
+      "property_tags": ["studio", "student-friendly"],
+      "amenities_of_interest": ["university", "cafes", "bookshops"],
+      "area_vibe": "student hub, historic",
+      "suggested_search_locations": ["Newington", "Tollcross", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "2BR apt nr LSE, max £2200pm, 15 mins.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London School of Economics and Political Science, Houghton Street, London WC2A 2AE",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["2-bedroom", "apartment", "student-friendly"],
+      "amenities_of_interest": ["university", "public transport", "restaurants"],
+      "area_vibe": "academic, central London, busy",
+      "suggested_search_locations": ["Holborn", "Aldwych", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I need a one bed appartment near New Street station, max £850pm, easy commut 10km.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 850,
+      "original_time_km": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Station St, Birmingham B2 4QA",
+      "max_budget": 850,
+      "max_travel_time": 30,
+      "soft_preferences": "good transport, city access",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "city centre, convenient",
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Southside"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "A one-bedroom residence is sought in the vicinity of Victoria Station, London. Budget not to exceed £1800 per calendar month, with a travel time of 20 minutes by public transport.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, Victoria Street, London SW1E 5ND",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "well-connected, safe",
+      "property_tags": ["1-bedroom", "residence"],
+      "amenities_of_interest": ["public transport", "parks", "theatres"],
+      "area_vibe": "transport hub, government district",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Just want a decent place in Manchester, two beds, good area. What's out there?",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "family-friendly, quiet, good amenities",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": null,
+      "area_vibe": "flexible, depends on preference",
+      "suggested_search_locations": ["Didsbury", "Chorlton", "Salford Quays"],
+      "city_context": "Manchester",
+      "clarification_questions": ["What is your maximum budget per month?", "Do you have a preferred travel time to work or city centre?", "What specific amenities are important to you (e.g., parks, shops, nightlife)?", "What does 'good area' mean to you (e.g., quiet, lively, family-friendly)?"]
+    }
+  },
+  {
+    "user_query": "I'm a student at UWE Bristol, need a cheap place, walking distance, don't care about anything else.",
+    "query_metadata": {
+      "style": "casual",
+      "original_time_proximity": "walking distance",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of the West of England (UWE Bristol), Frenchay Campus, Coldharbour Ln, Bristol BS16 1QY",
+      "max_budget": 550,
+      "max_travel_time": 20,
+      "soft_preferences": "very budget-conscious, close to campus, basic amenities",
+      "property_tags": ["student-friendly", "cheap"],
+      "amenities_of_interest": ["university", "supermarket", "bus stop"],
+      "area_vibe": "student area, residential",
+      "suggested_search_locations": ["Frenchay", "Filton", "Stoke Gifford"],
+      "city_context": "Bristol",
+      "inferred_values": {"max_budget": "inferred low budget based on 'cheap place' for a student", "max_travel_time": "inferred from 'walking distance'"}
+    }
+  },
+  {
+    "user_query": "Studio flat SW1, £1500pm, 10min Tube commute.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "SW1 (postcode district in London, e.g., Westminster)",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": "convenient, good transport, safe",
+      "property_tags": ["studio", "flat", "central"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants"],
+      "area_vibe": "upscale, central, busy",
+      "suggested_search_locations": ["Victoria", "Pimlico", "Westminster"],
+      "city_context": "London"
+    }
+  }
+]
+```

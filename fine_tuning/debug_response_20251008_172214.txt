@@ -1,0 +1,214 @@
+```json
+[
+  {
+    "user_query": "1 bed apartmnet for rent in Shoreditch, max £1800 pm, near Old Street station, 15 min commut",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "vibrant area, good nightlife",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["tube station", "restaurants", "bars"],
+      "area_vibe": "trendy, artsy, young professionals",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 2 bed flat in Didsbury, around £1000 a month, walking distance to the park",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Didsbury Park, Manchester",
+      "max_budget": 1000,
+      "max_travel_time": 10,
+      "soft_preferences": "family-friendly, green spaces",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["park", "schools", "local shops"],
+      "area_vibe": "leafy, suburban, family-oriented",
+      "suggested_search_locations": ["Didsbury", "Chorlton-cum-Hardy"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a studio in central London, cheap, good transport links",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Central London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "budget-friendly, well-connected",
+      "property_tags": ["studio"],
+      "amenities_of_interest": ["tube station", "bus routes"],
+      "area_vibe": "bustling, convenient for work/study",
+      "suggested_search_locations": ["Covent Garden", "Soho", "Bloomsbury"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious one-bedroom apartment suitable for a professional, within a 20-minute public transport journey to the University of Edinburgh, with a maximum rental budget of £1250 per calendar month.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1250,
+      "original_time_minutes": 20,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 1250,
+      "max_travel_time": 20,
+      "soft_preferences": "quiet, professional environment, good public transport",
+      "property_tags": ["1-bedroom", "apartment", "professional"],
+      "amenities_of_interest": ["university", "public transport links"],
+      "area_vibe": "historic, academic, residential",
+      "suggested_search_locations": ["Newington", "Morningside", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Family house for rent in Harborne, 3 beds, max £1500 per month, easy access to QEH",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": null,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Queen Elizabeth Hospital Birmingham",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "good schools, safe neighborhood",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["hospital", "schools", "parks"],
+      "area_vibe": "suburban, affluent, family-oriented",
+      "suggested_search_locations": ["Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Pets friendly 2 bed flat near Clapham Common, budget £450 weekly",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 450,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clapham Common, London",
+      "max_budget": 1949,
+      "max_travel_time": 10,
+      "soft_preferences": "pets allowed, park access",
+      "property_tags": ["2-bedroom", "flat", "pet-friendly"],
+      "amenities_of_interest": ["park", "veterinary services", "dog walking routes"],
+      "area_vibe": "vibrant, young professionals, green spaces",
+      "suggested_search_locations": ["Clapham", "Battersea", "Balham"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Student accommodation, 1 bed or studio, close to MMU campus, up to £700pm",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 700,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Metropolitan University (MMU)",
+      "max_budget": 700,
+      "max_travel_time": 5,
+      "soft_preferences": "student-friendly, furnished",
+      "property_tags": ["1-bedroom", "studio", "student-accommodation"],
+      "amenities_of_interest": ["university", "libraries", "student bars"],
+      "area_vibe": "student-focused, lively",
+      "suggested_search_locations": ["Hulme", "Ardwick", "City Centre"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a nice place to live in North London, not too expensive, 2-3 bedrooms.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "North London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "good community, safe, affordable",
+      "property_tags": ["2-bedroom", "3-bedroom"],
+      "amenities_of_interest": ["local shops", "parks"],
+      "area_vibe": "residential, varied",
+      "suggested_search_locations": ["Islington", "Camden", "Hampstead"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "3 bed house in Southville, Bristol, max £1700/month, within 3 miles of city centre",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1700,
+      "original_time_minutes": null,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol City Centre",
+      "max_budget": 1700,
+      "max_travel_time": 15,
+      "soft_preferences": "good transport, lively area",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["city centre", "restaurants", "shops"],
+      "area_vibe": "up-and-coming, bohemian, residential",
+      "suggested_search_locations": ["Southville", "Bedminster", "Harbourside"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "I need a place with a swimming pool and a helipad, budget no issue, anywhere in London",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "destination": "Anywhere in London",
+      "max_budget": 100000,
+      "max_travel_time": 999,
+      "soft_preferences": "luxurious, exclusive",
+      "property_tags": ["luxury-property", "mansion", "penthouse"],
+      "amenities_of_interest": ["swimming pool", "helipad", "private gym", "concierge"],
+      "area_vibe": "exclusive, high-end",
+      "suggested_search_locations": ["Knightsbridge", "Belgravia", "Kensington"],
+      "city_context": "London"
+    }
+  }
+]
+```

@@ -1,0 +1,167 @@
+[
+  {
+    "user_query": "Looking for a 1 bed flat near Canary Wharf, max £1800pcm, within 30 mins commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["canary wharf station", "financial district"],
+      "area_vibe": "modern, business district, good transport links",
+      "suggested_search_locations": ["Isle of Dogs", "Limehouse", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed apartmnet close to Piccadilly station, no more than £1000pm, 20 mintues travel.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1000,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre amenities"],
+      "area_vibe": "city centre, bustling, good public transport",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Gay Village"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio nr LSE. £400pw.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "London School of Economics (LSE)",
+      "max_budget": 1732,
+      "max_travel_time": null,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["studio", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries"],
+      "area_vibe": "student area",
+      "suggested_search_locations": ["Holborn", "Covent Garden", "Waterloo"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a spacious three-bedroom apartment suitable for a family, located within a 15-minute public transport journey to Edinburgh Castle, with a maximum monthly rent of two thousand five hundred pounds.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": 2500,
+      "max_travel_time": 15,
+      "soft_preferences": "suitable for a family",
+      "property_tags": ["3-bedroom", "apartment", "family-friendly", "spacious"],
+      "amenities_of_interest": ["public transport access", "parks", "schools"],
+      "area_vibe": "historic, family-friendly, well-connected",
+      "suggested_search_locations": ["Morningside", "Bruntsfield", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Find me a pet-friendly 2-bed place in Brixton, under £2200 a month, 45 mins to work.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Brixton, London",
+      "max_budget": 2200,
+      "max_travel_time": 45,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["parks", "pet services"],
+      "area_vibe": "vibrant, multicultural, good nightlife, green spaces",
+      "suggested_search_locations": ["Brixton", "Clapham", "Stockwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a flat in Manchester. Must be quiet and have good transport. Budget £800 pcm.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 800,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 800,
+      "max_travel_time": null,
+      "soft_preferences": "quiet area, good transport links",
+      "property_tags": ["flat"],
+      "amenities_of_interest": ["public transport", "quiet environment"],
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Searching for a modern two-bedroom property, ideally with a balcony, within 3 miles of the Bullring shopping centre, with a maximum rental budget of £1500 per calendar month.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 3,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bullring & Grand Central, Birmingham",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "with a balcony",
+      "property_tags": ["2-bedroom", "modern"],
+      "amenities_of_interest": ["shopping centre", "city centre amenities"],
+      "area_vibe": "urban, convenient, retail-focused",
+      "suggested_search_locations": ["Digbeth", "Jewellery Quarter", "Highgate"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Any good apartments in London for students? Budget around £1000-£1500.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_range": [1000, 1500],
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1500,
+      "max_travel_time": null,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["apartment"],
+      "amenities_of_interest": ["universities", "student facilities"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": ["Bloomsbury", "Islington", "Camden", "Southwark"],
+      "city_context": "London"
+    }
+  }
+]

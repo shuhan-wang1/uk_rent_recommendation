@@ -1,0 +1,250 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1800pm, 20 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["1-bedroom", "flat", "furnished"],
+      "amenities_of_interest": ["DLR station", "gym", "supermarket"],
+      "area_vibe": "business district, vibrant nightlife, modern living",
+      "suggested_search_locations": ["Isle of Dogs", "Limehouse", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Two bedroom apartment for rent close to Manchester Piccadilly, budget £400 per week, within 3 miles",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "central, good for young professionals",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "restaurants", "bars"],
+      "area_vibe": "city centre, lively, accessible",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Deansgate"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Waterloo",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Waterloo Station, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links"],
+      "area_vibe": "busy, central, good for commuters",
+      "suggested_search_locations": ["South Bank", "Lambeth", "Borough"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio flat in Edinburgh city centre, under £900 a month, 15 mins walk to Waverley",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Waverley Station, Edinburgh",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "historic, walkable",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["shops", "restaurants", "cultural sites"],
+      "area_vibe": "historic city centre, tourist-friendly",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bed apartmnet in London, max £600 weekly, within 5 km of Clapham Junction",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 600,
+      "original_distance_km": 5,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clapham Junction Station, London",
+      "max_budget": 2598,
+      "max_travel_time": 30,
+      "soft_preferences": "family-friendly, good for commuters",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "parks", "schools"],
+      "area_vibe": "lively, residential, well-connected",
+      "suggested_search_locations": ["Clapham", "Battersea", "Wandsworth"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a one bedroom residence in Birmingham, near Jewellery Quarter, maximum £850 per calendar month, 10 minute journey",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 850,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Jewellery Quarter, Birmingham",
+      "max_budget": 850,
+      "max_travel_time": 10,
+      "soft_preferences": "characterful, unique, vibrant",
+      "property_tags": ["1-bedroom", "residence"],
+      "amenities_of_interest": ["independent shops", "restaurants", "tram stop"],
+      "area_vibe": "historic, creative, independent businesses",
+      "suggested_search_locations": ["St. Paul's Square", "City Centre", "Hockley"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Enquiring about available two-bedroom properties in Bristol, close to the University of Bristol.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Bristol, Bristol",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "student-friendly, academic environment",
+      "property_tags": ["2-bedroom", "property"],
+      "amenities_of_interest": ["university", "libraries", "student facilities"],
+      "area_vibe": "student neighborhood, lively",
+      "suggested_search_locations": ["Clifton", "Redland", "Cotham"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Student flat, 2 bed, near Manchester Uni, £350 a week, 2 miles from campus",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 350,
+      "original_distance_miles": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 1516,
+      "max_travel_time": 10,
+      "soft_preferences": "student-friendly, safe area",
+      "property_tags": ["2-bedroom", "flat", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "student bars"],
+      "area_vibe": "student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1BR apt Leeds city ctr, max £750 pcm, 10 min walk to station",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 750,
+      "original_time_minutes": 10,
+      "city": "Leeds"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Leeds City Centre",
+      "max_budget": 750,
+      "max_travel_time": 10,
+      "soft_preferences": "central, convenient for work/leisure",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shopping centres", "restaurants"],
+      "area_vibe": "dynamic city centre, urban",
+      "suggested_search_locations": ["Quarry Hill", "Brewery Wharf", "Northern Quarter"],
+      "city_context": "Leeds"
+    }
+  },
+  {
+    "user_query": "Just show me flats in London.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["flat"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Requesting details on three-bedroom apartments for rent in Glasgow, within 4 kilometres of the city centre, up to £1500 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_distance_km": 4,
+      "original_budget_monthly": 1500,
+      "city": "Glasgow"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Glasgow City Centre",
+      "max_budget": 1500,
+      "max_travel_time": 24,
+      "soft_preferences": "spacious, good for families or sharers",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["parks", "schools", "public transport"],
+      "area_vibe": "varied, from bustling to quieter residential",
+      "suggested_search_locations": ["Merchant City", "Finnieston", "West End", "Gorbals"],
+      "city_context": "Glasgow"
+    }
+  },
+  {
+    "user_query": "I require a one-bedroom apartment near Victoria Station, London, with a maximum rental of £2200 per calendar month, and a commute of no more than 15 minutes to Westminster.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": "prime location, convenient for government/business",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["transport hub", "theatres", "restaurants"],
+      "area_vibe": "prestigious, busy, diplomatic",
+      "suggested_search_locations": ["Belgravia", "Pimlico", "Westminster"],
+      "city_context": "London"
+    }
+  }
+]
+```

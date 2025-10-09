@@ -1,0 +1,103 @@
+```json
+[
+  {
+    "user_query": "looking for a 1 bed flat near Shoreditch, max £1800 a month, 20 min walk to Old Street station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "close to nightlife and tech companies",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["restaurants", "bars", "art galleries", "tech companies"],
+      "area_vibe": "trendy, vibrant, tech hub",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment within a 30-minute commute to Canary Wharf, with a maximum rental budget of £550 per week.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 550,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2381,
+      "max_travel_time": 30,
+      "soft_preferences": "modern living, good transport links",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["gyms", "supermarkets", "transport links", "river views"],
+      "area_vibe": "business district, modern, high-rise living",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "3BR apt nr Manc Uni, want amenities",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Manchester",
+      "property_tags": ["3-bedroom", "apartment"],
+      "city_context": "Manchester",
+      "clarification_needed_fields": ["max_budget", "max_travel_time", "amenities_of_interest"]
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom flat close to Edinburgh Castle, with a budget of £1200pcm and accessible within 15 mins by public transport.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": 1200,
+      "max_travel_time": 15,
+      "soft_preferences": "historic atmosphere, walkable area",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["historic sites", "cafes", "public transport", "tourist attractions"],
+      "area_vibe": "historic, tourist-friendly, city centre",
+      "suggested_search_locations": ["Old Town", "Grassmarket", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I'm looking for a spacious apartment in Birmingham, ideally a 2-bedroom, somewhere really quiet and green, but still within a 2-mile radius of the Bullring shopping centre. My budget is around £1500 per month, and I'd prefer a short commute, maybe 15-20 minutes maximum.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 2,
+      "original_time_minutes": 20,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bullring & Grand Central, Birmingham B5 4BU",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": "quiet and green area, spacious",
+      "property_tags": ["2-bedroom", "spacious", "apartment"],
+      "amenities_of_interest": ["parks", "green spaces", "shopping centres", "restaurants"],
+      "area_vibe": "peaceful, green with good access to city amenities",
+      "suggested_search_locations": ["Moseley", "Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

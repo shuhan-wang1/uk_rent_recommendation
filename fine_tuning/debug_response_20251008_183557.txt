@@ -1,0 +1,256 @@
+```json
+[
+  {
+    "user_query": "Seeking a two-bedroom apartment within a 30-minute commute to Canary Wharf, with a maximum monthly rent of £2500. Proximity to green spaces is preferred.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "proximity to green spaces",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "modern, business district, good transport",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1BR apt nr LSE, max £1800/mo, 20min tube",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London School of Economics, Houghton Street, London WC2A 2AE",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "libraries", "public transport"],
+      "area_vibe": "student neighborhood with cultural spots",
+      "suggested_search_locations": ["Holborn", "Covent Garden", "Waterloo"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "flat to rent in Manc, cheap and good",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "affordable, good condition",
+      "property_tags": ["flat"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "3 bed house in North London, needs a garden, up to £3000pm, close to a good primary school",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": null,
+      "max_budget": 3000,
+      "max_travel_time": null,
+      "soft_preferences": "near good primary school",
+      "property_tags": ["3-bedroom", "house", "garden"],
+      "amenities_of_interest": ["primary school"],
+      "area_vibe": "family-friendly, suburban",
+      "suggested_search_locations": ["Islington", "Hampstead", "Finchley", "Muswell Hill"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a spacious one-bedroom flat near Edinburgh Uni, max £900 per month, quick walk.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 900,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Edinburgh EH8 9YL",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "spacious",
+      "property_tags": ["1-bedroom", "flat", "student-friendly"],
+      "amenities_of_interest": ["university"],
+      "area_vibe": "student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Old Town", "Newington", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "2 bed apartmnet for rent near Victoria station, budget £2200 per mnth, must have a balcony",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London SW1V 1JU",
+      "max_budget": 2200,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment", "balcony"],
+      "amenities_of_interest": ["public transport"],
+      "area_vibe": "central, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "studio flat in Brum, around £700pm, 15 min walk to New Street Station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 700,
+      "original_time_minutes": 15,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Birmingham B2 4QA",
+      "max_budget": 700,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["train station"],
+      "area_vibe": "city centre, lively",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Flat to rent in London, close to either Waterloo or London Bridge. Needs to be modern.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "modern, near Waterloo Station or London Bridge Station",
+      "property_tags": ["flat"],
+      "amenities_of_interest": ["public transport"],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a one-bedroom residence suitable for a professional, within 5 miles of Manchester Piccadilly, with a budget not exceeding £1000 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester M60 7RA",
+      "max_budget": 1000,
+      "max_travel_time": 25,
+      "soft_preferences": "suitable for a professional",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station"],
+      "area_vibe": "professional, good transport links",
+      "suggested_search_locations": ["Ancoats", "Northern Quarter", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2 bed apt Bristol, central, pets OK",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pets allowed",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "central",
+      "suggested_search_locations": [],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Looking for a family-friendly flat near Richmond Park, 2 beds, budget £450 weekly.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1949,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Richmond Park, London SW15 3HJ",
+      "max_budget": 1949,
+      "max_travel_time": null,
+      "soft_preferences": "family-friendly",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["park", "green spaces"],
+      "area_vibe": "leafy, quiet, residential",
+      "suggested_search_locations": ["Richmond", "East Sheen", "Kingston upon Thames"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "studio in Leeds city center, up to 800 per month, 10 min walk to train station, with a gym",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 800,
+      "original_time_minutes": 10,
+      "city": "Leeds"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Leeds City Centre",
+      "max_budget": 800,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["studio", "flat", "gym"],
+      "amenities_of_interest": ["train station", "gym"],
+      "area_vibe": "city centre, vibrant",
+      "suggested_search_locations": ["City Centre", "Quarry Hill", "Brewery Wharf"],
+      "city_context": "Leeds"
+    }
+  }
+]
+```

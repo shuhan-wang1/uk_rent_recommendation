@@ -1,0 +1,126 @@
+[
+  {
+    "user_query": "Lookin for a 1 bed flat in central London, max £1800 pcm, 20 mintues walk to Victoria Station. Must have a balcony.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London SW1V 1JU",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "balcony",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": [],
+      "area_vibe": "central London, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious two-bedroom apartment suitable for a professional couple, located within a 30-minute public transport commute to Manchester Piccadilly, with a maximum monthly rent of £1400. Proximity to green spaces would be advantageous.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1400,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester M60 7RA",
+      "max_budget": 1400,
+      "max_travel_time": 30,
+      "soft_preferences": "green spaces nearby",
+      "property_tags": ["2-bedroom", "apartment", "professional-friendly"],
+      "amenities_of_interest": ["parks", "gyms"],
+      "area_vibe": "residential, good for professionals, accessible",
+      "suggested_search_locations": ["Ancoats", "Salford Quays", "Northern Quarter"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a 2-bed apt near Waterloo. ASAP.",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "travel_time"],
+      "clarification_questions": [
+        "What is your maximum monthly budget for rent?",
+        "What is your desired maximum travel time to Waterloo, and by what mode of transport?",
+        "Are there any other specific requirements or preferences for the apartment?"
+      ],
+      "destination": "London Waterloo Station, London SE1 8SW",
+      "property_tags": ["2-bedroom", "apartment"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Finding a family home, 3 beds, near Edinburgh Castle, within 4 kilmeters. Budget up to 2500 pounds per month. Prefer quiet neighbourhoood.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2500,
+      "original_time_km": 4,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": 2500,
+      "max_travel_time": 24,
+      "soft_preferences": "quiet neighborhood, family-friendly",
+      "property_tags": ["3-bedroom", "house", "family-home"],
+      "amenities_of_interest": ["schools", "parks", "supermarkets"],
+      "area_vibe": "residential, peaceful",
+      "suggested_search_locations": ["Morningside", "Bruntsfield", "Stockbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "1 bed flat in Bristol, near Cabot Circus, £800 pw max. Need a pet-friendly place, quick commute, preferably with parking and a garden. Looking for a long-term lease.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 800,
+      "original_time_description": "quick commute",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success_with_assumptions",
+      "destination": "Cabot Circus, Bristol BS1 3BX",
+      "max_budget": 3464,
+      "max_travel_time": 20,
+      "soft_preferences": "pet-friendly, parking, garden, long-term lease, quick commute (assumed ~20 mins)",
+      "property_tags": ["1-bedroom", "flat", "pet-friendly"],
+      "amenities_of_interest": ["parks", "outdoor space"],
+      "area_vibe": "urban, accessible, green",
+      "suggested_search_locations": ["Montpelier", "Stokes Croft", "Cotham"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Find me a studio apt in Shoreditch, London. Budget around £1000 per month, 15 mins to Old Street station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London EC1Y 1BE",
+      "max_budget": 1000,
+      "max_travel_time": 15,
+      "soft_preferences": "vibrant neighborhood, good transport links",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["restaurants", "bars", "art galleries", "tech companies"],
+      "area_vibe": "trendy, creative, bustling",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Clerkenwell"],
+      "city_context": "London"
+    }
+  }
+]

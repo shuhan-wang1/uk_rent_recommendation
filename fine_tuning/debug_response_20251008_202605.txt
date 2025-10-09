@@ -1,0 +1,212 @@
+[
+  {
+    "user_query": "Looking for a 1 bed flat in Shoreditch, max £1800pcm, near Old Street station, 15 mins commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "lively area with nightlife",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["restaurants", "bars", "gym"],
+      "area_vibe": "vibrant, trendy",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Islington"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "need a 2 bed apartmnet in Didsbury, budget £1100 montly, 20 mintues to city centre.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester City Centre",
+      "max_budget": 1100,
+      "max_travel_time": 20,
+      "soft_preferences": "quiet, family-friendly",
+      "property_tags": ["2-bedroom", "garden"],
+      "amenities_of_interest": ["parks", "schools", "local shops"],
+      "area_vibe": "suburban, leafy",
+      "suggested_search_locations": ["Didsbury", "Chorlton-cum-Hardy", "Withington"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment within a five-mile radius of Canary Wharf, with a maximum monthly expenditure of two thousand five hundred pounds.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2500,
+      "max_travel_time": 25,
+      "soft_preferences": "high-rise building, concierge service",
+      "property_tags": ["2-bedroom", "modern", "luxury"],
+      "amenities_of_interest": ["gym", "supermarket", "transport links"],
+      "area_vibe": "financial district, modern",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a 1-bed flat near Edinburgh Uni, £700 weekly max, walkable or quick bus to campus.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 3031,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 3031,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, safe area",
+      "property_tags": ["1-bedroom", "furnished"],
+      "amenities_of_interest": ["cafes", "libraries", "pubs"],
+      "area_vibe": "student, historic",
+      "suggested_search_locations": ["Tollcross", "Marchmont", "Newington"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Looking for a cheap studio in East London, close to a Tube station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "East London, near Tube station",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "good transport links, safe",
+      "property_tags": ["studio", "affordable"],
+      "amenities_of_interest": ["supermarket", "laundromat"],
+      "area_vibe": "urban, convenient",
+      "suggested_search_locations": ["Stratford", "Leyton", "Bow"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am in search of a spacious three-bedroom house or large apartment suitable for a family, ideally situated within a 3-kilometer radius of Birmingham New Street Station, and I am prepared to allocate up to one thousand six hundred pounds sterling per calendar month for rental costs.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": 9,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1600,
+      "max_travel_time": 9,
+      "soft_preferences": "family-friendly, good schools nearby",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["parks", "schools", "shopping centres"],
+      "area_vibe": "suburban, quiet",
+      "suggested_search_locations": ["Edgbaston", "Moseley", "Harborne"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "1 BR apt nr KX, flexible on price but needs to be a good deal, quick commut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Kings Cross Station, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "value for money, good transport",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links", "restaurants"],
+      "area_vibe": "central, well-connected",
+      "suggested_search_locations": ["Kings Cross", "St Pancras", "Euston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a pet-friendly, 2-bed apartment, max £1250pm, within 4 miles of Spinningfields, Manchester. Has to have a balcony.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1250,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": 1250,
+      "max_travel_time": 20,
+      "soft_preferences": "pet-friendly, balcony",
+      "property_tags": ["2-bedroom", "apartment", "pet-friendly"],
+      "amenities_of_interest": ["parks", "walks", "pet services"],
+      "area_vibe": "modern, urban",
+      "suggested_search_locations": ["Deansgate", "Salford Quays", "Ancoats"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a quirky 1-bed flat, very central Bristol, budget no more than £950/month, but must have a view of the harbour. Flexible on commute time if the view is good.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 950,
+      "original_time_minutes": null,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol City Centre",
+      "max_budget": 950,
+      "max_travel_time": null,
+      "soft_preferences": "quirky, harbour view, unique",
+      "property_tags": ["1-bedroom", "flat", "character property"],
+      "amenities_of_interest": ["harbour", "restaurants", "cultural attractions"],
+      "area_vibe": "historic, vibrant",
+      "suggested_search_locations": ["Harbourside", "Clifton Village", "Redcliffe"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "I need a family-sized house, 3+ beds, in South West London, max £3000 a month, within 30 mins of Clapham Junction.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clapham Junction, London",
+      "max_budget": 3000,
+      "max_travel_time": 30,
+      "soft_preferences": "good schools, garden",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["parks", "schools", "local shops"],
+      "area_vibe": "suburban, affluent",
+      "suggested_search_locations": ["Wandsworth", "Balham", "Tooting"],
+      "city_context": "London"
+    }
+  }
+]

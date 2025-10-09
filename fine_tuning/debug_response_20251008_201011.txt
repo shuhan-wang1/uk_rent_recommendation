@@ -1,0 +1,172 @@
+```json
+[
+  {
+    "user_query": "2 bed apt nr CW, max 1800pm, 20min commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed flat, budget £400 pw, near Man Met Uni, within 3 miles",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Metropolitan University",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["university", "public transport"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": ["Fallowfield", "Hulme", "Rusholme"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious three-bedroom apartment in proximity to Victoria Station. What options are available?",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Victoria Station, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "spacious",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "",
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom property, preferably an apartment or flat, situated within a 45-minute public transport journey of Edinburgh Castle. My maximum budget is £1500 per calendar month.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 45,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle",
+      "max_budget": 1500,
+      "max_travel_time": 45,
+      "soft_preferences": "good public transport access",
+      "property_tags": ["2-bedroom", "apartment", "flat"],
+      "amenities_of_interest": ["public transport links"],
+      "area_vibe": "",
+      "suggested_search_locations": ["Tollcross", "Fountainbridge", "Newington"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "looking for a 3 bed apartmnet, near British Musuem, max £2500 pcm, within 10km radius.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 60,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, London",
+      "max_budget": 2500,
+      "max_travel_time": 60,
+      "soft_preferences": "",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["museums", "cultural sites"],
+      "area_vibe": "central, cultural",
+      "suggested_search_locations": ["Bloomsbury", "Holborn", "Covent Garden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1BR flat nr Piccadilly, max 350 weekly, 20min walk.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1516,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1516,
+      "max_travel_time": 20,
+      "soft_preferences": "walkable",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["train station", "city centre access"],
+      "area_vibe": "urban, well-connected",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "looking for a cool 2 bed place in Shoreditch, budget around £2200 per month, max 45 mins to work (London Bridge)",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station",
+      "max_budget": 2200,
+      "max_travel_time": 45,
+      "soft_preferences": "cool, vibrant neighborhood",
+      "property_tags": ["2-bedroom", "apartment", "flat"],
+      "amenities_of_interest": ["restaurants", "bars", "art galleries"],
+      "area_vibe": "trendy, lively",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Spitalfields"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a one-bedroom apartment, not exceeding £1100pcm, with a maximum 30-minute commute to the University of Birmingham.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 30,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Birmingham",
+      "max_budget": 1100,
+      "max_travel_time": 30,
+      "soft_preferences": "good transport links to university",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "public transport"],
+      "area_vibe": "student-friendly",
+      "suggested_search_locations": ["Selly Oak", "Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

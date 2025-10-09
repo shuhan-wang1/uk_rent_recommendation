@@ -1,0 +1,188 @@
+```json
+[
+  {
+    "user_query": "Looking for a one-bedroom apartment in London, max £2000 per month, within a 30-minute commute to Canary Wharf.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2000,
+      "max_travel_time": 30,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["DLR station", "supermarket", "gym"],
+      "area_vibe": "business district, vibrant nightlife",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Greenwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom property near Victoria Station, London. Budget £450 weekly, commute no more than 5 miles.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 450,
+      "original_distance_miles": 5,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London SW1V 1JU",
+      "max_budget": 1949,
+      "max_travel_time": 25,
+      "soft_preferences": "quiet neighborhood, family-friendly",
+      "property_tags": ["2-bedroom", "house", "flat"],
+      "amenities_of_interest": ["parks", "schools", "train station"],
+      "area_vibe": "residential, well-connected",
+      "suggested_search_locations": ["Pimlico", "Battersea", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Gotta find a cool 3 bed flat in East London, max 2500pm, 3km from Shoreditch.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_distance_km": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch High Street, London E1 6GF",
+      "max_budget": 2500,
+      "max_travel_time": 18,
+      "soft_preferences": "trendy, good for socialising",
+      "property_tags": ["3-bedroom", "flat"],
+      "amenities_of_interest": ["bars", "restaurants", "art galleries"],
+      "area_vibe": "vibrant, artistic, nightlife",
+      "suggested_search_locations": ["Hoxton", "Bethnal Green", "Dalston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Hey, looking for a flat near King's Cross, London, about 20 mins away. Need 1 bed.",
+    "query_metadata": {
+      "style": "casual",
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "King's Cross Station, London N1 9AL",
+      "max_budget": null,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": ["Pancras Square", "Caledonian Road", "Bloomsbury"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1BR apt nr KX, max £600 pw, 15 mins commute.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 600,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London N1 9AL",
+      "max_budget": 2598,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants"],
+      "area_vibe": "busy, central, well-connected",
+      "suggested_search_locations": ["Islington", "Camden Town", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed apartmnet in Manchester, budget 1500pm, commut 4 miles to Piccadilly.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 4,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester M60 7RA",
+      "max_budget": 1500,
+      "max_travel_time": 20,
+      "soft_preferences": "pet-friendly, balcony",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["tram stop", "park", "coffee shops"],
+      "area_vibe": "urban, lively, diverse",
+      "suggested_search_locations": ["Ancoats", "Salford Quays", "Northern Quarter"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a decent flat in Manchester, student friendly.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "student-friendly, safe",
+      "property_tags": ["flat"],
+      "amenities_of_interest": ["university", "pubs", "supermarket"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Withington"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2B apt, Edinburgh city centre, £1200/month, 25min walk to Uni of Edinburgh.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 25,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Old College, South Bridge, Edinburgh EH8 9YL",
+      "max_budget": 1200,
+      "max_travel_time": 25,
+      "soft_preferences": "historic building, quiet street",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "libraries", "cafes"],
+      "area_vibe": "historic, student-focused",
+      "suggested_search_locations": ["Newington", "Tollcross", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Find me a place in Birmigham, close to the city. Looking for something affordable.",
+    "query_metadata": {
+      "style": "with_typos",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Birmingham City Centre",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "affordable, good transport",
+      "property_tags": [],
+      "amenities_of_interest": null,
+      "area_vibe": "urban",
+      "suggested_search_locations": ["Digbeth", "Jewellery Quarter", "Erdington"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

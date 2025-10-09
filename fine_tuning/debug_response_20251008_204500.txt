@@ -1,0 +1,167 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Victoria Station. Max £1800 per month, 20 mins commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links"],
+      "area_vibe": "central, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment suitable for a professional couple in Manchester, specifically within a five-mile radius of Piccadilly Gardens. Our maximum rent allocation is £450 per week.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1949,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Piccadilly Gardens, Manchester",
+      "max_budget": 1949,
+      "max_travel_time": 25,
+      "soft_preferences": "suitable for professional couple",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["city centre", "restaurants", "bars"],
+      "area_vibe": "vibrant, urban",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Flat to rent in East London, 2 bed, near Canary Wharf. Need to move in next month.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Canary Wharf, East London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "move in next month",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["business district", "DLR access"],
+      "area_vibe": "modern, corporate, river views",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 3-bedroom property in Edinburgh, ideally within 3 km of the Royal Mile. Budget is £2500 pcm, must be family-friendly.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 18,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 2500,
+      "max_travel_time": 18,
+      "soft_preferences": "family-friendly",
+      "property_tags": ["3-bedroom", "property"],
+      "amenities_of_interest": ["historical sites", "parks", "schools"],
+      "area_vibe": "historic, charming, tourist-friendly",
+      "suggested_search_locations": ["Old Town", "Newington", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I need a 1 bed apartmnet in north london. Max £350 a week, 15 minut commut to Kings Cross.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1516,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Kings Cross, London",
+      "max_budget": 1516,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["transport hub", "restaurants", "universities"],
+      "area_vibe": "bustling, redeveloped, student-friendly",
+      "suggested_search_locations": ["Islington", "Camden", "Euston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious three-bedroom residence within the Manchester metropolitan area, with a monthly rent not exceeding £1500.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1500,
+      "max_travel_time": null,
+      "soft_preferences": "spacious",
+      "property_tags": ["3-bedroom", "residence"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": ["Didsbury", "Chorlton", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "A modern studio apartment in West London, close to Notting Hill Gate station. My budget is £1300/month, and I need a maximum 10-minute walk to the tube. Must have a balcony.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Notting Hill Gate station, West London",
+      "max_budget": 1300,
+      "max_travel_time": 10,
+      "soft_preferences": "modern, balcony",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants", "Portobello Market"],
+      "area_vibe": "trendy, upscale, vibrant, bohemian",
+      "suggested_search_locations": ["Notting Hill", "Holland Park", "Bayswater"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Somewhere nice in Birmingham, good for young professionals. What's available?",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "good for young professionals",
+      "property_tags": [],
+      "amenities_of_interest": ["bars", "restaurants", "gyms", "city centre"],
+      "area_vibe": "lively, modern, social",
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "City Centre"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

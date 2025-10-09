@@ -1,0 +1,109 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near London Bridge, max £1800pm, 20 mins to office",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "well-connected, safe area",
+      "property_tags": ["1-bedroom", "commuter-friendly"],
+      "amenities_of_interest": ["transport links", "restaurants"],
+      "area_vibe": "vibrant, central, good for young professionals",
+      "suggested_search_locations": ["Bermondsey", "Borough", "Elephant & Castle"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "i need a 2 bed apartmnet in Manchestir, under 500 per week, within 3 mile of Piccadilly station",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 500,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 2165,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good transport",
+      "property_tags": ["2-bedroom", "city-centre"],
+      "amenities_of_interest": ["train station", "shopping", "restaurants"],
+      "area_vibe": "lively, urban, good for young professionals",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "looking for a 3 bed house in London, around £2500 a month, with a garden, within 45 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["destination"],
+      "max_budget": 2500,
+      "max_travel_time": 45,
+      "soft_preferences": "garden, family-friendly",
+      "property_tags": ["3-bedroom", "house", "garden"],
+      "amenities_of_interest": ["schools", "parks"],
+      "area_vibe": "suburban, quiet, family-oriented",
+      "suggested_search_locations": ["South London", "East London"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed flatt in Edinbrugh, needs to be close to the Royal Infrimary, budget abt 450 weekly, max 2km",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 450,
+      "original_distance_km": 2,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Infirmary of Edinburgh",
+      "max_budget": 1949,
+      "max_travel_time": 12,
+      "soft_preferences": "quiet, accessible to hospital",
+      "property_tags": ["1-bedroom", "accessible"],
+      "amenities_of_interest": ["hospital", "bus routes"],
+      "area_vibe": "residential, convenient for hospital staff",
+      "suggested_search_locations": ["Little France", "Gilmerton", "Liberton"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "looking for a studio flat near Shoreditch, max £1500 per month, 15 min walk to Old Street station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "lively, trendy",
+      "property_tags": ["studio", "young-professional", "walkable"],
+      "amenities_of_interest": ["tech hub", "bars", "restaurants"],
+      "area_vibe": "vibrant, creative, good for nightlife",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Islington"],
+      "city_context": "London"
+    }
+  }
+]
+```

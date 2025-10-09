@@ -1,0 +1,205 @@
+[
+  {
+    "user_query": "1BR apt nr KX, max £1800pm, 15 min walk to station",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "close to transport links",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "underground"],
+      "area_vibe": "vibrant, well-connected",
+      "suggested_search_locations": ["King's Cross", "St Pancras", "Euston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Manchster Uni, budget £1000 p/m, 20 minuets commute",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 1000,
+      "max_travel_time": 20,
+      "soft_preferences": "student-friendly, safe",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["university", "shops"],
+      "area_vibe": "student area, lively",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Hulme"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a cool 3-bed flat in Shoreditch, around £2500 a month, not more than 10 mins tube ride to Old Street",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 10,
+      "soft_preferences": "trendy, good nightlife, artistic",
+      "property_tags": ["3-bedroom", "flat"],
+      "amenities_of_interest": ["art galleries", "bars", "restaurants", "tube station"],
+      "area_vibe": "trendy, vibrant, nightlife",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment in Edinburgh city centre, with a maximum rent of £1300 per calendar month, within 10 kilometres of the Royal Mile.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1300,
+      "original_distance_km": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1300,
+      "max_travel_time": 60,
+      "soft_preferences": "historic, central location",
+      "property_tags": ["one-bedroom", "apartment"],
+      "amenities_of_interest": ["historic sites", "cultural venues", "shops"],
+      "area_vibe": "historic, bustling, tourist-friendly",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom residence in South Kensington, London.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "South Kensington, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "upscale, quiet",
+      "property_tags": ["two-bedroom", "residence"],
+      "amenities_of_interest": ["museums", "parks", "fine dining"],
+      "area_vibe": "affluent, cultural, residential",
+      "suggested_search_locations": ["South Kensington", "Kensington", "Chelsea"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a decent 1-bed for under £800/month, close to New Street Station, maybe 2 miles away max. Pet-friendly would be a bonus.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 800,
+      "original_distance_miles": 2,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 800,
+      "max_travel_time": 10,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["1-bedroom", "flat", "apartment"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "city centre, convenient, lively",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "2-bed apt nr LSE, £2000pw max, easy access to Covent Garden",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 2000,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London School of Economics and Political Science / Covent Garden, London",
+      "max_budget": 8660,
+      "max_travel_time": 20,
+      "soft_preferences": "central, cultural, student-friendly",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "theatres", "restaurants", "shops"],
+      "area_vibe": "academic, cultural, bustling",
+      "suggested_search_locations": ["Holborn", "Covent Garden", "Temple"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Lookin for a one bed apartmnet in Didsbury, Manc. Must be quiet.",
+    "query_metadata": {
+      "style": "with_typos",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Didsbury, Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "quiet, residential",
+      "property_tags": ["one-bedroom", "apartment"],
+      "amenities_of_interest": ["parks", "local shops", "cafes"],
+      "area_vibe": "suburban, leafy, family-friendly",
+      "suggested_search_locations": ["Didsbury", "Withington", "Chorlton"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a luxury penthouse in Bristol, budget unlimited, no commute preference, just the best view.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol",
+      "max_budget": 99999,
+      "max_travel_time": 999,
+      "soft_preferences": "luxury, stunning views",
+      "property_tags": ["penthouse", "luxury", "high-end"],
+      "amenities_of_interest": ["harbour views", "city views", "high-spec interiors"],
+      "area_vibe": "exclusive, scenic, high-end",
+      "suggested_search_locations": ["Clifton", "Harbourside", "Redland"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Small studio in Notting Hill, budget around £1500, close to Holland Park tube, maybe 5 mins walk?",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 5,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Holland Park Station, London",
+      "max_budget": 1500,
+      "max_travel_time": 5,
+      "soft_preferences": "charming, quiet, good transport",
+      "property_tags": ["studio", "small", "flat"],
+      "amenities_of_interest": ["tube station", "parks", "cafes", "boutiques"],
+      "area_vibe": "affluent, picturesque, quiet residential",
+      "suggested_search_locations": ["Notting Hill", "Holland Park", "Ladbroke Grove"],
+      "city_context": "London"
+    }
+  }
+]

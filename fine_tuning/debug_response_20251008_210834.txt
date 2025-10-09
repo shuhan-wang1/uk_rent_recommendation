@@ -1,0 +1,424 @@
+```json
+[
+  {
+    "user_query": "Looking for a 2 bed flat in London, near King's Cross, max £2200pm, 20 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 2200,
+      "max_travel_time": 20,
+      "soft_preferences": "quiet neighborhood",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "shops"],
+      "area_vibe": "vibrant with good transport",
+      "suggested_search_locations": ["King's Cross", "St Pancras", "Caledonian Road"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 1 bed apartment in Manchester, close to Piccadilly, budget £1500 monthly, travel time under 30 mins",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Piccadilly Station, Manchester",
+      "max_budget": 1500,
+      "max_travel_time": 30,
+      "soft_preferences": "modern amenities",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city center"],
+      "area_vibe": "city center with business and leisure",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Piccadilly Basin"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Searching for a studio in Edinburgh, near the University, £1100 pcm",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Edinburgh",
+      "max_budget": 1100,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["studio", "student-friendly"],
+      "amenities_of_interest": ["university", "library"],
+      "area_vibe": "student area",
+      "suggested_search_locations": ["Newington", "Southside", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bedroom house in Birmingham, within 15 mins of city centre, budget £550 weekly",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2382,
+      "original_time_minutes": 15,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 2382,
+      "max_travel_time": 15,
+      "soft_preferences": "family-friendly",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["schools", "parks"],
+      "area_vibe": "suburban with good access",
+      "suggested_search_locations": ["Harborne", "Moseley", "Selly Park"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Need a 1BR apt near Bristol Uni, max £1300, 25 mins travel",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 25,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Bristol",
+      "max_budget": 1300,
+      "max_travel_time": 25,
+      "soft_preferences": "student accommodation",
+      "property_tags": ["1-bedroom", "apartment", "student-friendly"],
+      "amenities_of_interest": ["university", "pubs"],
+      "area_vibe": "student lively",
+      "suggested_search_locations": ["Clifton", "Redland", "City Centre"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Finding a 2 bed flat in Leeds, budget £1000 per month, 10 miles away from station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 50,
+      "city": "Leeds"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Leeds Station",
+      "max_budget": 1000,
+      "max_travel_time": 50,
+      "soft_preferences": "good transport links",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["train station", "commute"],
+      "area_vibe": "commutable suburbs",
+      "suggested_search_locations": ["Headingley", "Kirkstall", "Woodhouse"],
+      "city_context": "Leeds"
+    }
+  },
+  {
+    "user_query": "I want a 1 bedroom apartmnet in London, near Oxford Circus, max £2500, 30 mins commute",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Oxford Circus, London",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "central location",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["shopping", "theatre"],
+      "area_vibe": "busy commercial and entertainment district",
+      "suggested_search_locations": ["Soho", "Fitzrovia", "Marylebone"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a 3 bed flat in Manchester, close to MediaCityUK, budget £1800pm",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "MediaCityUK, Salford",
+      "max_budget": 1800,
+      "max_travel_time": null,
+      "soft_preferences": "modern living",
+      "property_tags": ["3-bedroom", "flat"],
+      "amenities_of_interest": ["work", "leisure"],
+      "area_vibe": "modern media and digital hub",
+      "suggested_search_locations": ["Salford Quays", "MediaCityUK"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed flat in London, near UCL, max £2800, 40 mins travel",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2800,
+      "original_time_minutes": 40,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University College London, Gower Street, London WC1E 6BT",
+      "max_budget": 2800,
+      "max_travel_time": 40,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["2-bedroom", "flat", "student-friendly"],
+      "amenities_of_interest": ["university", "museums"],
+      "area_vibe": "academic and cultural hub",
+      "suggested_search_locations": ["Bloomsbury", "Fitzrovia", "Euston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 1 bed flat in Edinburgh, near the Royal Mile, £1300 pcm, 20 mins commute",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 20,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1300,
+      "max_travel_time": 20,
+      "soft_preferences": "historic charm",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["tourism", "history"],
+      "area_vibe": "historic old town with tourist attractions",
+      "suggested_search_locations": ["Old Town", "Canongate", "Grassmarket"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Want a 2 bed apartment in Birmingham, max £1600, 10 miles from New Street",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": 50,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "New Street Station, Birmingham",
+      "max_budget": 1600,
+      "max_travel_time": 50,
+      "soft_preferences": "good transport",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "commute"],
+      "area_vibe": "commutable areas with amenities",
+      "suggested_search_locations": ["Selly Oak", "Bearwood", "Handsworth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Searching for a 1 bed flat in London, near Shoreditch, £1900 per month, 15 mins walk",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1900,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch, London",
+      "max_budget": 1900,
+      "max_travel_time": 15,
+      "soft_preferences": "trendy area",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["nightlife", "restaurants"],
+      "area_vibe": "vibrant, artistic, and trendy",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I need a 3 bed flat in Manchester city centre, max £2000, 30 minutes travel",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester City Centre",
+      "max_budget": 2000,
+      "max_travel_time": 30,
+      "soft_preferences": "convenient location",
+      "property_tags": ["3-bedroom", "flat"],
+      "amenities_of_interest": ["shops", "restaurants", "transport"],
+      "area_vibe": "bustling urban environment",
+      "suggested_search_locations": ["Castlefield", "Deansgate", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a studio in London, near the British Museum, budget £1500 per week",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 6495,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "The British Museum, London",
+      "max_budget": 6495,
+      "max_travel_time": null,
+      "soft_preferences": "cultural proximity",
+      "property_tags": ["studio"],
+      "amenities_of_interest": ["museums", "galleries"],
+      "area_vibe": "cultural and intellectual hub",
+      "suggested_search_locations": ["Bloomsbury", "Holborn", "Covent Garden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Find a 1 bed apartmnet in Edinburgh, near Holyrood Palace, max £1200 pcm",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Holyrood Palace, Edinburgh",
+      "max_budget": 1200,
+      "max_travel_time": null,
+      "soft_preferences": "historic area",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["historical sites", "parks"],
+      "area_vibe": "historic and scenic",
+      "suggested_search_locations": ["Canongate", "Abbeyhill", "Old Town"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "2 bed flat, London, near Liverpool Street, £2300 monthly, 25 mins travel",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 2300,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Liverpool Street Station, London",
+      "max_budget": 2300,
+      "max_travel_time": 25,
+      "soft_preferences": "financial district proximity",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["transport hub", "city life"],
+      "area_vibe": "financial district with good amenities",
+      "suggested_search_locations": ["Shoreditch", "Spitalfields", "City of London"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 4 bedroom house in Bristol, near Clifton Village, budget £3000pm, 10 miles commute",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 50,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clifton Village, Bristol",
+      "max_budget": 3000,
+      "max_travel_time": 50,
+      "soft_preferences": "family home",
+      "property_tags": ["4-bedroom", "house"],
+      "amenities_of_interest": ["parks", "schools", "boutique shops"],
+      "area_vibe": "affluent village feel with good amenities",
+      "suggested_search_locations": ["Clifton", "Redland", "Sneyd Park"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Need a studio in Manchester, close to the university, max £900, 15 min walk",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["studio", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries"],
+      "area_vibe": "student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I want a 2 bed flat in London, near Canary Wharf, £2600 pcm, 35 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2600,
+      "original_time_minutes": 35,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2600,
+      "max_travel_time": 35,
+      "soft_preferences": "modern amenities, good transport",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["work", "transport", "shops"],
+      "area_vibe": "modern financial district with residential areas",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "South Quay"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Searching for a 1 bedroom apartment in Glasgow, near the city centre, £1000 pcm, 20 min travel",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 20,
+      "city": "Glasgow"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Glasgow City Centre",
+      "max_budget": 1000,
+      "max_travel_time": 20,
+      "soft_preferences": "convenient location",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["shops", "restaurants", "transport"],
+      "area_vibe": "vibrant city centre with cultural attractions",
+      "suggested_search_locations": ["City Centre", "Merchant City", "Finnieston"],
+      "city_context": "Glasgow"
+    }
+  }
+]
+```

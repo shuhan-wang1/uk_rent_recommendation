@@ -1,0 +1,168 @@
+```json
+[
+  {
+    "user_query": "1 bed apartmnet in London, max £1800pm, 30 mins commut to Victoria Station",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links"],
+      "area_vibe": "central, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Manchester Uni, £400 a week, 2 miles from uni",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 1732,
+      "max_travel_time": 10,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["university", "cafes", "pubs"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a nice 3BR flat in London, good for famileis, budget around £2500",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2500,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 2500,
+      "max_travel_time": null,
+      "soft_preferences": "family-friendly",
+      "property_tags": ["3-bedroom", "flat"],
+      "amenities_of_interest": ["parks", "schools"],
+      "area_vibe": "residential, family-oriented",
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "One bedroom apartment in Edinburgh city centre, maximum £1100 per month, within a fifteen minute commute to Edinburgh Castle.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle",
+      "max_budget": 1100,
+      "max_travel_time": 15,
+      "soft_preferences": "historic area, walkable",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["cultural sites", "restaurants"],
+      "area_vibe": "historic, tourist-friendly, bustling",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a place to crash near work (Canary Wharf), very cheap, don't care about anything else.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Canary Wharf, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "minimalist, budget-conscious, close to work",
+      "property_tags": ["studio", "single_occupancy"],
+      "amenities_of_interest": ["transport links", "convenience stores"],
+      "area_vibe": "business district, modern",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr New Street Station, Bham, max £950pm, 10 min walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 950,
+      "max_travel_time": 10,
+      "soft_preferences": "central location, good transport",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shopping", "restaurants"],
+      "area_vibe": "city centre, vibrant",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Two bedroom residence in West London, close proximity to Imperial College, not exceeding £2500 monthly, with a maximum travel time of 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Imperial College London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "academic environment, quiet",
+      "property_tags": ["2-bedroom", "residence"],
+      "amenities_of_interest": ["universities", "museums", "parks"],
+      "area_vibe": "affluent, cultural, student-friendly",
+      "suggested_search_locations": ["South Kensington", "Earl's Court", "Chelsea"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Any studio flats available in Manchester? Budget £650.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 650,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 650,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["public transport"],
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "Manchester"
+    }
+  }
+]
+```

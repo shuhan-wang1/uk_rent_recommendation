@@ -1,0 +1,208 @@
+[
+  {
+    "user_query": "Looking for a 1 bed flat in Shoreditch, max £1800 a month, 20 mins to Liverpool Street station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Liverpool Street Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "vibrant nightlife, trendy area",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["bars", "restaurants", "galleries"],
+      "area_vibe": "trendy, artistic, busy",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr KX, £400 pw, 3 miles radius",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "good transport links, quiet building",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "parks"],
+      "area_vibe": "well-connected, residential with amenities",
+      "suggested_search_locations": ["King's Cross", "St Pancras", "Euston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious three-bedroom apartment, preferably furnished, within a prestigious neighbourhood in London, with a budget not exceeding two thousand five hundred pounds per calendar month.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 2500,
+      "max_travel_time": null,
+      "soft_preferences": "prestigious neighbourhood, furnished",
+      "property_tags": ["3-bedroom", "apartment", "furnished"],
+      "amenities_of_interest": null,
+      "area_vibe": "upscale, quiet",
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "need a studio apartmnet near Victoria station, max £350 weekly, 2km commut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 350,
+      "original_distance_km": 2,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1515,
+      "max_travel_time": 12,
+      "soft_preferences": "close to transport, modern",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "shops"],
+      "area_vibe": "central, busy, well-connected",
+      "suggested_search_locations": ["Victoria", "Pimlico", "Westminster"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed place in Hackney, gotta be under £2200pcm, quick tube ride to Old Street.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": "trendy, good cafes, vibrant",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["tube station", "restaurants", "boutique shops"],
+      "area_vibe": "trendy, creative, community feel",
+      "suggested_search_locations": ["Hackney Central", "Dalston", "London Fields"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a contemporary two-bedroom dwelling, suitable for professionals, situated within a fifteen-minute journey to Piccadilly station, with a maximum rental expenditure of one thousand five hundred pounds per month.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, professional, quiet",
+      "property_tags": ["2-bedroom", "apartment", "professional-friendly"],
+      "amenities_of_interest": ["train station", "city centre", "gyms"],
+      "area_vibe": "urban, professional, convenient",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1 bed flat MCR city centre, £250 pw",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 250,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester City Centre",
+      "max_budget": 1083,
+      "max_travel_time": null,
+      "soft_preferences": "central location, lively",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["shops", "restaurants", "bars"],
+      "area_vibe": "bustling, urban",
+      "suggested_search_locations": ["City Centre", "Northern Quarter", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a decent 2 bed place in Edinburgh, max £1300 a month, 4 miles to Princes Street.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1300,
+      "original_distance_miles": 4,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Princes Street, Edinburgh",
+      "max_budget": 1300,
+      "max_travel_time": 20,
+      "soft_preferences": "good views, safe neighbourhood",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["shops", "tourist attractions", "parks"],
+      "area_vibe": "historic, picturesque, lively",
+      "suggested_search_locations": ["Morningside", "Bruntsfield", "Stockbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "studio apertment near New Street staion, max £850pm, 1km walk.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 850,
+      "original_distance_km": 1,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 850,
+      "max_travel_time": 6,
+      "soft_preferences": "modern, close to amenities",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "shopping centre", "restaurants"],
+      "area_vibe": "city centre, urban, convenient",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "I am seeking a unique dwelling, preferably with historical significance or an unusual architectural design, within a thirty-minute commute to Bristol Temple Meads, with an unspecified budget, as long as the property meets my specific aesthetic requirements. I am flexible on bedroom count, but it must have character.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_time_minutes": 30,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Bristol Temple Meads Station",
+      "max_budget": null,
+      "max_travel_time": 30,
+      "soft_preferences": "historical significance, unusual architectural design, character",
+      "property_tags": ["unique property", "period property"],
+      "amenities_of_interest": ["art galleries", "independent shops"],
+      "area_vibe": "bohemian, artistic, historic",
+      "suggested_search_locations": ["Clifton", "Redland", "Montpelier"],
+      "city_context": "Bristol"
+    }
+  }
+]

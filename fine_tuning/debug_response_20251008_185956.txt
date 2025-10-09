@@ -1,0 +1,172 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near London Bridge, max £1800pm, 20 mins tube",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "flat", "tube access"],
+      "amenities_of_interest": ["restaurants", "pubs", "markets"],
+      "area_vibe": "vibrant, touristy, historical",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 2 bedroom apartment in Manchester, near Piccadilly station. Budget £1200 weekly, commute 15 min.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_weekly": 1200,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 5196,
+      "max_travel_time": 15,
+      "soft_preferences": "good transport links, modern living",
+      "property_tags": ["2-bedroom", "apartment", "city centre"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "urban, lively, professional",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a flat in East London, something affordable",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "East London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "affordable, safe area",
+      "property_tags": ["flat"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": ["Stratford", "Leytonstone", "Hackney"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment in Edinburgh, within 3 miles of the Royal Mile. Maximum budget of £1500 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_miles": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "historic charm, good walking access",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["tourist attractions", "restaurants", "cultural sites"],
+      "area_vibe": "historic, bustling, picturesque",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "2BR apartmnet near Victoria station, max £2200 pcm, 10 min commut",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station, London",
+      "max_budget": 2200,
+      "max_travel_time": 10,
+      "soft_preferences": "excellent transport links, central location",
+      "property_tags": ["2-bedroom", "apartment", "commuter-friendly"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "central, busy, professional",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio apartment close to Birmingham New Street. £800 p/m, 10 min walk.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 800,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Birmingham",
+      "max_budget": 800,
+      "max_travel_time": 10,
+      "soft_preferences": "city centre access, modern",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "shopping centres", "nightlife"],
+      "area_vibe": "urban, modern, lively",
+      "suggested_search_locations": ["Digbeth", "Jewellery Quarter", "City Centre"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed house, £3000pm, 45 mins travel, family friendly. London area.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 3000,
+      "max_travel_time": 45,
+      "soft_preferences": "family friendly, good schools, green spaces",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["parks", "schools", "playgrounds"],
+      "area_vibe": "suburban, quiet, community-oriented",
+      "suggested_search_locations": ["Richmond", "Wimbledon", "Greenwich", "Kingston upon Thames"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1BR apt nr Manc Uni, max £950 weekly, 2km commute",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_weekly": 950,
+      "original_time_km": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 4113.5,
+      "max_travel_time": 12,
+      "soft_preferences": "student-friendly, walkable",
+      "property_tags": ["1-bedroom", "apartment", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "cafes"],
+      "area_vibe": "student neighborhood, lively, accessible",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park", "City Centre"],
+      "city_context": "Manchester"
+    }
+  }
+]
+```

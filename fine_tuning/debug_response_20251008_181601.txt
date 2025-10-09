@@ -1,0 +1,265 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near London Bridge, max £1800pm. Need to get to work in 30 mins.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "restaurants"],
+      "area_vibe": "vibrant",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment suitable for a professional couple in Manchester, within 5 miles of Piccadilly Station. Budget not exceeding £1200 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1200,
+      "original_time_miles": 5,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1200,
+      "max_travel_time": 25,
+      "soft_preferences": "suitable for professional couple",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["gym", "supermarket"],
+      "area_vibe": "urban",
+      "suggested_search_locations": ["Ancoats", "Salford Quays", "Northern Quarter"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Canary Wharf, max £600pw, 15 min commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 600,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf",
+      "max_budget": 2598,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["office", "restaurants"],
+      "area_vibe": "business district",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am actively looking for a spacious three-bedroom property, ideally an apartment or a house, situated in Edinburgh. My preference is for a location within 3 kilometers of the University of Edinburgh campus, with a maximum monthly rent of £2500. Proximity to green spaces and good schools is highly valued.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_time_km": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 2500,
+      "max_travel_time": 18,
+      "soft_preferences": "near green spaces, good schools",
+      "property_tags": ["3-bedroom", "apartment", "house"],
+      "amenities_of_interest": ["university", "parks", "schools"],
+      "area_vibe": "family-friendly, academic",
+      "suggested_search_locations": ["Marchmont", "Newington", "Morningside"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a studio in central London, cheap.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "destination", "travel_time"],
+      "soft_preferences": null,
+      "property_tags": ["studio"],
+      "amenities_of_interest": null,
+      "area_vibe": "central",
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a decent 2 bed flat near New Street Station, around £950pm. Commute needs to be under 20 minutes.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 20,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 950,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["transport", "shopping"],
+      "area_vibe": "city centre",
+      "suggested_search_locations": ["Digbeth", "Jewellery Quarter", "City Centre"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "1 bed apartmnet near Victoria, max £1900pm, 20 mins commut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1900,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station",
+      "max_budget": 1900,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["transport", "shops"],
+      "area_vibe": "bustling",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "3BR apt Manchester, pet friendly",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "destination", "travel_time"],
+      "soft_preferences": "pet friendly",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "We require a furnished two-bedroom property in Bristol, within walking distance to Bristol Temple Meads. Our budget is £1400 per month, and we prefer a quiet residential area.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1400,
+      "original_time_description": "walking distance",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads",
+      "max_budget": 1400,
+      "max_travel_time": 15,
+      "soft_preferences": "quiet residential area, furnished",
+      "property_tags": ["2-bedroom", "furnished"],
+      "amenities_of_interest": ["train station"],
+      "area_vibe": "residential",
+      "suggested_search_locations": ["Totterdown", "Redcliffe", "St Philips"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Looking for a big 3 bed house in North London, max £2800pm, good for families, near a park.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2800,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "North London",
+      "max_budget": 2800,
+      "max_travel_time": null,
+      "soft_preferences": "good for families, near a park",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["parks", "schools"],
+      "area_vibe": "family-friendly, green",
+      "suggested_search_locations": ["Highgate", "Finchley", "Muswell Hill"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am specifically interested in finding a one-bedroom apartment in the vibrant Northern Quarter of Manchester. My financial parameters dictate a maximum expenditure of £1100 per calendar month. Accessibility to various entertainment venues and cultural hotspots is a priority.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1100,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Northern Quarter, Manchester",
+      "max_budget": 1100,
+      "max_travel_time": null,
+      "soft_preferences": "access to entertainment and culture",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["bars", "restaurants", "music venues"],
+      "area_vibe": "vibrant, trendy",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom property for rent in East London, with excellent transport links.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "travel_time"],
+      "destination": "East London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "excellent transport links",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["transport links"],
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I need something HUGE, for like 10 people, in London, doesn't matter where, I'm rich.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "special_request": "very large property for 10 people",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "no specific location preference, budget not an issue",
+      "property_tags": ["large-property", "multi-occupancy"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  }
+]
+```

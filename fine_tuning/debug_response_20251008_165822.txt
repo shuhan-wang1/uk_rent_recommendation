@@ -1,0 +1,107 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Victoria Station. Budget around £1800pcm, quick commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station, London SW1V 1JU",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "quick commute, good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport hub", "shops", "restaurants"],
+      "area_vibe": "lively, central, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I need a 2-bed apartment in Manchester. Pet friendly would be great.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["parks", "vet services"],
+      "area_vibe": "any, as long as pet-friendly",
+      "suggested_search_locations": [],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1BR apt nr Old Town Edinburgh. Max £1200pw, 10mins walk to uni.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 1200,
+      "original_time_minutes": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Town, Edinburgh",
+      "max_budget": 5196,
+      "max_travel_time": 10,
+      "soft_preferences": "walking distance to university",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "historic sites"],
+      "area_vibe": "historic, student-friendly, walkable",
+      "suggested_search_locations": ["Newington", "Tollcross", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed apartmnet in north London. Can pay £2500 per month. Commute to Islington should be under 4 miles.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 2500,
+      "original_time_miles": 4,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Islington, London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "north London location",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["local shops", "good schools", "parks"],
+      "area_vibe": "family-friendly, residential with amenities",
+      "suggested_search_locations": ["Highbury", "Canonbury", "Angel"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "We require a spacious two-bedroom apartment in Central London, suitable for a professional couple with a preference for modern amenities and excellent public transport links. Our budget is £3000 per calendar month, and the commute to Bank station must not exceed 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bank Station, London EC3V 3LA",
+      "max_budget": 3000,
+      "max_travel_time": 20,
+      "soft_preferences": "spacious, modern amenities, excellent public transport, suitable for professional couple",
+      "property_tags": ["2-bedroom", "apartment", "professional-friendly"],
+      "amenities_of_interest": ["transport links", "gyms", "restaurants", "cultural venues"],
+      "area_vibe": "vibrant, financial district, upscale",
+      "suggested_search_locations": ["Moorgate", "Barbican", "Monument"],
+      "city_context": "London"
+    }
+  }
+]
+```

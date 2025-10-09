@@ -1,0 +1,182 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat near Canary Wharf, max £1800pm, 15 mins commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "shops"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment in Central London, up to £2500 per month, with excellent public transport links.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Central London",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "good public transport",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["tube stations", "bus routes"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio flat in Shoreditch, budget around £1200",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Shoreditch, London",
+      "max_budget": 1200,
+      "property_tags": ["studio", "flat"],
+      "clarification_needed": "travel_time_or_distance",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Nice 2 bed apt near Piccadilly, £350 weekly, 2 miles max",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_weekly": 350,
+      "original_distance_miles": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1515,
+      "max_travel_time": 10,
+      "property_tags": ["2-bedroom", "apartment"],
+      "area_vibe": "central, vibrant",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "One-bedroom apartment close to Edinburgh Castle, maximum £1100 per month, within 2 km.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_distance_km": 2,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle",
+      "max_budget": 1100,
+      "max_travel_time": 12,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["historical sites", "city centre"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "1BR apt nr KX, budget £1600pm, 10 min walk to station",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1600,
+      "max_travel_time": 10,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "tube station"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed apartmnet near Birmingham New Street, £1400pm, 20 mins commut",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1400,
+      "original_time_minutes": 20,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1400,
+      "max_travel_time": 20,
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Flat to rent in Islington, needs to be family-friendly",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Islington, London",
+      "soft_preferences": "family-friendly",
+      "property_tags": ["flat"],
+      "clarification_needed": "budget, travel_time_or_distance, number_of_bedrooms",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Apartments in Manchester, something cheap and cheerful for students",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "soft_preferences": "student-friendly, affordable",
+      "property_tags": ["student-friendly", "apartment"],
+      "clarification_needed": "specific_destination, budget, number_of_bedrooms, travel_time_or_distance",
+      "city_context": "Manchester",
+      "suggested_search_locations": ["Fallowfield", "Withington", "Rusholme"]
+    }
+  },
+  {
+    "user_query": "Decent 2-bedroom place in Bristol city centre, max £1300/month, within 3 miles.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1300,
+      "original_distance_miles": 3,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol City Centre",
+      "max_budget": 1300,
+      "max_travel_time": 15,
+      "property_tags": ["2-bedroom"],
+      "area_vibe": "vibrant, central",
+      "city_context": "Bristol"
+    }
+  }
+]
+```

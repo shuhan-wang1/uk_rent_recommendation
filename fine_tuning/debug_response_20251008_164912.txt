@@ -1,0 +1,113 @@
+```json
+[
+  {
+    "user_query": "1BR apt nr KX, max £400 weekly, 3 miles commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["public transport links", "train station"],
+      "area_vibe": "vibrant, well-connected",
+      "suggested_search_locations": ["Islington", "Camden", "Euston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment near Manchester Piccadilly, budget not exceeding £1500 per month, with a maximum travel time of 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 1500,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["train station", "city center amenities"],
+      "area_vibe": "urban, commercial",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I require a one-bedroom apartment in London, suitable for a professional. Proximity to public transport is essential.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "London",
+      "missing_info": ["budget", "destination", "travel_time"]
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "clarification_points": [
+        "What is your maximum monthly budget?",
+        "Which specific area or destination in London are you commuting to?",
+        "What is your preferred maximum travel time or distance to your destination?",
+        "Are there any other specific amenities or property features you require?"
+      ],
+      "soft_preferences": "suitable for professional, good public transport access",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["public transport"],
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bed flat in Edinburgh, near Edinburgh Uni. Max £1800 pcm, needs to be student friendly and have good internet.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Edinburgh",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, good internet",
+      "property_tags": ["3-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "high-speed internet", "libraries"],
+      "area_vibe": "student neighborhood, lively",
+      "suggested_search_locations": ["Newington", "Marchmont", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a cheap 1 bed flat in Birmingham, prefer somewhere with a big park nearby for dog walking. Budget around £700 per month.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 700,
+      "city": "Birmingham",
+      "priority_amenity": "park"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham, near a large park",
+      "max_budget": 700,
+      "max_travel_time": 20,
+      "soft_preferences": "cheap, dog-friendly, access to large park",
+      "property_tags": ["1-bedroom", "pet-friendly"],
+      "amenities_of_interest": ["large park", "green space", "dog walking areas"],
+      "area_vibe": "suburban, quiet, green",
+      "suggested_search_locations": ["Moseley", "Harborne", "Sutton Coldfield"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

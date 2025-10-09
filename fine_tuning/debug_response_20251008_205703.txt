@@ -1,0 +1,172 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, £1800pm, 20 mins commute, must be pet-friendly",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["parks", "vet clinics"],
+      "area_vibe": "modern, business district with residential areas",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment in Central London, proximity to British Museum, maximum rent £2500 per month, commute within 30 minutes via public transport.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, Great Russell St, London WC1B 3DG",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["museums", "restaurants", "theatres"],
+      "area_vibe": "cultural, historic, bustling",
+      "suggested_search_locations": ["Bloomsbury", "Holborn", "Covent Garden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Piccadilly. Commute max 15 mins. Need parking.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": null,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester Piccadilly Station, Manchester M60 7RA",
+      "max_budget": null,
+      "max_travel_time": 15,
+      "soft_preferences": "parking available",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["car park", "public transport links"],
+      "area_vibe": "central, well-connected",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "A one-bedroom property for rent in Edinburgh, preferably close to the University of Edinburgh. Budget of £1100 per calendar month, with a travel time no longer than 25 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 25,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Edinburgh EH8 9YL",
+      "max_budget": 1100,
+      "max_travel_time": 25,
+      "soft_preferences": "close to university",
+      "property_tags": ["1-bedroom", "property"],
+      "amenities_of_interest": ["university", "libraries", "student facilities"],
+      "area_vibe": "student-friendly, historic",
+      "suggested_search_locations": ["Newington", "Marchmont", "Old Town"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio apt nr Victoria Station. £400 weekly. 3 miles radius. Solo prof, quiet.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_time_miles": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London SW1V 1JU",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "quiet, suitable for single professional",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["good transport links", "quiet spaces"],
+      "area_vibe": "well-connected, professional",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "3 bed house near Bullring. Max £1500 per month. Commute up to 5 km. Family friendly.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_km": 5,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bullring & Grand Central, Birmingham B5 4BU",
+      "max_budget": 1500,
+      "max_travel_time": 30,
+      "soft_preferences": "family friendly",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["schools", "parks", "shopping"],
+      "area_vibe": "diverse, family-oriented",
+      "suggested_search_locations": ["Moseley", "Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Find me a place, any apartmnet. Must be cheep. Commut is not importnat. Just needs to be in London.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_description": "cheep",
+      "original_time_description": "not importnat",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "as cheap as possible",
+      "property_tags": ["apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "A spacious one-bedroom apartment to let in Manchester, close to Spinningfields district. Budget not exceeding £1400 per month. Travel time to Spinningfields should be less than 10 minutes walk.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1400,
+      "original_time_minutes": 10,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester M3 3BE",
+      "max_budget": 1400,
+      "max_travel_time": 10,
+      "soft_preferences": "spacious",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["restaurants", "bars", "gyms", "offices"],
+      "area_vibe": "modern, professional, vibrant",
+      "suggested_search_locations": ["Castlefield", "Deansgate", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  }
+]
+```

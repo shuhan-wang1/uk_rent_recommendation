@@ -1,0 +1,104 @@
+[
+  {
+    "user_query": "I require a two-bedroom apartment within a maximum budget of £2500 per month, situated no more than 30 minutes' commute from Canary Wharf.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["DLR", "restaurants"],
+      "area_vibe": "business district, modern",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Stratford"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 1 bed flat near Piccadilly, around £850 a month, easy walk to shops.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 850,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 850,
+      "max_travel_time": 15,
+      "soft_preferences": "easy walk to shops",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["shops", "restaurants"],
+      "area_vibe": "city centre, vibrant",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Gay Village"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious three-bedroom residence suitable for a family, in London.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "clarification_required": ["max_budget", "destination", "max_travel_time"],
+      "property_tags": ["3-bedroom", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks"],
+      "area_vibe": "family-oriented",
+      "suggested_search_locations": ["Richmond", "Wimbledon", "Dulwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a decent pad in Edinburgh, 2 beds, budget £1200 weekly, close to the Meadows.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 5196,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "The Meadows, Edinburgh",
+      "max_budget": 5196,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["green spaces", "university"],
+      "area_vibe": "student-friendly, vibrant",
+      "suggested_search_locations": ["Tollcross", "Marchmont", "Newington"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I am deeply interested in locating an accommodation, preferably a flat or small house, with at least two separate sleeping areas, in a locale that provides excellent connectivity to central London via public transport, yet retains a tranquil, village-like ambiance, potentially near Hampstead or Richmond, and my financial ceiling is approximately £3000 per month, but I am open to slightly exceeding that for an exceptional property, and I'd prefer to be within a 45-minute journey to Oxford Circus.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Oxford Circus, London",
+      "max_budget": 3000,
+      "max_travel_time": 45,
+      "soft_preferences": "tranquil, village-like ambiance, flexible budget for exceptional property",
+      "property_tags": ["2-bedroom", "flat/house"],
+      "amenities_of_interest": ["public transport", "green spaces"],
+      "area_vibe": "leafy, quiet, good connectivity",
+      "suggested_search_locations": ["Hampstead", "Richmond", "Barnes", "Dulwich Village"],
+      "city_context": "London"
+    }
+  }
+]

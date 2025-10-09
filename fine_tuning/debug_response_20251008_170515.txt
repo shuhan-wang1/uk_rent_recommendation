@@ -1,0 +1,214 @@
+```json
+[
+  {
+    "user_query": "I am seeking a two-bedroom apartment suitable for a professional couple in central London, with a maximum monthly rent of £2500 and a commute of no more than 30 minutes to Canary Wharf. Proximity to green spaces is highly valued.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "proximity to green spaces, suitable for professional couple",
+      "property_tags": ["2-bedroom", "apartment", "professional-friendly"],
+      "amenities_of_interest": ["parks", "gyms", "restaurants"],
+      "area_vibe": "modern, business district with amenities",
+      "suggested_search_locations": ["Isle of Dogs", "Limehouse", "Greenwich", "Stratford"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 1 bed flat in North London, near a tube station, budget around £1500/month. Don't want to be more than 20 mins from King's Cross. Pet-friendly would be a bonus!",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1500,
+      "max_travel_time": 20,
+      "soft_preferences": "pet-friendly, near tube station",
+      "property_tags": ["1-bedroom", "flat", "pet-friendly"],
+      "amenities_of_interest": ["tube station", "parks", "shops"],
+      "area_vibe": "vibrant, good transport links, residential",
+      "suggested_search_locations": ["Camden Town", "Islington", "Angel", "Caledonian Road"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt near Waterloo. £600pw. What's available?",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 2598,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "London Waterloo Station",
+      "max_budget": 2598,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am looking for an apartmnet with three bedrooms in the London borough of Camden, ideally close to good schools and a park. My maximum budget is £3000 per month, and I need to be able to commut to Euston Station within 25 minutes by public transport. A family-friendly area is essential.",
+    "query_metadata": {
+      "style": "verbose_with_typos",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Euston Station, London",
+      "max_budget": 3000,
+      "max_travel_time": 25,
+      "soft_preferences": "close to good schools and a park, family-friendly area",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks", "public transport"],
+      "area_vibe": "residential, family-oriented, good amenities",
+      "suggested_search_locations": ["Camden Town", "Kentish Town", "Belsize Park", "Hampstead Heath"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio flat, max £1300pm, need to be close to the Barbican Centre (like 15 mins walk). Modern building preferred.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Barbican Centre, London",
+      "max_budget": 1300,
+      "max_travel_time": 15,
+      "soft_preferences": "modern building preferred",
+      "property_tags": ["studio", "flat", "modern"],
+      "amenities_of_interest": ["arts and culture", "restaurants", "transport links"],
+      "area_vibe": "cultural, urban, vibrant",
+      "suggested_search_locations": ["Clerkenwell", "Moorgate", "Shoreditch"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a decent 2 bed flat in Manchester, student friendly, near Manc Uni. Max £1200pm, 20 mins commute. Shops nearby are a plus.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 1200,
+      "max_travel_time": 20,
+      "soft_preferences": "student friendly, shops nearby",
+      "property_tags": ["2-bedroom", "flat", "student-friendly"],
+      "amenities_of_interest": ["university", "shops", "restaurants"],
+      "area_vibe": "student neighborhood, lively",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Could you please identify suitable one-bedroom properties within a 5-mile radius of central Manchester? My budget is £900 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Central Manchester",
+      "max_budget": 900,
+      "max_travel_time": 25,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Want a 1-bedroom apartment in Edinburgh, no more than £1100 a month. Need to get to Edinburgh Castle in about 10 minutes. Prefer a quiet street.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": 1100,
+      "max_travel_time": 10,
+      "soft_preferences": "quiet street",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["historic sites", "shops", "restaurants"],
+      "area_vibe": "historic, central, potentially touristy",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross", "Fountainbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I require a three-bedroom house in Birmingham, suitable for a family, within a 3km radius of Birmingham New Street station. The maximum rental budget is £1800 per month. A garden would be highly advantageous.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 18,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1800,
+      "max_travel_time": 18,
+      "soft_preferences": "suitable for a family, garden",
+      "property_tags": ["3-bedroom", "house", "family-friendly", "garden"],
+      "amenities_of_interest": ["schools", "parks", "shopping"],
+      "area_vibe": "residential, family-oriented",
+      "suggested_search_locations": ["Moseley", "Harborne", "Edgbaston", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Looking for a studio flat in Bristol, near Bristol Uni. Max £950pm, 15 mins commute. Something with good natural light.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 15,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Bristol, Beacon House, Queens Rd, Bristol BS8 1QU",
+      "max_budget": 950,
+      "max_travel_time": 15,
+      "soft_preferences": "good natural light",
+      "property_tags": ["studio", "flat", "student-friendly"],
+      "amenities_of_interest": ["university", "cafes", "bookstores"],
+      "area_vibe": "student neighborhood, bohemian",
+      "suggested_search_locations": ["Clifton", "Redland", "Cotham", "City Centre"],
+      "city_context": "Bristol"
+    }
+  }
+]
+```

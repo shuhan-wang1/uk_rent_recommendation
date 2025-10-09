@@ -1,0 +1,129 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in central London, max £2000 per month, 30 min commute to Oxford Circus.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Oxford Circus, London",
+      "max_budget": 2000,
+      "max_travel_time": 30,
+      "soft_preferences": "lively, central, good transport",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["tube station", "restaurants", "shops"],
+      "area_vibe": "bustling, urban, convenient",
+      "suggested_search_locations": ["Soho", "Fitzrovia", "Covent Garden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am actively seeking a two-bedroom apartment suitable for a young professional, located within a five-mile radius of Manchester Piccadilly Station, with a maximum rental budget of five hundred pounds per week.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_weekly": 500,
+      "original_distance_miles": 5,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester M60 7RA",
+      "max_budget": 2165,
+      "max_travel_time": 25,
+      "soft_preferences": "suitable for young professional",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["gym", "restaurants", "public transport links"],
+      "area_vibe": "vibrant, professional, well-connected",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a studio apt in East London, around Canary Wharf. Rent up to £450 weekly, commute no more than 3km.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 450,
+      "original_distance_km": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14 5AB",
+      "max_budget": 1949,
+      "max_travel_time": 18,
+      "soft_preferences": "modern, good views",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["DLR station", "supermarket", "gym"],
+      "area_vibe": "corporate, modern, waterfront",
+      "suggested_search_locations": ["Canary Wharf", "Poplar", "Isle of Dogs"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1BR apt nr Old Town, Edin. 20 min walk to Uni of Edin.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_time_minutes": 20,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Edinburgh, Old College, South Bridge, Edinburgh EH8 9YL",
+      "max_budget": null,
+      "max_travel_time": 20,
+      "soft_preferences": "student-friendly, historic area",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "cafes", "bookshops"],
+      "area_vibe": "historic, student hub, lively",
+      "suggested_search_locations": ["Old Town", "Newington", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Searching for a 2-bedroom residence suitable for a family near the Queen Elizabeth Hospital Birmingham, with a monthly budget of £1500, and a 10-minute drive commute.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Queen Elizabeth Hospital Birmingham, Mindelsohn Way, Edgbaston, Birmingham B15 2TH",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": "family-friendly, quiet neighborhood, good schools",
+      "property_tags": ["2-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["hospital", "schools", "parks"],
+      "area_vibe": "residential, green, community-oriented",
+      "suggested_search_locations": ["Edgbaston", "Harborne", "Selly Oak"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "I need a pet-friendly 3 bed house with a garden in North London, max £1800pcm, 15 min cycle to Hampstead Heath. Must have excellent natural light and no shared walls.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Hampstead Heath, London NW3 1GA",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "pet-friendly, excellent natural light, no shared walls",
+      "property_tags": ["3-bedroom", "house", "garden", "pet-friendly"],
+      "amenities_of_interest": ["Hampstead Heath", "cycling routes", "parks"],
+      "area_vibe": "leafy, residential, upscale, green",
+      "suggested_search_locations": ["Highgate", "East Finchley", "Muswell Hill"],
+      "city_context": "London"
+    }
+  }
+]
+```

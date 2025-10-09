@@ -1,0 +1,107 @@
+[
+  {
+    "user_query": "1 bed flat near Shoreditch, max £1800pm, 20 mins from Old Street station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London EC1Y 1BE",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "lively area, good nightlife",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["bars", "restaurants", "tech hub"],
+      "area_vibe": "vibrant, trendy, creative",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Islington"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Professional seeks one-bedroom apartment, maximum £400 per week, within 3 miles of Spinningfields, Manchester.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester M3 3BE",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "quiet, professional environment",
+      "property_tags": ["1-bedroom", "executive", "furnished"],
+      "amenities_of_interest": ["gym", "concierge", "parking"],
+      "area_vibe": "upscale, business district",
+      "suggested_search_locations": ["Deansgate", "Castlefield", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a 2 bed apartmnet in Clapham, max 550 weekly. Need it quick.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2381,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Clapham, London",
+      "max_budget": 2381,
+      "max_travel_time": null,
+      "soft_preferences": "good transport links, lively area",
+      "property_tags": ["2-bedroom", "available immediately"],
+      "amenities_of_interest": ["bars", "restaurants", "parks"],
+      "area_vibe": "vibrant, social",
+      "suggested_search_locations": ["Clapham North", "Clapham Common", "Clapham Junction"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom property for rent in Edinburgh, ideally within 2 km of Princes Street. Budget up to £1500 per month. Needs to be pet-friendly.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 12,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Princes Street, Edinburgh EH2 2ER",
+      "max_budget": 1500,
+      "max_travel_time": 12,
+      "soft_preferences": "pet-friendly, good local amenities",
+      "property_tags": ["2-bedroom", "pet-friendly"],
+      "amenities_of_interest": ["parks", "vet services", "public transport"],
+      "area_vibe": "historic, central, good access to nature",
+      "suggested_search_locations": ["New Town", "Tollcross", "Fountainbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I require a spacious three-bedroom residence in South Kensington, London. My maximum monthly expenditure is £4500, with a commute time not exceeding 15 minutes to Imperial College London.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 4500,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Imperial College London, South Kensington, London SW7 2AZ",
+      "max_budget": 4500,
+      "max_travel_time": 15,
+      "soft_preferences": "prestigious area, good schools nearby",
+      "property_tags": ["3-bedroom", "luxury", "family-friendly"],
+      "amenities_of_interest": ["museums", "parks", "high-end shopping"],
+      "area_vibe": "affluent, cultural, academic",
+      "suggested_search_locations": ["South Kensington", "Kensington", "Chelsea"],
+      "city_context": "London"
+    }
+  }
+]

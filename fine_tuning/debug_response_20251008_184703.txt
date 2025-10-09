@@ -1,0 +1,130 @@
+```json
+[
+  {
+    "user_query": "Seeking a two-bedroom apartment near Victoria Station, London. My maximum budget is £2500 per month, and I require a commute no longer than 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am interested in a one-bedroom flat suitable for a professional in the vicinity of Canary Wharf, London. My budget is approximately £550 per week, and I prefer a travel time of 15 minutes or less.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 550,
+      "original_budget_monthly": 2382,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2382,
+      "max_travel_time": 15,
+      "soft_preferences": "suitable for a professional",
+      "property_tags": ["1-bedroom", "flat", "professional-friendly"],
+      "amenities_of_interest": [],
+      "area_vibe": "modern, business district",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bed house in Didsbury, Manchester. No specific budget yet, but need good schools nearby.",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Didsbury, Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "good schools nearby",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["schools"],
+      "area_vibe": "family-friendly, suburban",
+      "suggested_search_locations": [],
+      "city_context": "Manchester",
+      "clarification_questions": ["What is your approximate monthly budget?", "What is your preferred maximum commute time to your main destination?"]
+    }
+  },
+  {
+    "user_query": "I need a 1 bed apartmnet in Edinburgh, close to the city centre. Budget around £1000 p/m, and commut should be max 25 mins walk.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 25,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh City Centre",
+      "max_budget": 1000,
+      "max_travel_time": 25,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "city centre, vibrant, historical",
+      "suggested_search_locations": ["New Town", "Old Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Anywhere in London, 2 bed, cheap, quick travel to work.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "cheap",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London",
+      "clarification_questions": ["What is your maximum monthly budget?", "What is your specific work destination and preferred maximum travel time?"]
+    }
+  },
+  {
+    "user_query": "Find me a studio apartment for rent near Birmingham New Street Station. My budget is £700pm, and I'd like to be within 2 miles of the station.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 700,
+      "original_distance_miles": 2,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 700,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "city centre amenities"],
+      "area_vibe": "city centre, convenient, bustling",
+      "suggested_search_locations": ["Chinese Quarter", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

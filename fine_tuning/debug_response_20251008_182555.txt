@@ -1,0 +1,169 @@
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Victoria Station. Max £1800 a month, 20 mins travel.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "convenient transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "central, bustling, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr MAN Uni, £400pw max, 15min commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, good transport",
+      "property_tags": ["2-bedroom", "apartment", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "public transport"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Ardwick"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed flat in North London. Budget £2200.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "North London",
+      "max_budget": 2200,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": ["Islington", "Camden", "Hampstead"],
+      "city_context": "London",
+      "missing_information": ["travel_time"]
+    }
+  },
+  {
+    "user_query": "Studio apt Edi city centre, £950pm, walk 10min",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh city centre",
+      "max_budget": 950,
+      "max_travel_time": 10,
+      "soft_preferences": "walkable, central",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["shops", "restaurants", "cultural sites"],
+      "area_vibe": "vibrant, historical, pedestrian-friendly",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "3 bedroom apartment near Waterloo, max 2500 pcm, 3 miles radius",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 2500,
+      "original_distance_miles": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Waterloo station",
+      "max_budget": 2500,
+      "max_travel_time": 15,
+      "soft_preferences": "good transport, family-friendly",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "parks", "schools"],
+      "area_vibe": "central, well-connected, urban",
+      "suggested_search_locations": ["Southwark", "Lambeth", "Borough"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "apartmnet in birmingham, 1 bed, want quiet area",
+    "query_metadata": {
+      "style": "with_typos",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Birmingham",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "quiet area",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": null,
+      "area_vibe": "calm, residential",
+      "suggested_search_locations": ["Harborne", "Moseley", "Edgbaston"],
+      "city_context": "Birmingham",
+      "missing_information": ["budget", "travel_time"]
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom residence within a twenty-minute commute to Canary Wharf. Maximum expenditure of one thousand nine hundred pounds per calendar month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1900,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1900,
+      "max_travel_time": 20,
+      "soft_preferences": "professional environment",
+      "property_tags": ["2-bedroom", "residence"],
+      "amenities_of_interest": ["business district", "DLR access", "gyms"],
+      "area_vibe": "modern, financial hub, riverside",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Student room near Oxford Road, Manchester. £150 per week, 10 min bus.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 150,
+      "original_time_minutes": 10,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Oxford Road, Manchester",
+      "max_budget": 650,
+      "max_travel_time": 10,
+      "soft_preferences": "student-friendly, good public transport",
+      "property_tags": ["room", "student-friendly"],
+      "amenities_of_interest": ["university", "bus routes", "student services"],
+      "area_vibe": "student neighborhood, lively",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  }
+]

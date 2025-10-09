@@ -1,0 +1,196 @@
+```json
+[
+  {
+    "user_query": "1 bed flat, London Bridge area, max £1800pm, 20 mins walk to work",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["work"],
+      "area_vibe": "central, bustling",
+      "suggested_search_locations": ["Bermondsey", "Borough", "Southwark"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seek a two-bedroom apartment suitable for professionals near Spinningfields, Manchester. Budget not to exceed two thousand five hundred pounds per calendar month. Commute by public transport should be within 30 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "suitable for professionals",
+      "property_tags": ["2-bedroom", "apartment", "professional-friendly"],
+      "amenities_of_interest": ["public transport"],
+      "area_vibe": "business district, modern",
+      "suggested_search_locations": ["Deansgate", "Castlefield", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a place in East London, something with 3 rooms. What's available?",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "East London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["3-bedroom"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London",
+      "suggested_follow_up": "Please specify your budget, desired commute time, and a more precise destination if possible."
+    }
+  },
+  {
+    "user_query": "lookin for a 2 bed apartmnet near edinburgh castle, max 1500pm, travel time max 15 mintues.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["tourist attractions"],
+      "area_vibe": "historic, central",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I am searching for a spacious three-bedroom residence in the affluent Kensington area of London. My maximum financial outlay per month is £3,500, and I require the property to be situated within a 4-mile radius of Hyde Park Corner for convenient access.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 3500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Hyde Park Corner, London",
+      "max_budget": 3500,
+      "max_travel_time": 20,
+      "soft_preferences": "spacious, affluent area, convenient access",
+      "property_tags": ["3-bedroom", "luxury", "residence"],
+      "amenities_of_interest": ["Hyde Park"],
+      "area_vibe": "affluent, quiet, green",
+      "suggested_search_locations": ["Kensington", "Knightsbridge", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Just need a cheap studio in Manc. Where should I look?",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "cheap",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "Manchester",
+      "suggested_follow_up": "What is your budget and where do you need to commute to/from in Manchester?"
+    }
+  },
+  {
+    "user_query": "Find me a 2-bed flat in Clapham, London. Budget £400 a week. Need to be within 3km of Clapham Junction station.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 18,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clapham Junction station, London",
+      "max_budget": 1732,
+      "max_travel_time": 18,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["Clapham Junction station"],
+      "area_vibe": "lively, well-connected",
+      "suggested_search_locations": ["Clapham", "Battersea", "Wandsworth"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a one-bedroom apartment in Birmingham city centre, with a maximum rental expenditure of £250 per week. Proximity to New Street Station is essential, with a travel duration not exceeding 10 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1082,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "New Street Station, Birmingham",
+      "max_budget": 1082,
+      "max_travel_time": 10,
+      "soft_preferences": "essential proximity to New Street Station",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["New Street Station"],
+      "area_vibe": "city centre, convenient",
+      "suggested_search_locations": ["Birmingham City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Looking for a small place, dog friendly, London, around £1000 a month. Don't mind where, as long as it's quiet.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1000,
+      "max_travel_time": null,
+      "soft_preferences": "small place, dog friendly, quiet area",
+      "property_tags": ["pet-friendly", "studio", "1-bedroom"],
+      "amenities_of_interest": [],
+      "area_vibe": "quiet",
+      "suggested_search_locations": [],
+      "city_context": "London",
+      "suggested_follow_up": "Please provide a destination or preferred area in London, and if there's a maximum commute time."
+    }
+  }
+]
+```

@@ -1,0 +1,169 @@
+```json
+[
+  {
+    "user_query": "I am seeking a two-bedroom apartment for rent in London, preferably within a 20-minute commute to Canary Wharf, with a maximum monthly budget of £2500.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "modern amenities, good transport links",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["gym", "concierge", "parking"],
+      "area_vibe": "modern, business district, well-connected",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 1 bed flat near Manchester Uni, £700 pw max, 15 mins travel.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 700,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 3031,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, furnished",
+      "property_tags": ["1-bedroom", "flat", "student-friendly"],
+      "amenities_of_interest": ["public transport", "supermarkets", "cafes"],
+      "area_vibe": "vibrant, student area",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Hulme"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2BR apt nr London Bridge, £1800pm.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1800,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "London Bridge",
+      "max_budget": 1800,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": null,
+      "area_vibe": "central, historical, busy",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "My partner and I are interested in finding a charming one-bedroom property, ideally an apartment or flat, situated within 3 miles of Edinburgh Castle. Our budget is approximately £1500 per calendar month, and we would appreciate a quiet neighborhood.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Edinburgh EH1 2NG",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "quiet neighborhood, charming property",
+      "property_tags": ["1-bedroom", "apartment", "flat"],
+      "amenities_of_interest": ["parks", "local shops", "good transport links"],
+      "area_vibe": "historic, residential, scenic",
+      "suggested_search_locations": ["Tollcross", "Fountainbridge", "Old Town"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need an apartmnet with 3 rooms near Victoria station, max £3000pm. Commut shoud be less than 25 mins.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 3000,
+      "max_travel_time": 25,
+      "soft_preferences": "spacious for 3 rooms",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links", "restaurants", "shopping"],
+      "area_vibe": "central, busy, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Somewhere nice to live in Manchester, 2 bed, pet friendly.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pet friendly, nice area",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["parks", "vet services"],
+      "area_vibe": "residential, green spaces",
+      "suggested_search_locations": ["Didsbury", "Chorlton-cum-Hardy", "Sale"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a studio apartment in the vicinity of King's Cross, London, with a maximum rental of £1600 per month, and a travel time not exceeding 30 minutes to the British Museum.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, Great Russell St, London WC1B 3DG",
+      "max_budget": 1600,
+      "max_travel_time": 30,
+      "soft_preferences": "well-connected, quiet despite central location",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["museums", "theatres", "restaurants", "public transport"],
+      "area_vibe": "cultural, central, vibrant",
+      "suggested_search_locations": ["Bloomsbury", "Clerkenwell", "Islington"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a family home in Birmingham, 3 bed, no more than £1800pcm, 4 km from city centre.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_distance_km": 4,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 1800,
+      "max_travel_time": 24,
+      "soft_preferences": "good schools, family-friendly area",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks", "supermarkets"],
+      "area_vibe": "suburban, residential, green",
+      "suggested_search_locations": ["Harborne", "Moseley", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

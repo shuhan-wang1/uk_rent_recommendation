@@ -1,0 +1,168 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Canary Wharf. Max £1800pm, 20 min commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport hub", "restaurants", "gyms"],
+      "area_vibe": "business district, modern, river views",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment suitable for a professional couple, located within a 30-minute travel radius of Victoria Station, London. My budget is approximately £2500 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "suitable for professional couple, quiet neighborhood",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["transport", "parks", "restaurants"],
+      "area_vibe": "central, well-connected, potentially residential but close to amenities",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a cheap flat near Manchester Piccadilly, 30 mins max. Budget around £900 a month. Studio or 1 bed.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 900,
+      "max_travel_time": 30,
+      "soft_preferences": "affordable, good transport links",
+      "property_tags": ["studio", "1-bedroom", "flat"],
+      "amenities_of_interest": ["transport", "city centre amenities"],
+      "area_vibe": "urban, vibrant, central",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Flat to rent in Edinburgh. Needs to be close to the city centre. Pet friendly.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Edinburgh City Centre",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["flat"],
+      "amenities_of_interest": ["parks", "vet services"],
+      "area_vibe": "central, historic",
+      "suggested_search_locations": ["New Town", "Old Town", "Stockbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "2 bed flat near King's Cross. £400 a week max, 2 miles away.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1732,
+      "max_travel_time": 10,
+      "soft_preferences": "good for sharing, accessible",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["transport hub", "restaurants", "bars"],
+      "area_vibe": "bustling, central, well-connected",
+      "suggested_search_locations": ["King's Cross", "Islington", "Camden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed apartmnet in Birmingahm, close to New Street station. Budgett £850pm, no more than 15 mintues travel.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 850,
+      "original_time_minutes": 15,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 850,
+      "max_travel_time": 15,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["transport", "shopping", "restaurants"],
+      "area_vibe": "city centre, modern, convenient",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "2BR apt near Spinningfields, MCR.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "modern, high-end",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["restaurants", "bars", "gyms", "offices"],
+      "area_vibe": "upscale, financial district, vibrant nightlife",
+      "suggested_search_locations": ["Spinningfields", "Deansgate", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio flat, £1500 per month, max 1 km from London Bridge. I work late so a safe area is key.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 6,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1500,
+      "max_travel_time": 6,
+      "soft_preferences": "safe area, good lighting",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["transport", "food markets", "museums"],
+      "area_vibe": "historic, touristy, bustling, riverside",
+      "suggested_search_locations": ["Borough", "Southwark", "Shad Thames"],
+      "city_context": "London"
+    }
+  }
+]
+```

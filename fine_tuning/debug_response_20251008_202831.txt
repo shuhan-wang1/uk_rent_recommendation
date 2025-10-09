@@ -1,0 +1,208 @@
+```json
+[
+  {
+    "user_query": "1BR apt nr KX, max £1800pm, 20 mins tube",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "well-connected area",
+      "property_tags": ["1-bedroom", "apartment", "tube-accessible"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants"],
+      "area_vibe": "bustling, central, well-connected",
+      "suggested_search_locations": ["King's Cross", "St Pancras", "Euston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Picc, £400 pw, 3 miles max",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "good public transport links",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["train station", "city centre", "restaurants"],
+      "area_vibe": "vibrant, urban",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio flat London, near British Museum",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "British Museum, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "cultural area, quiet",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["museums", "galleries", "libraries"],
+      "area_vibe": "historic, academic",
+      "suggested_search_locations": ["Bloomsbury", "Fitzrovia", "Covent Garden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am looking for a two-bedroom apartment suitable for a small family in Edinburgh, preferably within a 15-minute commute by bus to the city centre, with a maximum budget of £1500 per calendar month.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh city centre",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "family-friendly, good schools, parks",
+      "property_tags": ["2-bedroom", "apartment", "family-friendly"],
+      "amenities_of_interest": ["bus routes", "schools", "parks"],
+      "area_vibe": "quiet, residential, good for families",
+      "suggested_search_locations": ["Morningside", "Bruntsfield", "Stockbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "3 bed hse B'ham Uni, £1200 max, 4km walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1200,
+      "original_distance_km": 4,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Birmingham",
+      "max_budget": 1200,
+      "max_travel_time": 24,
+      "soft_preferences": "student-friendly, safe walking route",
+      "property_tags": ["3-bedroom", "house", "student-friendly"],
+      "amenities_of_interest": ["university", "shops", "parks"],
+      "area_vibe": "student area, residential",
+      "suggested_search_locations": ["Selly Oak", "Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Cosy 1 bed in Shoreditch, budget around £1600/month, quick commute to Bank",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1600,
+      "original_time_implied": "quick",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bank Station, London",
+      "max_budget": 1600,
+      "max_travel_time": 15,
+      "soft_preferences": "vibrant nightlife, good transport",
+      "property_tags": ["1-bedroom", "cosy"],
+      "amenities_of_interest": ["Shoreditch High Street", "Bank station", "bars", "restaurants"],
+      "area_vibe": "trendy, artistic, bustling",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I need a place with a view of the Old Trafford pitch, doesn't matter the price, ready to move tomorrow.",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "destination": "Old Trafford Stadium, Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "direct view of football pitch",
+      "property_tags": ["unique-view", "high-demand"],
+      "amenities_of_interest": ["Old Trafford Stadium"],
+      "area_vibe": "football-centric, potentially commercial",
+      "suggested_search_locations": ["Trafford", "Salford Quays (with specific view)"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Canary Wharf, budget £2200 pcm, 10 min walk to DLR",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2200,
+      "max_travel_time": 10,
+      "soft_preferences": "modern, good transport, corporate environment",
+      "property_tags": ["2-bedroom", "apartment", "DLR-accessible"],
+      "amenities_of_interest": ["Canary Wharf station", "DLR", "shopping centres", "restaurants"],
+      "area_vibe": "modern, financial district, high-rise",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Could you please help me find a one-bedroom apartment in Bristol? I'm flexible on the area.",
+    "query_metadata": {
+      "style": "verbose",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Bristol",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "flexible area, good amenities",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "varied, depends on specific area",
+      "suggested_search_locations": ["Clifton", "Redland", "Southville", "Montpelier"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Studio near Waterloo, £1500pm, 15 min cycle",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "central, good for commuting, cycle-friendly",
+      "property_tags": ["studio", "cycle-accessible"],
+      "amenities_of_interest": ["Waterloo station", "The Cut", "South Bank"],
+      "area_vibe": "bustling, cultural, central",
+      "suggested_search_locations": ["Waterloo", "Southwark", "Lambeth"],
+      "city_context": "London"
+    }
+  }
+]
+```

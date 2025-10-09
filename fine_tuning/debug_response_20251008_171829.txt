@@ -1,0 +1,102 @@
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1800pm, 20 mins tube",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants"],
+      "area_vibe": "modern business district",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Greenwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed place in Manchester, close to city centre, within 3 miles",
+    "query_metadata": {
+      "style": "casual",
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester City Centre",
+      "max_travel_time": 15,
+      "missing_info": ["budget"],
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["public transport", "shopping"],
+      "area_vibe": "vibrant city life",
+      "suggested_search_locations": ["Ancoats", "Salford Quays", "Northern Quarter"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a spacious one bedroom apartment in Edinburgh, no more than £400 per week, within 4 km of the Old Town.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 400,
+      "original_distance_km": 4,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Old Town",
+      "max_budget": 1732,
+      "max_travel_time": 24,
+      "property_tags": ["1-bedroom", "spacious", "apartment"],
+      "amenities_of_interest": ["historic sites", "cultural attractions", "restaurants"],
+      "area_vibe": "historic and charming",
+      "suggested_search_locations": ["New Town", "Tollcross", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "3 bed house wanted in South West London, max £2500 a month, 45 mins commute to Victoria Station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 45,
+      "soft_preferences": "family-friendly area",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["parks", "good schools"],
+      "area_vibe": "suburban, residential",
+      "suggested_search_locations": ["Wandsworth", "Clapham", "Tooting"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Lookin for a 2bed apartmnet near Birminghma New Street, £350 weekly, 15 min commut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 350,
+      "original_time_minutes": 15,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1515,
+      "max_travel_time": 15,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre amenities"],
+      "area_vibe": "urban, well-connected",
+      "suggested_search_locations": ["Digbeth", "Jewellery Quarter", "Gay Village"],
+      "city_context": "Birmingham"
+    }
+  }
+]

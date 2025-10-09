@@ -1,0 +1,131 @@
+```json
+[
+  {
+    "user_query": "I am seeking a spacious two-bedroom apartment in London, ideally situated within a 30-minute commute to the British Museum, with a maximum monthly rent of £2000. Access to green spaces would be highly appreciated.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, Great Russell St, London WC1B 3DG",
+      "max_budget": 2000,
+      "max_travel_time": 30,
+      "soft_preferences": "access to green spaces",
+      "property_tags": ["2-bedroom", "spacious", "apartment"],
+      "amenities_of_interest": ["museums", "parks", "cultural venues"],
+      "area_vibe": "cultural, central, with parks nearby",
+      "suggested_search_locations": ["Bloomsbury", "Fitzrovia", "Covent Garden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 1-bed flat near Manchester city centre, max £500/week, within 5 miles. Need good transport links.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_weekly": 500,
+      "original_distance_miles": 5,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester City Centre",
+      "max_budget": 2165,
+      "max_travel_time": 25,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["public transport", "city life", "shopping"],
+      "area_vibe": "vibrant, accessible, urban",
+      "suggested_search_locations": ["Ancoats", "Northern Quarter", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Yo, need a cool 2 bed flat in London, max £450 weekly, around 20 mins travel. Trendy area vibes, please.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 450,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1949,
+      "max_travel_time": 20,
+      "soft_preferences": "trendy area vibes",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["bars", "restaurants", "boutique shops"],
+      "area_vibe": "trendy, lively, artistic",
+      "suggested_search_locations": null,
+      "clarification_questions": ["What is your desired destination or preferred area in London?"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a nice 1 bed flat in Edinburgh, near the uni, max £1200pm, within 3 km walk. Pet-friendly is a big plus!",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_distance_km": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Edinburgh EH8 9YL",
+      "max_budget": 1200,
+      "max_travel_time": 18,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["university", "parks", "walks"],
+      "area_vibe": "student-friendly, historic, walkable",
+      "suggested_search_locations": ["Marchmont", "Newington", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "We require a three-bedroom family residence in a quiet residential area of London, with excellent schools nearby. The property should not exceed £2500 per month and allow for a commute of no more than 40 minutes to Canary Wharf.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 40,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2500,
+      "max_travel_time": 40,
+      "soft_preferences": "quiet residential area, excellent schools nearby",
+      "property_tags": ["3-bedroom", "family-friendly", "house"],
+      "amenities_of_interest": ["schools", "parks", "family activities"],
+      "area_vibe": "residential, safe, family-oriented",
+      "suggested_search_locations": ["Greenwich", "Stratford", "Isle of Dogs"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Bham New St, max £900 p/m, 15 mins. Balcony pref.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 15,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Station St, Birmingham B2 4QA",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "balcony preferred",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre", "restaurants"],
+      "area_vibe": "urban, convenient, lively",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

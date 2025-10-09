@@ -1,0 +1,226 @@
+```json
+[
+  {
+    "user_query": "2 bed flat near London Bridge, max £1800pm, 20 mins walk",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London SE1 9RA",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "vibrant area with good transport",
+      "property_tags": ["2-bedroom", "central"],
+      "amenities_of_interest": ["restaurants", "shops"],
+      "area_vibe": "bustling urban, historic",
+      "suggested_search_locations": ["Borough", "Southwark", "Tower Bridge"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "One bedroom apartment, close to Spinningfields, budget up to £1100 per month, 15 minutes commute.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester M3 3BE",
+      "max_budget": 1100,
+      "max_travel_time": 15,
+      "soft_preferences": "modern amenities",
+      "property_tags": ["1-bedroom", "luxury"],
+      "amenities_of_interest": ["gym", "concierge"],
+      "area_vibe": "upscale business district",
+      "suggested_search_locations": ["Deansgate", "Castlefield", "Northern Quarter"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio flat in East London, good for young professionals.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "destination", "max_travel_time"],
+      "soft_preferences": "vibrant social scene, good transport links",
+      "property_tags": ["studio", "young-professional"],
+      "amenities_of_interest": ["bars", "restaurants", "co-working spaces"],
+      "area_vibe": "trendy, creative",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Edinburgh Uni, max £1500/month, 3 miles travel.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Old College, South Bridge, Edinburgh EH8 9YL",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "safe area, close to amenities",
+      "property_tags": ["2-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "parks"],
+      "area_vibe": "historic, academic, lively",
+      "suggested_search_locations": ["Newington", "Marchmont", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "1BR apt nr Canary Wharf, £450 weekly, 10 min DLR.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 450,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 1949,
+      "max_travel_time": 10,
+      "soft_preferences": "modern, high-rise",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["gym", "supermarket", "DLR station"],
+      "area_vibe": "business district, modern residential",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed house in Harborne, max £1300 per month, good for families, 20 mins to city centre.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 20,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre, Birmingham B2 4BA",
+      "max_budget": 1300,
+      "max_travel_time": 20,
+      "soft_preferences": "good schools, quiet street",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks", "supermarkets"],
+      "area_vibe": "suburban, leafy, family-oriented",
+      "suggested_search_locations": ["Harborne", "Edgbaston", "Moseley"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Two-bedroom property in West London, maximum budget of two thousand pounds per month, with a commute of no more than 25 minutes to Victoria Station.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London SW1V 1JU",
+      "max_budget": 2000,
+      "max_travel_time": 25,
+      "soft_preferences": "well-connected, safe neighbourhood",
+      "property_tags": ["2-bedroom", "commuter-friendly"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants"],
+      "area_vibe": "residential, good amenities",
+      "suggested_search_locations": ["Pimlico", "Fulham", "Earl's Court"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Apartment in Bristol, close to the harbour, looking for something modern.",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "max_travel_time"],
+      "destination": "Bristol Harbour, Bristol BS1 5UH",
+      "soft_preferences": "modern design, good views",
+      "property_tags": ["apartment", "modern"],
+      "amenities_of_interest": ["harbourside restaurants", "cultural venues"],
+      "area_vibe": "vibrant, trendy, waterside",
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "1 bed flat nr Waterloo, max £2100pm, 15 min commut, student friendly",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2100,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London SE1 8SW",
+      "max_budget": 2100,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, safe",
+      "property_tags": ["1-bedroom", "student-friendly"],
+      "amenities_of_interest": ["universities", "transport links"],
+      "area_vibe": "central, bustling",
+      "suggested_search_locations": ["Lambeth", "Southwark", "Borough"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio in Manc, £500pw, 5 miles to Piccadilly",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 500,
+      "original_distance_miles": 5,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester M60 7RA",
+      "max_budget": 2165,
+      "max_travel_time": 25,
+      "soft_preferences": "good transport, modern",
+      "property_tags": ["studio", "city-living"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "urban, lively",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom residence in the vicinity of Notting Hill, with a maximum rental of two thousand two hundred pounds per month, and a travel time of no more than 10 minutes to Holland Park.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Holland Park, London W11 3RB",
+      "max_budget": 2200,
+      "max_travel_time": 10,
+      "soft_preferences": "charming, leafy streets",
+      "property_tags": ["2-bedroom", "period-property"],
+      "amenities_of_interest": ["parks", "boutique shops", "cafes"],
+      "area_vibe": "affluent, bohemian, picturesque",
+      "suggested_search_locations": ["Notting Hill", "Ladbroke Grove", "Kensington"],
+      "city_context": "London"
+    }
+  }
+]
+```

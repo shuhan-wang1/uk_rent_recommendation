@@ -1,0 +1,108 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Victoria Station. Max £1800 a month, travel time no more than 20 mins.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "shops"],
+      "area_vibe": "bustling, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Man Uni. Need something for £400 pw.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Manchester",
+      "max_budget": 1732,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "student facilities"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": null,
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a one bedroom apartment near Edinburgh Castle. Budget around £1000 per month, 2 miles commute.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1000,
+      "original_distance_miles": 2,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": 1000,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["historical sites", "city centre"],
+      "area_vibe": "historic, tourist-friendly",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "1bd apt london zone 2. Must be pet frindly. asap.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "London",
+      "area_preference": "Zone 2",
+      "typo_detected": true
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "London Zone 2",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pet friendly, urgent move-in",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": null,
+      "area_vibe": "residential, good transport links",
+      "suggested_search_locations": ["Clapham", "Islington", "Canary Wharf"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed house in Brum, pet friendly please! Around £1500pm, 30 mins to city centre.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 30,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 1500,
+      "max_travel_time": 30,
+      "soft_preferences": "pet friendly",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["city centre facilities"],
+      "area_vibe": "diverse, accessible",
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

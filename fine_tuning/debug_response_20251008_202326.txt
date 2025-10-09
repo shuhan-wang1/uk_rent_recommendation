@@ -1,0 +1,169 @@
+```json
+[
+  {
+    "user_query": "I am seeking a two-bedroom apartment in the vicinity of London Bridge, with a maximum monthly rent of £2500 and a commute no longer than 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1BR apt nr Piccadilly Stn, max £400pw, 15min commute.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "city center, well-connected",
+      "suggested_search_locations": [],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Please find a spacious three-bedroom residence in North London, suitable for a family. No budget specified.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "North London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "spacious",
+      "property_tags": ["3-bedroom", "family-friendly"],
+      "amenities_of_interest": [],
+      "area_vibe": "family-friendly neighborhood",
+      "suggested_search_locations": [],
+      "city_context": "London",
+      "clarification_needed_fields": ["max_budget", "max_travel_time"]
+    }
+  },
+  {
+    "user_query": "Looking for a cosy 1 bed flat in Edinburgh, near the Royal Mile. Budget around £950 a month, 10-15 mins walk to work.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 950,
+      "max_travel_time": 15,
+      "soft_preferences": "cosy",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["historic sites"],
+      "area_vibe": "historic, central, tourist-friendly",
+      "suggested_search_locations": [],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I urgently require a pet-friendly studio flat in Zone 2 London, within walking distance of a large park, for a maximum of £1300 per month. Ideally, it should have a balcony and good natural light, and I'd like a quick move-in. My job is flexible, so commute time isn't as critical as the other factors.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1300,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Zone 2 London, near a large park",
+      "max_budget": 1300,
+      "max_travel_time": null,
+      "soft_preferences": "balcony, good natural light, quick move-in",
+      "property_tags": ["studio", "pet-friendly", "flat"],
+      "amenities_of_interest": ["park"],
+      "area_vibe": "green, relaxed",
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "We require a two-bedroom property in central Birmingham, with a maximum rental of £1100 per calendar month, and a commute of no more than 10 minutes to New Street Station.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1100,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "property"],
+      "amenities_of_interest": ["train station"],
+      "area_vibe": "central, commercial",
+      "suggested_search_locations": [],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Hey, looking for a cool 2 bed place in Manchester, not too far from the city centre. Don't really have a specific budget yet, just seeing what's out there.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester city centre",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "cool",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": [],
+      "area_vibe": "vibrant, trendy",
+      "suggested_search_locations": [],
+      "city_context": "Manchester",
+      "clarification_needed_fields": ["max_budget", "max_travel_time"]
+    }
+  },
+  {
+    "user_query": "Could you please assist me in locating a comfortable and well-connected one-bedroom apartment in West London? I am seeking a property with a maximum rent of £450 per week, and a maximum travel time of 3 miles to Westfield London for my retail job.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_weekly": 450,
+      "original_distance_miles": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Westfield London, Shepherd's Bush",
+      "max_budget": 1949,
+      "max_travel_time": 15,
+      "soft_preferences": "comfortable, well-connected",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["shopping center", "transport links"],
+      "area_vibe": "retail-focused, busy",
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  }
+]
+```

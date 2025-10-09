@@ -1,0 +1,228 @@
+[
+  {
+    "user_query": "1 bed apartmnet near LSE, max 1800 pm, commut 20 mins",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London School of Economics and Political Science, Houghton St, London WC2A 2AE",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "student-friendly area",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "public transport"],
+      "area_vibe": "central, academic, lively",
+      "suggested_search_locations": ["Holborn", "Covent Garden", "Waterloo"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Manchester Uni, max £1200pm, 25 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 1200,
+      "max_travel_time": 25,
+      "soft_preferences": "safe area for students",
+      "property_tags": ["2-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries"],
+      "area_vibe": "student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio flat in Shoreditch, max £1000 per month",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_fields": ["max_travel_time", "destination"],
+      "clarification_questions": ["What is your desired maximum commute time?", "Is Shoreditch the destination, or are you looking for a commute *to* somewhere from Shoreditch?"],
+      "destination": "Shoreditch, London",
+      "max_budget": 1000,
+      "soft_preferences": "lively, trendy",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["bars", "restaurants", "galleries"],
+      "area_vibe": "vibrant, artistic, nightlife",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "3 bed house in New Town, Edinburgh, under £2500pm, 15 min walk to Princes Street",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Princes Street, Edinburgh EH2 2ER",
+      "max_budget": 2500,
+      "max_travel_time": 15,
+      "soft_preferences": "historic architecture, quiet residential",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["parks", "shops", "cultural sites"],
+      "area_vibe": "upscale, historic, central",
+      "suggested_search_locations": ["New Town", "Stockbridge", "Comely Bank"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a place to crash, don't care where, just cheap in London, anywhere is fine",
+    "query_metadata": {
+      "style": "with_typos",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_fields": ["max_budget", "max_travel_time", "destination"],
+      "clarification_questions": ["What is your definition of 'cheap' (e.g., a specific budget range)?", "Are there any specific areas of London you need to access?", "How quickly do you need to move?"],
+      "soft_preferences": "very affordable",
+      "property_tags": ["any-size", "any-type"],
+      "amenities_of_interest": ["public transport"],
+      "area_vibe": "flexible, value-focused",
+      "suggested_search_locations": ["East London (e.g., Barking, Dagenham)", "South London (e.g., Croydon, Sutton)", "North West London (e.g., Harrow)"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Pet-friendly 1 bed in Didsbury, Manchester, max £900 weekly, 30 min commute to city centre",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 900,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester City Centre",
+      "max_budget": 3897,
+      "max_travel_time": 30,
+      "soft_preferences": "pet-friendly, green spaces",
+      "property_tags": ["1-bedroom", "pet-friendly"],
+      "amenities_of_interest": ["parks", "local shops", "public transport"],
+      "area_vibe": "leafy, suburban, village feel",
+      "suggested_search_locations": ["Didsbury", "Chorlton-cum-Hardy", "Withington"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Family home with 3 beds in Richmond, London, £3000 a month, good schools nearby",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 3000,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Richmond, London",
+      "max_budget": 3000,
+      "max_travel_time": 20,
+      "soft_preferences": "good schools, safe, green",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks", "river"],
+      "area_vibe": "affluent, suburban, riverside",
+      "suggested_search_locations": ["Richmond", "East Sheen", "Kew"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Apartment in city centre Birmingham, high floor, for under £1500",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_fields": ["max_travel_time", "destination"],
+      "clarification_questions": ["What is your desired maximum commute time?", "Are you looking for a commute *to* somewhere, or is the city centre the destination?"],
+      "destination": "Birmingham City Centre",
+      "max_budget": 1500,
+      "soft_preferences": "high floor, modern",
+      "property_tags": ["apartment", "city-living"],
+      "amenities_of_interest": ["restaurants", "shops", "transport links"],
+      "area_vibe": "urban, vibrant, central",
+      "suggested_search_locations": ["Birmingham City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "2BR apt near Waterloo, < £2200pm, 10 min walk to station",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London SE1 8SW",
+      "max_budget": 2200,
+      "max_travel_time": 10,
+      "soft_preferences": "good transport links",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "theatre", "restaurants"],
+      "area_vibe": "bustling, central, well-connected",
+      "suggested_search_locations": ["Southwark", "Lambeth North", "Waterloo"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "One bedroom apartment suitable for a professional in Clifton, Bristol, maximum budget of £1400 per month, within 2 miles of Bristol Temple Meads",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1400,
+      "original_distance_miles": 2,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads railway station, Bristol BS1 6QF",
+      "max_budget": 1400,
+      "max_travel_time": 10,
+      "soft_preferences": "upscale, professional, quiet",
+      "property_tags": ["1-bedroom", "apartment", "professional-friendly"],
+      "amenities_of_interest": ["restaurants", "boutiques", "parks"],
+      "area_vibe": "affluent, historic, bohemian",
+      "suggested_search_locations": ["Clifton", "Redland", "Hotwells"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Help! I need to move out tomorrow! Anywhere affordable near work (Canary Wharf) for me and my cat!",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London",
+      "urgency": "immediate"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_fields": ["max_budget", "max_travel_time"],
+      "clarification_questions": ["What is your specific budget range for 'affordable'?", "What is the absolute maximum commute time you can accept?", "Do you have any specific requirements for the property type or size?"],
+      "destination": "Canary Wharf, London E14 5AB",
+      "soft_preferences": "pet-friendly, urgent, affordable",
+      "property_tags": ["pet-friendly"],
+      "amenities_of_interest": ["public transport", "vet services"],
+      "area_vibe": "flexible, value-focused, convenient to Canary Wharf",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Stratford", "Greenwich"],
+      "city_context": "London"
+    }
+  }
+]

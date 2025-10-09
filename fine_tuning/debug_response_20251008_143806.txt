@@ -1,0 +1,107 @@
+[
+  {
+    "user_query": "2 bed flat near London Bridge, max £1800pm, 20 mins tube commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["tube access"],
+      "area_vibe": "vibrant, good transport links",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed apartmnet in Manchester, nr Piccadilly station, budget £400 weekly, need fast internet",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 400,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1732,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["high-speed internet"],
+      "area_vibe": "city centre, good for professionals",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats"],
+      "city_context": "Manchester",
+      "clarification_needed": "What is your desired maximum travel time to Piccadilly Station?"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment in close proximity to the British Museum, with a maximum monthly rent of £2200 and a commute of no more than 15 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["one-bedroom", "apartment"],
+      "amenities_of_interest": ["museums", "cultural sites"],
+      "area_vibe": "cultural, academic, central",
+      "suggested_search_locations": ["Bloomsbury", "Holborn", "Fitzrovia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio apt near Edinburgh Uni, up to £900pcm, within 3km walk of campus, pet friendly",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 900,
+      "original_distance_km": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 900,
+      "max_travel_time": 18,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["studio", "student-friendly"],
+      "amenities_of_interest": ["university", "green spaces"],
+      "area_vibe": "vibrant student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Marchmont", "Newington", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom residence within a 4-mile radius of Victoria Station, London. My budget is strictly £2500 per calendar month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_distance_miles": 4,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["two-bedroom", "residence"],
+      "amenities_of_interest": ["transport links", "parks"],
+      "area_vibe": "well-connected, residential",
+      "suggested_search_locations": ["Pimlico", "Chelsea", "Belgravia", "Clapham"],
+      "city_context": "London"
+    }
+  }
+]

@@ -1,0 +1,130 @@
+```json
+[
+  {
+    "user_query": "1 bed flat in central London, max £1800pm, 20 mins to Waterloo station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "vibrant, good transport links",
+      "property_tags": ["1-bedroom", "central"],
+      "amenities_of_interest": ["tube station", "restaurants", "shops"],
+      "area_vibe": "bustling city center",
+      "suggested_search_locations": ["Southwark", "Lambeth", "Westminster"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a one bed flat in Manchester, £400 weekly. Needs to be within 3 miles of Spinningfields, good commut.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, professional, good commute",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["gym", "co-working space", "public transport"],
+      "area_vibe": "trendy business district",
+      "suggested_search_locations": ["Deansgate", "Salford Quays", "Ancoats"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a one bedroom apartment in Edinburgh, budget £900 per month. Pet friendly, but no specific location given.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 900,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 900,
+      "max_travel_time": null,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["1-bedroom", "pet-friendly"],
+      "amenities_of_interest": ["parks", "vet clinics"],
+      "area_vibe": "historic, lively",
+      "suggested_search_locations": ["Tollcross", "Marchmont", "Newington"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "2BR flat nr London Bridge, max £2200pm, 3km commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 18,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 2200,
+      "max_travel_time": 18,
+      "soft_preferences": "good transport, vibrant",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["train station", "restaurants", "bars"],
+      "area_vibe": "bustling, historic",
+      "suggested_search_locations": ["Borough", "Shoreditch", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a modern two bedroom apartment in Birmingham, maximum budget £1500 per month. Proximity to city centre amenities is essential.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": null,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 1500,
+      "max_travel_time": null,
+      "soft_preferences": "modern, central amenities",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["shopping", "restaurants", "cultural venues"],
+      "area_vibe": "urban, lively",
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Mailbox"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Searching for a spacious three bedroom apartment in London, ideally £650 per week. Commute must be no more than 7 miles to Canary Wharf.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2815,
+      "original_time_minutes": 35,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2815,
+      "max_travel_time": 35,
+      "soft_preferences": "spacious, family-friendly",
+      "property_tags": ["3-bedroom"],
+      "amenities_of_interest": ["schools", "parks", "supermarkets"],
+      "area_vibe": "financial district, residential",
+      "suggested_search_locations": ["Isle of Dogs", "Greenwich", "Stratford"],
+      "city_context": "London"
+    }
+  }
+]
+```

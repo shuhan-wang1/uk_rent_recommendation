@@ -1,0 +1,102 @@
+[
+  {
+    "user_query": "I require a two-bedroom apartment within a 30-minute commute to Canary Wharf, with a maximum monthly rent of £2500.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "modern, professional area",
+      "property_tags": ["2-bedroom", "modern"],
+      "amenities_of_interest": ["transport links", "gym", "restaurants"],
+      "area_vibe": "vibrant business district, riverside views",
+      "suggested_search_locations": ["Isle of Dogs", "Limehouse", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 1 bed flat near Manchester University. Budget around £900 per month, maximum 2 miles away.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 900,
+      "original_time_miles": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 900,
+      "max_travel_time": 10,
+      "soft_preferences": "student-friendly, good transport",
+      "property_tags": ["1-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "cafes", "supermarkets"],
+      "area_vibe": "lively student area",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a studio apartment in a quiet residential area of London, suitable for a professional. What are the options?",
+    "query_metadata": {
+      "style": "formal",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["destination", "max_budget", "max_travel_time"],
+      "clarification_questions": ["What is your preferred maximum monthly budget?", "What specific area or commute destination in London are you interested in?", "What is your desired maximum commute time?"],
+      "property_tags": ["studio", "professional"],
+      "soft_preferences": "quiet residential area",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am interested in a one-bedroom apartment close to Edinburgh Waverley station. My budget is £400 per week, and I prefer a commute of no more than 15 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Waverley Station, Edinburgh EH1 1BB",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "central, good transport links",
+      "property_tags": ["1-bedroom", "central"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "historic city centre, busy",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Looking for a 2 bed flat near London Bridge, max £2200 per month, and I need it to be pet freindly. Commute must be quick, say 10 minuts.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 10,
+      "city": "London",
+      "typos_detected": ["freindly", "minuts"]
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London SE1 9RA",
+      "max_budget": 2200,
+      "max_travel_time": 10,
+      "soft_preferences": "pet-friendly, quick commute",
+      "property_tags": ["2-bedroom", "pet-friendly"],
+      "amenities_of_interest": ["public transport", "parks", "walks"],
+      "area_vibe": "bustling, riverside, good for walks",
+      "suggested_search_locations": ["Borough", "Bermondsey", "Southwark"],
+      "city_context": "London"
+    }
+  }
+]

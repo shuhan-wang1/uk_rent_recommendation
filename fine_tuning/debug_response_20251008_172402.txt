@@ -1,0 +1,214 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near London Bridge, max £1800pm, 20 min walk",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport-links", "city-landmarks"],
+      "area_vibe": "vibrant, central, historic",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a two-bedroom apartment suitable for a professional couple in Manchester city centre. Budget up to £1100 per month, with a commute no longer than 15 minutes to Piccadilly Station.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1100,
+      "max_travel_time": 15,
+      "soft_preferences": "suitable for professional couple",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["city-centre", "public-transport"],
+      "area_vibe": "urban, professional, convenient",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2BR apt, Shoreditch, max £450pw",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1949,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Shoreditch, London",
+      "max_budget": 1949,
+      "max_travel_time": null,
+      "soft_preferences": "",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "trendy, artistic, nightlife",
+      "suggested_search_locations": ["Hoxton", "Bethnal Green"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed apartmnet in Edinburgh, close to Royal Mile. Budget £1500 per mnth, with a short commut to city center, around 10 mins.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": "short commute to city center",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["historic-sites", "city-center"],
+      "area_vibe": "historic, tourist-friendly, central",
+      "suggested_search_locations": ["Old Town", "New Town", "Holyrood"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio in Camden, £900pcm, 30 min tube to King's Cross",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 900,
+      "max_travel_time": 30,
+      "soft_preferences": "",
+      "property_tags": ["studio"],
+      "amenities_of_interest": ["tube-station", "market", "music-venues"],
+      "area_vibe": "bohemian, lively, cultural",
+      "suggested_search_locations": ["Camden Town", "Kentish Town", "Chalk Farm"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "One bedroom apartment in Birmingham, preferably near the Jewellery Quarter. Maximum rent £850 per month, with public transport travel time to New Street Station not exceeding 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 850,
+      "original_time_minutes": 20,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 850,
+      "max_travel_time": 20,
+      "soft_preferences": "preferably near Jewellery Quarter",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["jewellery-quarter", "public-transport"],
+      "area_vibe": "historic, creative, residential",
+      "suggested_search_locations": ["Jewellery Quarter", "City Centre", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Something nice, central, and cheap. Big if possible. London.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "nice, central, cheap, big if possible",
+      "property_tags": [],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": ["Central London"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat, MCR city centre, 5 miles to airport, £1000 pcm",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Airport",
+      "max_budget": 1000,
+      "max_travel_time": 25,
+      "soft_preferences": "",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["airport", "city-centre"],
+      "area_vibe": "urban, convenient for travel",
+      "suggested_search_locations": ["Manchester City Centre", "Hulme", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a spacious three-bedroom residence in South Kensington, London. Rental budget is approximately £3000 per month, with convenient access to Imperial College London within 15 minutes by foot.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Imperial College London",
+      "max_budget": 3000,
+      "max_travel_time": 15,
+      "soft_preferences": "spacious",
+      "property_tags": ["3-bedroom", "residence"],
+      "amenities_of_interest": ["university", "museums", "parks"],
+      "area_vibe": "affluent, cultural, academic",
+      "suggested_search_locations": ["South Kensington", "Kensington", "Chelsea"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Small flat in Bristol, near Cabot Circus. Looking for something affordable.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Cabot Circus, Bristol",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "affordable",
+      "property_tags": ["small-sized", "flat"],
+      "amenities_of_interest": ["shopping-centre"],
+      "area_vibe": "shopping district, city-centre",
+      "suggested_search_locations": ["Bristol City Centre", "St Pauls", "Old Market"],
+      "city_context": "Bristol"
+    }
+  }
+]
+```

@@ -1,0 +1,235 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near London Bridge, max £1800pm, 20 mins tube",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links, central location",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants"],
+      "area_vibe": "vibrant, historical, good for professionals",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "One bedroom apartment close to Manchester Piccadilly, budget £900 per month, 15 minutes travel",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good for young professionals",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre", "gym"],
+      "area_vibe": "bustling, urban, convenient",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2 bed apartmnet in Islington, £550 weekly, 3 miles from Angel station",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2382,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Angel Station, Islington, London N1",
+      "max_budget": 2382,
+      "max_travel_time": 15,
+      "soft_preferences": "family-friendly, green spaces",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["Angel tube station", "Upper Street", "parks"],
+      "area_vibe": "affluent, leafy, good amenities",
+      "suggested_search_locations": ["Canonbury", "Barnsbury", "Highbury"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Flat for rent near Edinburgh Old Town, up to £1000 a month, 25 mins walk",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 25,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Old Town, Edinburgh EH1",
+      "max_budget": 1000,
+      "max_travel_time": 25,
+      "soft_preferences": "historic character, accessible to tourist spots",
+      "property_tags": ["flat", "traditional"],
+      "amenities_of_interest": ["Royal Mile", "Edinburgh Castle", "universities"],
+      "area_vibe": "historic, vibrant, touristy",
+      "suggested_search_locations": ["Newington", "Tollcross", "Fountainbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I am actively seeking a two-bedroom residence, preferably an apartment, situated within a reasonable commuting distance, approximately 30 minutes, to Canary Wharf. My maximum monthly expenditure for rent is £2500.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "modern, professional, good transport links",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["Jubilee Line", "DLR", "financial district"],
+      "area_vibe": "modern, business-oriented, waterfront",
+      "suggested_search_locations": ["Poplar", "Limehouse", "Stratford", "Greenwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio near Salford Quays, under 20 mins travel",
+    "query_metadata": {
+      "style": "casual",
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Salford Quays, Salford",
+      "max_budget": null,
+      "max_travel_time": 20,
+      "soft_preferences": "modern, waterside views, good for singles",
+      "property_tags": ["studio"],
+      "amenities_of_interest": ["MediaCityUK", "shops", "restaurants"],
+      "area_vibe": "modern, media hub, lively",
+      "suggested_search_locations": ["Salford Quays", "Ordsall"],
+      "city_context": "Manchester",
+      "missing_fields": ["max_budget"]
+    }
+  },
+  {
+    "user_query": "Affordable 3 bed house in London, £1500pm",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1500,
+      "max_travel_time": null,
+      "soft_preferences": "family-friendly, good schools, quiet neighbourhood",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["schools", "parks"],
+      "area_vibe": "suburban",
+      "suggested_search_locations": null,
+      "city_context": "London",
+      "missing_fields": ["destination", "max_travel_time"]
+    }
+  },
+  {
+    "user_query": "Looking for a 1-bedroom flat close to Birmingham New Street station, max £850/month, within 1.5 km commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 850,
+      "original_time_minutes": 9,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Birmingham",
+      "max_budget": 850,
+      "max_travel_time": 9,
+      "soft_preferences": "central, good for commuters, modern",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["train station", "Grand Central", "Bullring"],
+      "area_vibe": "urban, commercial, bustling",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Penthouse apartment in London with a view, over £5000pm.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 5000,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "luxury, high-end, panoramic views, minimum budget specified",
+      "property_tags": ["penthouse", "apartment", "luxury"],
+      "amenities_of_interest": ["concierge", "private terrace", "gym", "views"],
+      "area_vibe": "exclusive, affluent",
+      "suggested_search_locations": ["Chelsea", "Knightsbridge", "Mayfair", "The Shard", "City of London"],
+      "city_context": "London",
+      "missing_fields": ["destination", "max_travel_time", "max_budget (as query states 'over', indicating a minimum)"]
+    }
+  },
+  {
+    "user_query": "2 bed apt near Bristol Temple Meads, around £1200 a month, 10 minutes by bus.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 10,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads Station, Bristol",
+      "max_budget": 1200,
+      "max_travel_time": 10,
+      "soft_preferences": "good transport links, accessible to city centre",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "bus routes", "shops"],
+      "area_vibe": "urban, convenient, developing",
+      "suggested_search_locations": ["Redcliffe", "Old Market", "Southville"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Need a compact studio apartment for single occupancy, within 4 miles of Victoria Station, London, maximum rent £1600 monthly.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station, London",
+      "max_budget": 1600,
+      "max_travel_time": 20,
+      "soft_preferences": "compact, suitable for single person, convenient transport",
+      "property_tags": ["studio", "apartment", "single-occupancy"],
+      "amenities_of_interest": ["Victoria Station", "shops", "theatres"],
+      "area_vibe": "central, bustling, transport hub",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall", "Earl's Court"],
+      "city_context": "London"
+    }
+  }
+]
+```

@@ -1,0 +1,211 @@
+```json
+[
+  {
+    "user_query": "I am searching for a spacious one-bedroom apartment in the vicinity of London Bridge, with a maximum budget of £1800 per month, and a commute time not exceeding 20 minutes.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "spacious",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links", "restaurants"],
+      "area_vibe": "vibrant, central, good for professionals",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom property situated within five miles of Spinningfields in Manchester, with rental costs not exceeding £450 per week.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 450,
+      "original_distance_miles": 5,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": 1949,
+      "max_travel_time": 25,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["2-bedroom", "property"],
+      "amenities_of_interest": ["business district", "restaurants", "bars"],
+      "area_vibe": "upscale, professional, lively",
+      "suggested_search_locations": ["Deansgate", "Salford Quays", "Ancoats"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment to rent in the London area, specifically within a 15-minute commute to Canary Wharf. My budget is strictly £2200 per calendar month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good views, gym access",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["DLR", "finance district", "shopping malls"],
+      "area_vibe": "corporate, high-rise, convenient",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Stratford"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am looking for a comfortable living space in Edinburgh, perhaps a studio or one-bedroom flat, not more than three miles from the city center. I have a monthly budget of £950, but I'm flexible for the right place. Proximity to green spaces would be ideal.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 950,
+      "original_distance_miles": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Edinburgh city centre",
+      "max_budget": 950,
+      "max_travel_time": 15,
+      "soft_preferences": "comfortable, proximity to green spaces, flexible budget",
+      "property_tags": ["studio", "1-bedroom", "flat"],
+      "amenities_of_interest": ["parks", "shops", "restaurants"],
+      "area_vibe": "historical, walkable, vibrant",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a cool 2 bed flat in East London, near Shoreditch High Street, max £600 a week. Gotta be within 10 mins walk to a tube station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 600,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch High Street, London",
+      "max_budget": 2598,
+      "max_travel_time": 10,
+      "soft_preferences": "cool, near tube station",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["tube station", "bars", "restaurants", "galleries"],
+      "area_vibe": "trendy, artistic, nightlife",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Bethnal Green"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1BR apt nr Bullring B'ham. Max £900pcm, 3km radius.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 900,
+      "original_distance_km": 3,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bullring, Birmingham",
+      "max_budget": 900,
+      "max_travel_time": 18,
+      "soft_preferences": "convenient, modern",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["shopping", "city centre", "transport"],
+      "area_vibe": "central, commercial, diverse",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bed apartmnet in north London, preferablly near Angel station. Budget around £2800 per month, max 20 mins commut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Angel station, London",
+      "max_budget": 2800,
+      "max_travel_time": 20,
+      "soft_preferences": "family-friendly, good schools nearby",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants", "schools"],
+      "area_vibe": "affluent, urban village, good transport",
+      "suggested_search_locations": ["Islington", "Highbury", "Canonbury"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am in search of a contemporary two-bedroom apartment within a 15-minute travel radius of Manchester Piccadilly station. It is crucial that the property offers excellent connectivity and modern amenities.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester Piccadilly station",
+      "max_budget": null,
+      "max_travel_time": 15,
+      "soft_preferences": "contemporary, excellent connectivity, modern amenities",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre", "restaurants"],
+      "area_vibe": "central, vibrant, well-connected",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Piccadilly Basin"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Wanna find a decent flat in Bristol, maybe a 1 bed, not too pricey. Near the harbourside would be ace.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Bristol Harbourside",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "decent, not too pricey",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["harbourside", "restaurants", "pubs", "cultural venues"],
+      "area_vibe": "lively, picturesque, cultural",
+      "suggested_search_locations": ["Harbourside", "Clifton", "Southville"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "I require a three-bedroom house for rent within the London borough of Richmond Upon Thames, with a maximum monthly rent of £3500. Commute time to Waterloo station should not exceed 40 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 3500,
+      "original_time_minutes": 40,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Richmond Upon Thames, London",
+      "max_budget": 3500,
+      "max_travel_time": 40,
+      "soft_preferences": "family-friendly, garden",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["parks", "river", "good schools", "train station"],
+      "area_vibe": "leafy, affluent, suburban",
+      "suggested_search_locations": ["Richmond", "Twickenham", "Teddington"],
+      "city_context": "London"
+    }
+  }
+]
+```

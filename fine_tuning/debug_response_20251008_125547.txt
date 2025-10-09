@@ -1,0 +1,176 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat near Canary Wharf, around £1800pcm, quick commute to the financial district.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "property_tags": ["1-bedroom", "flat"],
+      "area_vibe": "modern financial district",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment suitable for professionals, within a 30-minute commute to Spinningfields, Manchester. My maximum monthly expenditure is £1500.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": 1500,
+      "max_travel_time": 30,
+      "soft_preferences": "suitable for professionals",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["business district", "restaurants"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio apartment near King's Cross. Needs to be pet-friendly.",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "King's Cross, London",
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["studio", "apartment"],
+      "missing_info": ["budget", "max_travel_time"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am searching for a spacious three-bedroom property, ideally a house or large flat, in a quiet residential area of Edinburgh, with a budget not exceeding two thousand two hundred pounds per month, and a maximum travel time of 40 minutes to the city centre by public transport.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 40,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh city centre",
+      "max_budget": 2200,
+      "max_travel_time": 40,
+      "soft_preferences": "quiet residential area",
+      "property_tags": ["3-bedroom", "house", "flat"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Find me a decent 2 bed flat in South London, max £400 per week. Commute to Waterloo in under 25 minutes.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London",
+      "max_budget": 1732,
+      "max_travel_time": 25,
+      "property_tags": ["2-bedroom", "flat"],
+      "area_vibe": "South London",
+      "suggested_search_locations": ["Vauxhall", "Lambeth", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Cheap place to rent in Brum. I need somewhere ASAP.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "destination": "Birmingham",
+      "soft_preferences": "low cost, immediate availability",
+      "missing_info": ["budget", "number_of_bedrooms", "max_travel_time", "specific_area"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "A one-bedroom apartment is sought within 3 miles of Victoria Station, London. The rental budget is capped at £2100 per calendar month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2100,
+      "original_distance_miles": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2100,
+      "max_travel_time": 15,
+      "property_tags": ["1-bedroom", "apartment"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a flat for students near Man Uni, but not too far. Budget around 1000 pcm.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Manchester",
+      "max_budget": 1000,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["flat"],
+      "missing_info": ["number_of_bedrooms", "max_travel_time"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I am interested in securing a two-bedroom residence within a 3-kilometer radius of Borough Market, London. My financial allocation for rent is strictly £2500 per month.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_distance_km": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Borough Market, London",
+      "max_budget": 2500,
+      "max_travel_time": 18,
+      "property_tags": ["2-bedroom", "residence"],
+      "amenities_of_interest": ["Borough Market", "The Shard"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a family home, 3+ beds, in a good school catchment area in Bristol. Max £1800 a month. Don't want more than 35 mins commute to Temple Meads.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 35,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads Station",
+      "max_budget": 1800,
+      "max_travel_time": 35,
+      "soft_preferences": "good school catchment area",
+      "property_tags": ["3-bedroom+", "family home"],
+      "city_context": "Bristol"
+    }
+  }
+]
+```

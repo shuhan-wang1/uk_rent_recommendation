@@ -1,0 +1,174 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Victoria Station, max £1800pm, 20 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["train station", "shops"],
+      "area_vibe": "central, busy, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Victoria"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Piccadilly Stn, Manc, £400pw, 10 min commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 10,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1732,
+      "max_travel_time": 10,
+      "soft_preferences": "modern, city living",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "restaurants", "bars"],
+      "area_vibe": "vibrant, city centre",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Deansgate"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a 2 bedroom place in Edinburgh, good for students.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "soft_preferences": "student-friendly",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["university", "libraries", "student union"],
+      "area_vibe": "student neighborhood",
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "1 bed apartmnet near Covent Garden, London. Budget £2200 per month. Max 3 miles away.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Covent Garden, London",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": "central, cultural",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["theatre", "restaurants", "shops"],
+      "area_vibe": "lively, entertainment hub",
+      "suggested_search_locations": ["Covent Garden", "Holborn", "Soho"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a 3-bedroom house near Birmingham New Street. £1500 per month, commute within 25 minutes.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 25,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1500,
+      "max_travel_time": 25,
+      "soft_preferences": "family-friendly, good transport",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["train station", "schools", "supermarkets"],
+      "area_vibe": "residential, suburban with good links",
+      "suggested_search_locations": ["Moseley", "Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Studio flat in Shoreditch area, London. Up to £1500/month. 15 mins walk to Old Street.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "walkable commute, vibrant nightlife",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["restaurants", "bars", "art galleries"],
+      "area_vibe": "vibrant, tech-focused, nightlife",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Islington"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Pet-friendly 2BD apt, Manc. No budget specified, but must be nr a park. Quick commute to city centre.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester City Centre",
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["park", "green space", "vet clinics"],
+      "area_vibe": "residential, quiet",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a flat for a family with 2 kids, close to a good primary school in Hampstead, London. Max £3000pm, 4km commute to work (near Euston).",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 24,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Euston Station, London",
+      "max_budget": 3000,
+      "max_travel_time": 24,
+      "soft_preferences": "family-friendly",
+      "property_tags": ["family-friendly", "flat"],
+      "amenities_of_interest": ["primary school", "parks", "playgrounds"],
+      "area_vibe": "affluent, residential, family-oriented",
+      "suggested_search_locations": ["Hampstead", "Belsize Park", "Swiss Cottage"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Cheap flat in London, need to rent soon",
+    "query_metadata": {
+      "style": "with_typos",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "soft_preferences": "budget-friendly",
+      "property_tags": ["flat"],
+      "city_context": "London"
+    }
+  }
+]
+```

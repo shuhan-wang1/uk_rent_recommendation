@@ -1,0 +1,107 @@
+```json
+[
+  {
+    "user_query": "I require a two-bedroom apartment near Victoria Station, London. My maximum monthly budget is £2500, and I need a commute no longer than 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "central, vibrant",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 1 bed flat, central London, max £400 weekly. Needs to be close to transport.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_weekly": 400,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "reason": "destination or specific commute time required for a precise search",
+      "max_budget": 1732,
+      "max_travel_time": null,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["tube station", "bus stops"],
+      "area_vibe": "central, convenient",
+      "suggested_search_locations": ["Clerkenwell", "Holborn", "Covent Garden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a spacious three-bedroom residence within 4 miles of Spinningfields, Manchester. My budget ceiling is £1800 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_distance_miles": 4,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "modern, professional area",
+      "property_tags": ["3-bedroom", "house", "apartment"],
+      "amenities_of_interest": ["restaurants", "bars", "gyms", "offices"],
+      "area_vibe": "upscale, business district",
+      "suggested_search_locations": ["Salford Quays", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Want a 2 bed flat near Edinburgh Uni, max £1500 a month. Needs to be easy to get to lectures.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, safe, close to campus",
+      "property_tags": ["2-bedroom", "flat", "student accommodation"],
+      "amenities_of_interest": ["university", "libraries", "pubs"],
+      "area_vibe": "student-oriented, lively",
+      "suggested_search_locations": ["Newington", "Marchmont", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a 1 bed apartmnet in London, close to Canary Warf. Max £1800 pm, 30 minuts commut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "soft_preferences": "modern, good transport (DLR, Jubilee)",
+      "property_tags": ["1-bedroom", "apartment", "flat"],
+      "amenities_of_interest": ["business district", "restaurants", "gyms", "shopping malls"],
+      "area_vibe": "financial hub, high-rise, modern",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  }
+]
+```

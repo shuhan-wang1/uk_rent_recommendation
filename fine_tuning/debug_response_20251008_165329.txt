@@ -1,0 +1,109 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Victoria Station, max £1800pm, 20 mins commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London SW1V 1JU",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "shops", "restaurants"],
+      "area_vibe": "central, bustling",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I need a 2 bed apartmnet in Mancester, max £400 weekly, close to the city centre. Whats availible?",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 400,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester City Centre",
+      "max_budget": 1732,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["shops", "restaurants", "entertainment"],
+      "area_vibe": "urban, lively",
+      "suggested_search_locations": ["Northern Quarter", "Deansgate", "Spinningfields"],
+      "city_context": "Manchester",
+      "missing_information": ["max_travel_time_minutes"],
+      "clarification_prompt": "What is your preferred maximum travel time to the city centre?"
+    }
+  },
+  {
+    "user_query": "Kindly provide listings for a two-bedroom apartment in London, within 3 miles of Canary Wharf, with a maximum rental of two thousand two hundred pounds per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2200,
+      "original_distance_miles": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, high-rise",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["business district", "restaurants", "gyms"],
+      "area_vibe": "modern, professional",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a cosy 1 bed flat in Edinburgh, near the Meadows, max £950 a month, 15 mins walk to uni.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "The Meadows, Edinburgh EH9 1EW",
+      "max_budget": 950,
+      "max_travel_time": 15,
+      "soft_preferences": "cosy, quiet, walkable to university",
+      "property_tags": ["1-bedroom", "flat", "cosy"],
+      "amenities_of_interest": ["park", "university", "cafes"],
+      "area_vibe": "green, student-friendly",
+      "suggested_search_locations": ["Newington", "Tollcross", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a pet-friendly studio near Shoreditch High Street, under £1500pm. Must have a balcony.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1500,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch High Street, London E1 6GF",
+      "max_budget": 1500,
+      "max_travel_time": null,
+      "soft_preferences": "pet-friendly, balcony",
+      "property_tags": ["studio", "pet-friendly"],
+      "amenities_of_interest": ["restaurants", "bars", "art galleries"],
+      "area_vibe": "vibrant, trendy",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Bethnal Green"],
+      "city_context": "London"
+    }
+  }
+]
+```

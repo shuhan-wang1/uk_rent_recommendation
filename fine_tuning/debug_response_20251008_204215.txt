@@ -1,0 +1,177 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, £1800pcm, 20 min commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["DLR station", "supermarket", "gym"],
+      "area_vibe": "business district, modern, lively",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment suitable for a professional couple, close to Manchester Piccadilly, not exceeding £1500 per month, with a maximum travel time of 15 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "suitable for professional couple, modern",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "restaurants", "cultural venues"],
+      "area_vibe": "city centre, vibrant, professional",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for an apt in North London, needs to be close to a tube station. Budget is £400 pw.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_weekly": 400,
+      "original_budget_monthly": 1732,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1732,
+      "max_travel_time": null,
+      "soft_preferences": "close to tube station",
+      "property_tags": ["apartment"],
+      "amenities_of_interest": ["tube station", "shops"],
+      "area_vibe": null,
+      "suggested_search_locations": ["various North London areas"],
+      "city_context": "London",
+      "missing_info": ["specific destination in North London", "max travel time"]
+    }
+  },
+  {
+    "user_query": "I am actively searching for a three-bedroom property, ideally a house or a spacious apartment, situated within the charming city of Edinburgh. My financial parameters dictate a maximum expenditure of £2500 monthly, and I require the location to be within a comfortable 30-minute public transport journey to the city centre. Furthermore, I prioritize a quiet neighborhood with good access to green spaces and local amenities.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh city centre",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "quiet neighborhood, good access to green spaces and local amenities",
+      "property_tags": ["3-bedroom", "house", "spacious-apartment"],
+      "amenities_of_interest": ["parks", "supermarkets", "public transport"],
+      "area_vibe": "residential, peaceful, family-friendly",
+      "suggested_search_locations": ["Morningside", "Stockbridge", "Newington"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a studio apartmnet near King's Cross, max £1300 a month. Commut shoud be 15mins.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1300,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "tube station", "restaurants", "shops"],
+      "area_vibe": "vibrant, central, well-connected",
+      "suggested_search_locations": ["King's Cross", "Euston", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Something cheap, 2 beds, don't care where, just near a park. Birmingham area.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "near a park",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["park"],
+      "area_vibe": null,
+      "suggested_search_locations": ["Birmingham area with parks"],
+      "city_context": "Birmingham",
+      "missing_info": ["specific budget", "specific destination/area in Birmingham", "max travel time"]
+    }
+  },
+  {
+    "user_query": "Could you please assist me in locating a suitable residence? I require a minimum of two bedrooms and a preference for proximity to essential transport links within the Manchester area. My budget is flexible but I would prefer not to exceed £1600 per month. I am open to various property types, but a modern finish would be appreciated.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1600,
+      "max_travel_time": null,
+      "soft_preferences": "modern finish, close to essential transport links",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["tram stop", "bus routes", "train station"],
+      "area_vibe": null,
+      "suggested_search_locations": ["various Manchester areas with good transport"],
+      "city_context": "Manchester",
+      "missing_info": ["specific destination/area in Manchester", "max travel time"]
+    }
+  },
+  {
+    "user_query": "Looking for a family home, 3 beds, within 5 miles of Richmond Park. Budget around £3000pcm.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 3000,
+      "original_time_miles": 5,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Richmond Park, London",
+      "max_budget": 3000,
+      "max_travel_time": 25,
+      "soft_preferences": "family-friendly, quiet",
+      "property_tags": ["3-bedroom", "house", "family-home"],
+      "amenities_of_interest": ["Richmond Park", "schools", "local shops"],
+      "area_vibe": "leafy, suburban, affluent, family-oriented",
+      "suggested_search_locations": ["Richmond", "East Sheen", "Kingston upon Thames"],
+      "city_context": "London"
+    }
+  }
+]
+```

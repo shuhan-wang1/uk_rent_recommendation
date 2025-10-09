@@ -1,0 +1,107 @@
+[
+  {
+    "user_query": "Looking for a 1 bedroom flat in London, near Canary Wharf. Max budget £1800 pcm, and within 30 minutes commute by public transport.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "soft_preferences": "good public transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "shopping", "restaurants"],
+      "area_vibe": "modern financial district, vibrant",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed flat for students near Manchester Uni, around £1200pm, short commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 1200,
+      "max_travel_time": 20,
+      "soft_preferences": "student-friendly area, safe, good for shared living",
+      "property_tags": ["2-bedroom", "flat", "student-friendly"],
+      "amenities_of_interest": ["university", "public transport", "cafes", "pubs"],
+      "area_vibe": "lively student neighborhood",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I am searching for a spacious two-bedroom apartment suitable for a small family. It needs to be located in a pleasant residential area of London, preferably with good schools nearby.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "family-friendly, good schools, quiet residential area",
+      "property_tags": ["2-bedroom", "apartment", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks", "supermarkets"],
+      "area_vibe": "quiet, family-oriented residential",
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Kindly assist me in locating a one-bedroom apartment in Edinburgh. My preferred location is close to the city centre, with a maximum weekly rent of £400, and a commute no longer than 15 minutes to Waverley Station.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 400,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Waverley Station",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "close to city centre, good transport",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["city centre facilities", "train station", "shops", "restaurants"],
+      "area_vibe": "central, historic, bustling",
+      "suggested_search_locations": ["New Town", "Old Town", "Tollcross", "Fountainbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "We require a three-bedroom property, ideally a house or large apartment, in North London. The maximum budget is £2500 per calendar month, and it must be within a 5-mile radius of Highbury & Islington station.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 5,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Highbury & Islington station",
+      "max_budget": 2500,
+      "max_travel_time": 25,
+      "soft_preferences": "family-friendly, good transport, green spaces",
+      "property_tags": ["3-bedroom", "house", "apartment"],
+      "amenities_of_interest": ["transport links", "parks", "local shops", "schools"],
+      "area_vibe": "leafy, residential, good community",
+      "suggested_search_locations": ["Highbury", "Islington", "Finsbury Park", "Canonbury"],
+      "city_context": "London"
+    }
+  }
+]

@@ -1,0 +1,214 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in central London, max £1800pm, 20 min commute to Oxford Circus.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Oxford Circus, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "single professional, vibrant area",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["tube station", "restaurants", "shopping"],
+      "area_vibe": "vibrant, busy, central",
+      "suggested_search_locations": ["Fitzrovia", "Soho", "Bloomsbury"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Manchester Uni, max £400 per week, within 3 miles.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, good transport links",
+      "property_tags": ["2-bedroom", "furnished"],
+      "amenities_of_interest": ["supermarkets", "gym", "university"],
+      "area_vibe": "lively student area",
+      "suggested_search_locations": ["Fallowfield", "Rusholme"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a cheap studio flat in London, what's available?",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "budget-conscious",
+      "property_tags": ["studio"],
+      "amenities_of_interest": ["public transport"],
+      "area_vibe": "affordable",
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "A nice 2-bedroom flat in Edinburgh, around £1300 per month, 2km from Princes Street.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Princes Street, Edinburgh",
+      "max_budget": 1300,
+      "max_travel_time": 12,
+      "soft_preferences": "family-friendly, quiet",
+      "property_tags": ["2-bedroom", "balcony"],
+      "amenities_of_interest": ["parks", "schools", "local shops"],
+      "area_vibe": "quiet residential",
+      "suggested_search_locations": ["Stockbridge", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "1BR apt nr KX, budget £450 weekly, 15 min walk to station.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": null,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1949,
+      "max_travel_time": 15,
+      "soft_preferences": "commuter-friendly, good connectivity",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "urban, well-connected",
+      "suggested_search_locations": ["Islington", "Camden", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a modern 2-bed apartment in Birmingham city centre, max £1500pm, 10 min walk to New Street Station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": "professional couple, city living",
+      "property_tags": ["2-bedroom", "new build"],
+      "amenities_of_interest": ["restaurants", "shopping", "transport links"],
+      "area_vibe": "vibrant city centre",
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Southside"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Family home in South West London, 3 beds, max £2500 per month, 30 min commute to Victoria.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "family with children, good schools",
+      "property_tags": ["3-bedroom", "garden", "house"],
+      "amenities_of_interest": ["schools", "parks", "local amenities"],
+      "area_vibe": "leafy residential, family-friendly",
+      "suggested_search_locations": ["Wandsworth", "Clapham Common", "Fulham"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Got a job at MediaCityUK, need a place nearby.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "MediaCityUK, Salford",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "young professional, modern living",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["tram links", "restaurants", "entertainment"],
+      "area_vibe": "buzzing, modern, waterfront",
+      "suggested_search_locations": ["Salford Quays", "Ordsall", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Cosy 1-bed flat in Bristol, near Cabot Circus, budget £1100 per month, within 2 miles.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": null,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Cabot Circus, Bristol",
+      "max_budget": 1100,
+      "max_travel_time": 10,
+      "soft_preferences": "single individual, vibrant area",
+      "property_tags": ["1-bedroom", "characterful"],
+      "amenities_of_interest": ["shops", "cafes", "city centre"],
+      "area_vibe": "lively, creative, urban",
+      "suggested_search_locations": ["Old Market", "Redcliffe", "Montpelier"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "I need a huge 5-bed house in Zone 1 London for £1000 a month, walking distance to Big Ben. Must have a large garden.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Big Ben, London",
+      "max_budget": 1000,
+      "max_travel_time": null,
+      "soft_preferences": "unrealistic expectations, large property, garden",
+      "property_tags": ["5-bedroom", "house", "garden"],
+      "amenities_of_interest": ["landmarks", "tourist attractions", "river"],
+      "area_vibe": "central, historic",
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  }
+]
+```

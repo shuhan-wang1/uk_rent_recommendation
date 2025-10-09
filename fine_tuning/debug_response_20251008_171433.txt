@@ -1,0 +1,109 @@
+```json
+[
+  {
+    "user_query": "I require a two-bedroom apartment within a 30-minute commute to the British Museum, with a maximum rental budget of £2500 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, Great Russell St, London WC1B 3DG",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "quiet neighbourhood, good public transport links",
+      "property_tags": ["2-bedroom", "unfurnished"],
+      "amenities_of_interest": ["museums", "parks", "cultural institutions"],
+      "area_vibe": "historic, cultural, well-connected",
+      "suggested_search_locations": ["Bloomsbury", "Clerkenwell", "Holborn"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 1 bed flat in London, cheap, around £400 a week, and not too far from Old Street station - maybe 5 miles max.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, City Rd, London EC1V 9BD",
+      "max_budget": 1732,
+      "max_travel_time": 25,
+      "soft_preferences": "affordable, lively area, good nightlife",
+      "property_tags": ["1-bedroom", "furnished"],
+      "amenities_of_interest": ["pubs", "restaurants", "gyms", "tube station"],
+      "area_vibe": "vibrant, tech-hub, hipster",
+      "suggested_search_locations": ["Shoreditch", "Islington", "Hoxton"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a place in Manchester, two beds, close to uni. What's available for like £1000 a month?",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University in Manchester",
+      "max_budget": 1000,
+      "max_travel_time": null,
+      "soft_preferences": "student-friendly, close to campus",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["university", "cafes", "libraries"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": ["Fallowfield", "Rusholme"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a 2 bed flat near Edinburgh Castle, max £450 weekly, within 3 km walk.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1949,
+      "original_time_minutes": 18,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": 1949,
+      "max_travel_time": 18,
+      "soft_preferences": "historic area, walkable, good views",
+      "property_tags": ["2-bedroom", "pet-friendly"],
+      "amenities_of_interest": ["historic sites", "parks", "restaurants"],
+      "area_vibe": "historic, touristy, lively",
+      "suggested_search_locations": ["Old Town", "Grassmarket", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I require a single-bedroom apartment, unfurnished, with an exceptionally high ceiling and south-facing aspect, ideally located within 15 minutes' public transport of Birmingham New Street Station. My budget is not a primary constraint, but I anticipate a range of £1500-£2000 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 15,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "destination": "Birmingham New Street Station, Station St, Birmingham B2 4QA",
+      "max_budget": 2000,
+      "max_travel_time": 15,
+      "soft_preferences": "high ceilings, south-facing, unique architectural features",
+      "property_tags": ["1-bedroom", "unfurnished", "luxury"],
+      "amenities_of_interest": ["natural light", "spacious living", "city views"],
+      "area_vibe": "central, modern, well-connected",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

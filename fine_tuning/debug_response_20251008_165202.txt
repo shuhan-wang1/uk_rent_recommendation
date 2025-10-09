@@ -1,0 +1,108 @@
+```json
+[
+  {
+    "user_query": "Need a 1 bed flat in East London, near Shoreditch, max £1800pcm. I need good transport links, like 30 mins to Liverpool Street.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Liverpool Street Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transportation hubs"],
+      "area_vibe": "vibrant, trendy, nightlife",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Bethnal Green"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment suitable for professionals, situated within a 3-mile radius of Manchester Piccadilly Station. Our maximum weekly budget is £400.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "suitable for professionals",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["city centre", "business district"],
+      "area_vibe": "professional, urban",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a nice place near Edinburgh Uni. What's available?",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Edinburgh",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "nice place",
+      "property_tags": [],
+      "amenities_of_interest": ["university", "student facilities"],
+      "area_vibe": "student-friendly",
+      "suggested_search_locations": ["Newington", "Marchmont", "Tollcross"],
+      "city_context": "Edinburgh",
+      "missing_info": ["budget", "number_of_bedrooms", "property_type"]
+    }
+  },
+  {
+    "user_query": "Need a pet-friendly 2 bed flat in South West London, max £2500 per month, easy access to Clapham Junction (within 20 mins).",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clapham Junction Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["2-bedroom", "flat", "pet-friendly"],
+      "amenities_of_interest": ["parks", "green spaces", "vet services"],
+      "area_vibe": "family-friendly, residential, green",
+      "suggested_search_locations": ["Clapham", "Wandsworth", "Battersea"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am specifically looking for a modern one-bedroom apartment with a balcony, situated within a maximum travel distance of 4 kilometers from Birmingham New Street Station. My budget is strictly set at £1200 per calendar month, and I require proximity to cultural amenities and public transportation hubs.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1200,
+      "original_distance_km": 4,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Birmingham",
+      "max_budget": 1200,
+      "max_travel_time": 24,
+      "soft_preferences": "modern, balcony, proximity to cultural amenities and public transportation hubs",
+      "property_tags": ["1-bedroom", "apartment", "balcony"],
+      "amenities_of_interest": ["cultural venues", "theatres", "museums", "train station", "bus stops"],
+      "area_vibe": "cultural, urban, well-connected",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

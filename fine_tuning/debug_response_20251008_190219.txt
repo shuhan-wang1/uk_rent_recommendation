@@ -1,0 +1,156 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Canary Wharf, around £1800 per month, 20 mins commute max.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "shopping", "restaurants"],
+      "area_vibe": "modern, business district",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed apartmnet in Manchster, budget £1500pm",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1500,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["destination", "max_travel_time"],
+      "max_budget": 1500,
+      "property_tags": ["2-bedroom"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment in Edinburgh, proximity to the University of Edinburgh, with a maximum budget of £1600 per calendar month, and a travel duration not exceeding 15 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 1600,
+      "max_travel_time": 15,
+      "soft_preferences": "close to educational facilities",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "libraries", "cultural sites"],
+      "area_vibe": "historic, student-friendly",
+      "suggested_search_locations": ["Newington", "Old Town", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Cheap studio flat for short term, 6 months, in Central London. Maybe near a tube station?",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["max_budget", "max_travel_time", "specific_destination"],
+      "soft_preferences": "short term (6 months), near tube station",
+      "property_tags": ["studio", "flat", "short-term-rental"],
+      "area_vibe": "central, good transport",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed house in Birmingham, close to New Street Station, up to £1200 a month. Max 3 miles away.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_distance_miles": 3,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1200,
+      "max_travel_time": 15,
+      "soft_preferences": "good for families or sharers",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["transport links", "city centre amenities"],
+      "area_vibe": "urban, well-connected",
+      "suggested_search_locations": ["Digbeth", "Jewellery Quarter", "Highgate"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Find me a pet-friendly 1 bed flat in South London, like Clapham or Balham, for around £400 a week. Commute to Victoria Station should be under 25 minutes.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station",
+      "max_budget": 1732,
+      "max_travel_time": 25,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["parks", "vet services"],
+      "area_vibe": "vibrant, good transport, residential",
+      "suggested_search_locations": ["Clapham", "Balham", "Brixton"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a one-bedroom dwelling in Manchester, preferably close to Piccadilly Station, with an upper limit of £1100 per month and an approximate travel time of 10 kilometers.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_distance_km": 10,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1100,
+      "max_travel_time": 60,
+      "soft_preferences": "easy access to rail services",
+      "property_tags": ["1-bedroom", "dwelling"],
+      "amenities_of_interest": ["transport links", "city centre"],
+      "area_vibe": "urban, convenient",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Apartment to rent in North London, good for families, with a garden.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["max_budget", "max_travel_time", "specific_destination"],
+      "soft_preferences": "good for families, with a garden",
+      "property_tags": ["apartment", "family-friendly", "garden"],
+      "amenities_of_interest": ["schools", "parks", "playgrounds"],
+      "area_vibe": "residential, green spaces",
+      "suggested_search_locations": ["Islington", "Camden", "Hampstead"],
+      "city_context": "London"
+    }
+  }
+]
+```

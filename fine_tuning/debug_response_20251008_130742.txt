@@ -1,0 +1,108 @@
+```json
+[
+  {
+    "user_query": "I am looking for a spacious two-bedroom apartment in Central London, with a maximum budget of two thousand pounds per month. It needs to be within a thirty-minute commute to Waterloo Station.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London SE1 8SW",
+      "max_budget": 2000,
+      "max_travel_time": 30,
+      "soft_preferences": "spacious",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "central, good transport links",
+      "suggested_search_locations": ["Southwark", "Lambeth", "Westminster"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Hey, looking for a 1 bed flat, budget around 500 quid a week. Needs to be within 5 miles of the city centre. Not too fussed about the exact area, just need somewhere nice in Manchester.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 500,
+      "original_distance_miles": 5,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 2165,
+      "max_travel_time": 25,
+      "soft_preferences": "nice area",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a well-appointed one-bedroom apartment situated within the city of Edinburgh. My financial allowance is strictly four hundred and fifty pounds weekly, and proximity to the University of Edinburgh, specifically within an eighteen-minute travel radius, is essential.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 450,
+      "original_time_minutes": 18,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Old College, South Bridge, Edinburgh EH8 9YL",
+      "max_budget": 1949,
+      "max_travel_time": 18,
+      "soft_preferences": "well-appointed",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["university"],
+      "area_vibe": "academic, city centre",
+      "suggested_search_locations": ["Newington", "Tollcross", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed place near Shoreditch High Street, max 1500 a month, 10 min walk.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch High Street, London E1 6GF",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": [],
+      "area_vibe": "vibrant, trendy, nightlife",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Bethnal Green"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a property with robust soundproofing and excellent natural light, suitable for a professional, located in Birmingham. My budget extends to one thousand pounds.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1000,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1000,
+      "max_travel_time": null,
+      "soft_preferences": "robust soundproofing, excellent natural light, suitable for professional",
+      "property_tags": ["apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": "professional",
+      "suggested_search_locations": [],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

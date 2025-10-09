@@ -1,0 +1,107 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near London Bridge, max £400 a week, 20 mins tube",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge",
+      "max_budget": 1732,
+      "max_travel_time": 20,
+      "soft_preferences": "vibrant area, good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["tube station", "shops", "restaurants", "cultural attractions"],
+      "area_vibe": "bustling, central, well-connected",
+      "suggested_search_locations": ["Borough", "Southwark", "London Bridge Quarter"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment suitable for a professional couple, close to Piccadilly Station in Manchester, budget not exceeding £1500 per month, with a maximum commute of 15 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "quiet, professional area, good amenities for couples",
+      "property_tags": ["2-bedroom", "apartment", "professional-friendly"],
+      "amenities_of_interest": ["train station", "supermarket", "gym", "restaurants"],
+      "area_vibe": "urban, modern, convenient for commuters and city living",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I require a one-bedroom apartment in Edinburgh, within 3 miles of the city centre. Proximity to cultural amenities is preferred.",
+    "query_metadata": {
+      "style": "formal",
+      "original_time_minutes": 18,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Edinburgh City Centre",
+      "max_travel_time": 18,
+      "soft_preferences": "close to cultural amenities",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["museums", "theatres", "galleries", "historical sites"],
+      "area_vibe": "historic, culturally rich, walkable",
+      "clarification_needed_fields": ["max_budget"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Nice 3 bed house for a family, near Richmond Park, around £2500 a month, 45 mins commute max",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Richmond Park",
+      "max_budget": 2500,
+      "max_travel_time": 45,
+      "soft_preferences": "family-friendly, quiet residential, good schools",
+      "property_tags": ["3-bedroom", "house", "garden", "family-friendly"],
+      "amenities_of_interest": ["parks", "schools", "playgrounds", "local shops"],
+      "area_vibe": "leafy, suburban, affluent, community-focused",
+      "suggested_search_locations": ["Richmond", "East Sheen", "Kingston upon Thames"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio apt nr Waterloo, max £1200pm, 10 min walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Waterloo Station",
+      "max_budget": 1200,
+      "max_travel_time": 10,
+      "soft_preferences": "walking distance to station, secure building",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "tube station", "shops", "restaurants", "South Bank"],
+      "area_vibe": "central, bustling, commuter-heavy, vibrant",
+      "suggested_search_locations": ["South Bank", "Lambeth North", "Borough"],
+      "city_context": "London"
+    }
+  }
+]
+```

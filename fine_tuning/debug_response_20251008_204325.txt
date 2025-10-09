@@ -1,0 +1,168 @@
+```json
+[
+  {
+    "user_query": "Seeking a two-bedroom apartment near Victoria Station, London. My budget is capped at £2500 per month, and I require a commute no longer than 20 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "no specific",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links", "shops"],
+      "area_vibe": "bustling urban hub",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 1 bed flat, central London, max £400 a week. Close to work, maybe 15 mins walk to Oxford Circus.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Oxford Circus, London",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "close to work",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["shopping", "restaurants", "theatre"],
+      "area_vibe": "vibrant city centre",
+      "suggested_search_locations": ["Fitzrovia", "Soho", "Marylebone"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Piccadilly, MCR. £1800pm max, 10 mins commute.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 10,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1800,
+      "max_travel_time": 10,
+      "soft_preferences": "no specific",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre"],
+      "area_vibe": "central, convenient",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I am interested in a spacious studio apartment in the Canary Wharf area. Please provide options.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Canary Wharf, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "spacious",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["financial district", "riverside views"],
+      "area_vibe": "modern, business-oriented",
+      "suggested_search_locations": ["Isle of Dogs", "Limehouse", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a cosy flat in New Town, Edinburgh. Around £1000/month, and easy access to Edinburgh Uni, say 25 mins max travel.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 25,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 1000,
+      "max_travel_time": 25,
+      "soft_preferences": "cosy, easy access to university",
+      "property_tags": ["flat", "any-bedroom"],
+      "amenities_of_interest": ["university", "historic sites", "cafes"],
+      "area_vibe": "historic, cultural, student-friendly",
+      "suggested_search_locations": ["New Town", "Old Town", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Find me a one bedroom apartmnet in Birmingahm city centre. Budget £900 per mnth, and prefer a short commut to New Street Station, like 10 mins.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 900,
+      "max_travel_time": 10,
+      "soft_preferences": "short commute",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shopping"],
+      "area_vibe": "lively city centre",
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Southside"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Any good 3 bed houses for rent in south Manchester? Need a garden and pet-friendly.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "South Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "garden, pet-friendly",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["parks", "local shops"],
+      "area_vibe": "suburban, family-friendly",
+      "suggested_search_locations": ["Didsbury", "Chorlton", "Withington"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I require a professional dwelling, minimum two bedrooms, within a 3-mile radius of the British Museum. My budget is strictly £2800 per month. Proximity to a reputable primary school is also a critical factor.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2800,
+      "original_distance_miles": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, London",
+      "max_budget": 2800,
+      "max_travel_time": 15,
+      "soft_preferences": "reputable primary school nearby, professional dwelling",
+      "property_tags": ["2-bedroom", "apartment", "house"],
+      "amenities_of_interest": ["museums", "schools", "cultural sites"],
+      "area_vibe": "cultural, academic, family-friendly",
+      "suggested_search_locations": ["Bloomsbury", "Holborn", "Covent Garden"],
+      "city_context": "London"
+    }
+  }
+]
+```

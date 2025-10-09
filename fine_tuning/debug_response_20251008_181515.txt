@@ -1,0 +1,275 @@
+[
+  {
+    "user_query": "2 bed flat near London Bridge, max £1800 per month, 30 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "restaurants"],
+      "area_vibe": "central, bustling",
+      "suggested_search_locations": ["Borough", "Bermondsey", "Elephant & Castle"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed flat near Manchester Piccadilly, £350 per week, 2 miles max",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 350,
+      "original_distance_miles": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 1516,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["city centre", "railway station"],
+      "area_vibe": "urban, convenient",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "One bedroom apartment in Edinburgh, close to University of Edinburgh, budget £1200 per month, 3 km distance",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1200,
+      "original_distance_km": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Edinburgh",
+      "max_budget": 1200,
+      "max_travel_time": 18,
+      "soft_preferences": "close to university",
+      "property_tags": ["one-bedroom", "apartment", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "cafes"],
+      "area_vibe": "historic, academic",
+      "suggested_search_locations": ["Old Town", "Newington", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio flat in Shoreditch, up to £400 weekly, 20 mins from Old Street",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 1732,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["nightlife", "tech hub", "restaurants"],
+      "area_vibe": "trendy, vibrant",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Family house near Birmingham city centre, need 3 beds",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Birmingham City Centre, Birmingham",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "family-friendly",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["schools", "parks", "shops"],
+      "area_vibe": "suburban, quiet",
+      "suggested_search_locations": ["Moseley", "Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "1BR apt nr Lndn Bridge, max 2k pm, quick commut",
+    "query_metadata": {
+      "style": "abbreviated, with_typos",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station, London",
+      "max_budget": 2000,
+      "max_travel_time": 15,
+      "soft_preferences": "quick commute",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links", "restaurants"],
+      "area_vibe": "central, convenient",
+      "suggested_search_locations": ["Borough", "Southwark", "London Bridge"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Cheap flat in Didsbury, Manchester, £200-£250 weekly",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 250,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Didsbury, Manchester",
+      "max_budget": 1083,
+      "max_travel_time": null,
+      "soft_preferences": "affordable",
+      "property_tags": ["flat"],
+      "amenities_of_interest": ["local shops", "cafes", "parks"],
+      "area_vibe": "leafy, suburban",
+      "suggested_search_locations": ["Didsbury Village", "West Didsbury"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Cosy 1 bed flat in Islington, max £1500pm, 2 miles to Angel Station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 2,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Angel Station, London",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": "cosy",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["boutique shops", "restaurants", "transport links"],
+      "area_vibe": "trendy, residential",
+      "suggested_search_locations": ["Islington", "Angel", "Barnsbury"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Two bedroom apartment in Clifton, Bristol, maximum £1400 per month, 25 minutes to Bristol Temple Meads",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1400,
+      "original_time_minutes": 25,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads Station, Bristol",
+      "max_budget": 1400,
+      "max_travel_time": 25,
+      "soft_preferences": null,
+      "property_tags": ["two-bedroom", "apartment"],
+      "amenities_of_interest": ["historic architecture", "boutique shops", "parks"],
+      "area_vibe": "affluent, picturesque",
+      "suggested_search_locations": ["Clifton Village", "Clifton Down"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Studio flat near Victoria Station, must have good transport links",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Victoria Station, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "good transport links",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["railway station", "bus routes", "underground"],
+      "area_vibe": "busy, central",
+      "suggested_search_locations": ["Victoria", "Pimlico", "Westminster"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Student accommodation, close to Manchester Met, £750pm, within 2km",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 750,
+      "original_distance_km": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Metropolitan University, Manchester",
+      "max_budget": 750,
+      "max_travel_time": 12,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["student-accommodation"],
+      "amenities_of_interest": ["university", "nightlife", "shops"],
+      "area_vibe": "lively, student-focused",
+      "suggested_search_locations": ["Hulme", "Rusholme", "City Centre"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Flat for a professional, good nightlife, central London, £2200 per month, 15 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Central London",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": "good nightlife, professional-friendly",
+      "property_tags": ["flat", "professional-friendly"],
+      "amenities_of_interest": ["nightlife", "restaurants", "cultural attractions"],
+      "area_vibe": "vibrant, lively",
+      "suggested_search_locations": ["Soho", "Covent Garden", "Fitzrovia", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bed house in South London, max £500pw, 45 mins to Waterloo",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 500,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London",
+      "max_budget": 2165,
+      "max_travel_time": 45,
+      "soft_preferences": null,
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["transport links", "parks", "schools"],
+      "area_vibe": "residential, suburban",
+      "suggested_search_locations": ["Clapham", "Balham", "Tooting", "Wimbledon"],
+      "city_context": "London"
+    }
+  }
+]

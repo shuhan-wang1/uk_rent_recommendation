@@ -1,0 +1,130 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in South Kensington, London. Max £1800 per month, 20 mins commute to Imperial College.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Imperial College London, South Kensington, London SW7 2AZ",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "posh area, student-friendly",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["university", "museums", "parks", "shops"],
+      "area_vibe": "affluent, cultural, academic",
+      "suggested_search_locations": ["South Kensington", "Kensington", "Chelsea"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed near Piccadilly, Manchester. Budget around £400 a week, 3 miles from the station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Piccadilly, Manchester M60 7RA",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "good transport links",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shops", "restaurants", "nightlife"],
+      "area_vibe": "city centre, vibrant, well-connected",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Find me a studio in London, I don't want to spend too much.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "affordable",
+      "property_tags": ["studio"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment suitable for professionals, situated within 3 km of the Royal Mile in Edinburgh. My budget is approximately £1500 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 18,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh EH1 1QS",
+      "max_budget": 1500,
+      "max_travel_time": 18,
+      "soft_preferences": "professional environment, historic area",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["historic sites", "cultural venues", "restaurants"],
+      "area_vibe": "historic, cultural, bustling",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "2 bed apartmnet in Bristl, max £350 weekly. Need to commut to the Uni of Bristol in 15 minut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1515,
+      "original_time_minutes": 15,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Bristol, Beacon House, Queens Rd, Bristol BS8 1QU",
+      "max_budget": 1515,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "cafes", "pubs", "bookstores"],
+      "area_vibe": "lively, student-oriented",
+      "suggested_search_locations": ["Clifton", "Redland", "Cotham"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Looking for a dog-friendly flat with a garden in Islington, London. Preferably near a park and with good natural light. Budget £2200pm.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Islington, London",
+      "max_budget": 2200,
+      "max_travel_time": null,
+      "soft_preferences": "dog-friendly, good natural light, near park",
+      "property_tags": ["flat", "garden"],
+      "amenities_of_interest": ["parks", "green spaces", "vet clinics"],
+      "area_vibe": "leafy, family-friendly, community feel",
+      "suggested_search_locations": ["Highbury", "Canonbury", "Angel"],
+      "city_context": "London"
+    }
+  }
+]
+```

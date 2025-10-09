@@ -1,0 +1,190 @@
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1800pm, 30 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["financial district offices", "shopping centres"],
+      "area_vibe": "modern, business-oriented",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Two-bedroom apartment for rent near Manchester University, budget £1200 per month, within 2 miles.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1200,
+      "original_distance_miles": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 1200,
+      "max_travel_time": 10,
+      "property_tags": ["2-bedroom", "apartment", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "student services"],
+      "area_vibe": "vibrant student neighborhood",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bed apartmnet in Clapham, max 600 weekly, commute to Victoria Station should be under 20 mintues.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 600,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station",
+      "max_budget": 2598,
+      "max_travel_time": 20,
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["Clapham Common", "bars", "restaurants"],
+      "area_vibe": "lively, family-friendly with good transport links",
+      "suggested_search_locations": ["Clapham North", "Clapham Junction", "Stockwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Nice pad for students near Edinburgh uni, max £850pm, walkable.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 850,
+      "original_travel_preference": "walkable",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 850,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, walkable",
+      "property_tags": ["flat", "student-friendly"],
+      "amenities_of_interest": ["university buildings", "student pubs", "cafes"],
+      "area_vibe": "historic, bustling student area",
+      "suggested_search_locations": ["Newington", "Marchmont", "Old Town"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Flat to rent in Shoreditch, really cool vibes and good nightlife.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Shoreditch, London",
+      "soft_preferences": "vibrant, good nightlife",
+      "property_tags": ["flat"],
+      "area_vibe": "trendy, artistic, nightlife",
+      "city_context": "London",
+      "missing_information": ["budget", "number_of_bedrooms", "max_travel_time_or_destination"]
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious three-bedroom residence, preferably a house or large apartment, situated within a respectable residential area of Birmingham, with a maximum monthly rent of £1500, and a reasonable commute of no more than 45 minutes to the city centre by public transport.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 45,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 1500,
+      "max_travel_time": 45,
+      "soft_preferences": "respectable residential area",
+      "property_tags": ["3-bedroom", "house", "large apartment"],
+      "amenities_of_interest": ["parks", "good schools"],
+      "area_vibe": "quiet, family-oriented",
+      "suggested_search_locations": ["Moseley", "Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed near Waterloo, budget £450 weekly, dont want to commut more than 25 minuts.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 450,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Waterloo Station",
+      "max_budget": 1949,
+      "max_travel_time": 25,
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["South Bank attractions", "theatre", "restaurants"],
+      "area_vibe": "central, bustling",
+      "suggested_search_locations": ["Lambeth", "Southwark", "Borough"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a well-appointed one-bedroom apartment in a desirable Manchester locale.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "soft_preferences": "well-appointed, desirable locale",
+      "property_tags": ["1-bedroom", "apartment"],
+      "city_context": "Manchester",
+      "missing_information": ["budget", "destination", "max_travel_time"]
+    }
+  },
+  {
+    "user_query": "Studio flat in Bristol, close to shops, £900 budget, 15 mins to Temple Meads.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 15,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads Station",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "close to shops",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["shopping streets", "local markets"],
+      "area_vibe": "convenient, urban",
+      "suggested_search_locations": ["Redcliffe", "Old Market", "St Philips"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Something quirky and pet-friendly in East London, with outdoor space please, any budget really.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "soft_preferences": "quirky, pet-friendly, outdoor space",
+      "area_vibe": "creative, vibrant, independent",
+      "city_context": "London",
+      "missing_information": ["budget_range", "number_of_bedrooms", "specific_destination_or_commute"],
+      "suggested_search_locations": ["Hackney", "Dalston", "Stoke Newington"]
+    }
+  }
+]

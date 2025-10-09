@@ -1,0 +1,124 @@
+```json
+[
+  {
+    "user_query": "Searching for a one-bedroom apartment in Central London, with a maximum monthly rent of £1800. Proximity to London Bridge, no more than 20 minutes commute.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London SE1 9SG",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "quiet, professional environment",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["public transport links", "restaurants", "cultural attractions"],
+      "area_vibe": "bustling urban center with historical significance",
+      "suggested_search_locations": ["Borough", "Southwark", "Bankside"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Yo, need a 2 bed flat near Piccadilly Station, like £1000 a month, 15 mins walk max.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Piccadilly, Manchester M60 7RA",
+      "max_budget": 1000,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, vibrant area",
+      "property_tags": ["2-bedroom", "flat", "furnished"],
+      "amenities_of_interest": ["bars", "restaurants", "supermarkets"],
+      "area_vibe": "lively city center, good for young professionals/students",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Gay Village"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1 bed aptmnet near Canary Wharf, budget around 400 weekly. Needs to be dog frienldy.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 400,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_fields": ["max_travel_time"],
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 1732,
+      "soft_preferences": "pet-friendly (dog)",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["parks", "vet services", "pet shops"],
+      "area_vibe": "modern business district with green spaces",
+      "suggested_search_locations": ["Isle of Dogs", "Limehouse", "Greenwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I'm looking for a spacious studio apartment or small one-bedroom in Edinburgh, preferably close to the Old Town. My budget is £900-£1000 per month, and I'd like to be within 2 miles of the castle.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1000,
+      "original_distance_miles": 2,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": 1000,
+      "max_travel_time": 10,
+      "soft_preferences": "historic charm, good walking access",
+      "property_tags": ["studio", "1-bedroom", "apartment"],
+      "amenities_of_interest": ["historic sites", "cafes", "independent shops"],
+      "area_vibe": "historic, culturally rich, tourist-friendly",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I need a place to live in London, something nice with good transport links.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_fields": ["destination", "max_budget", "max_travel_time", "property_tags"],
+      "soft_preferences": "good transport links",
+      "amenities_of_interest": ["public transport", "tube station", "bus routes"],
+      "area_vibe": "unknown - requires more input",
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a modern two-bedroom apartment suitable for a professional couple in Birmingham city centre. Our maximum budget is £1300 per calendar month, and we require excellent connectivity to New Street Station, ideally within a 10-minute public transport journey.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, New Street, Birmingham B2 4QA",
+      "max_budget": 1300,
+      "max_travel_time": 10,
+      "soft_preferences": "modern, professional environment",
+      "property_tags": ["2-bedroom", "apartment", "new build"],
+      "amenities_of_interest": ["gym", "concierge", "parking"],
+      "area_vibe": "dynamic city centre, excellent for professionals",
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Eastside"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

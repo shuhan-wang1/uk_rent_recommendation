@@ -1,0 +1,106 @@
+[
+  {
+    "user_query": "Looking for a 1 bed apt near Canary Whrf, max 1800pm, 40 mins commut. Must have a gym.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 40,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 1800,
+      "max_travel_time": 40,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["gym"],
+      "area_vibe": "modern, financial district",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR flat nr Picc. Stn, £400pw, 15min walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["walking distance to station"],
+      "area_vibe": "city centre, transport hub",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "New Islington"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio apt nr Old Town. Need pet-frndly.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Edinburgh Old Town",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["studio"],
+      "amenities_of_interest": null,
+      "area_vibe": "historic, central",
+      "suggested_search_locations": ["Grassmarket", "Canongate", "New Town (nearby)"],
+      "city_context": "Edinburgh",
+      "clarification_needed": ["budget", "travel_time"]
+    }
+  },
+  {
+    "user_query": "3 bed hse Clapham, £600pw, 20min commute to Victoria",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 600,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clapham, London",
+      "max_budget": 2598,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": null,
+      "area_vibe": "lively, family-friendly",
+      "suggested_search_locations": ["Clapham North", "Clapham Common", "Clapham South"],
+      "city_context": "London",
+      "transit_destination": "Victoria Station"
+    }
+  },
+  {
+    "user_query": "I need something with good vibes, cool cafes nearby, maybe a bit artsy. No budget or location set yet, just browsing for ideas in Brum.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "artsy, good vibes, cool cafes nearby",
+      "property_tags": null,
+      "amenities_of_interest": ["cafes", "art galleries"],
+      "area_vibe": "bohemian, cultural",
+      "suggested_search_locations": ["Digbeth", "Jewellery Quarter", "Moseley"],
+      "city_context": "Birmingham",
+      "clarification_needed": ["location", "budget", "travel_time"]
+    }
+  }
+]

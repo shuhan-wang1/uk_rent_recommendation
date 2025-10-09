@@ -1,0 +1,127 @@
+```json
+[
+  {
+    "user_query": "Seeking a one-bedroom apartment in London, within 30 minutes commute to Canary Wharf, with a maximum budget of £2000 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2000,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Greenwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment near London Bridge, ideally within 5 miles, with a weekly budget not exceeding £500.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 500,
+      "original_time_miles": 5,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 2165,
+      "max_travel_time": 25,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": ["Borough", "Elephant & Castle", "Southwark"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am looking for a spacious 3-bedroom property in Manchester. My budget is around £450 weekly, and I prefer it not to be too far from Manchester Piccadilly Station, perhaps within 3 kilometers.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_weekly": 450,
+      "original_time_km": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 1949,
+      "max_travel_time": 18,
+      "soft_preferences": null,
+      "property_tags": ["3-bedroom"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Could you please assist me in finding a comfortable two-bedroom apartment in Edinburgh? I'm looking for something that is a maximum of 20 minutes travel time to the Royal Mile, with a monthly rent limit of £1500.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 20,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Hey, looking for a cool 1 bed flat in Birmingham. Somewhere lively, maybe near the Jewellery Quarter.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Jewellery Quarter, Birmingham",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": null,
+      "area_vibe": "lively",
+      "suggested_search_locations": null,
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Just need a decent 1 bed flat in London, cheap as possible, under £1000pm. Don't care where really, as long as it's not too far from a tube.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1000,
+      "max_travel_time": null,
+      "soft_preferences": "near a tube station",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["tube station"],
+      "area_vibe": null,
+      "suggested_search_locations": ["Zone 3", "Zone 4", "Outer London"],
+      "city_context": "London"
+    }
+  }
+]
+```

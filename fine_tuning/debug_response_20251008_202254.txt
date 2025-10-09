@@ -1,0 +1,171 @@
+```json
+[
+  {
+    "user_query": "Seeking a two-bedroom apartment within 30 minutes commute to Canary Wharf, with a maximum rental budget of £2500 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["transport_links", "business_district"],
+      "area_vibe": "modern, financial district",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Greenwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Professional seeks a one-bedroom flat convenient for Manchester Piccadilly, not exceeding £1800 per month, within a 20-minute travel radius.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "convenient for public transport",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["train_station", "city_centre_access"],
+      "area_vibe": "urban, well-connected",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Salford Quays"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1BR apt nr KX, max £400pw, 15 min walk.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "walking distance",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train_station", "tube_access", "universities"],
+      "area_vibe": "vibrant, transport hub",
+      "suggested_search_locations": ["King's Cross", "Euston", "Bloomsbury"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am searching for a cozy and well-maintained two-bedroom dwelling, ideally an apartment or flat, in Edinburgh. It needs to be within easy reach, perhaps a 4-mile radius, of the historic Royal Mile, and my budget absolutely cannot exceed £1500 monthly. Proximity to local amenities like cafes and parks is highly valued.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 4,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 20,
+      "soft_preferences": "cozy, well-maintained, near cafes and parks",
+      "property_tags": ["2-bedroom", "apartment", "flat"],
+      "amenities_of_interest": ["historic_sites", "cafes", "parks", "cultural_attractions"],
+      "area_vibe": "historic, charming, lively",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "We require a three-bedroom family house or spacious apartment, located within 45 minutes commute to Victoria Station, with a budget cap of £3500 per calendar month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 3500,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station",
+      "max_budget": 3500,
+      "max_travel_time": 45,
+      "soft_preferences": "family-friendly, spacious",
+      "property_tags": ["3-bedroom", "house", "apartment"],
+      "amenities_of_interest": ["train_station", "tube_access", "schools", "parks"],
+      "area_vibe": "residential, good transport links",
+      "suggested_search_locations": ["Clapham", "Wandsworth", "Brixton"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 2 bed flat in Manchester, cheap.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "clarification_questions": ["What is your desired budget?", "What is your preferred location or destination?", "Do you have a maximum travel time in mind?"],
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "cheap",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a 1 bed apartmnet in Birmingahm, max £1100 pm, 3 km from New Street.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1100,
+      "original_distance_km": 3,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1100,
+      "max_travel_time": 18,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train_station", "city_centre"],
+      "area_vibe": "urban, central",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Just need somewhere to crash in London, budget is super tight, like £200 a week. Don't care where really, just gotta be cheap and close to a tube.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 200,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "reason": "extremely low budget for a private apartment in London, may require alternative housing types or shared accommodation",
+      "destination": null,
+      "max_budget": 866,
+      "max_travel_time": null,
+      "soft_preferences": "very cheap, near tube station, flexible on area",
+      "property_tags": ["studio", "room_in_shared_house", "shared_apartment"],
+      "amenities_of_interest": ["public_transport_access"],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  }
+]
+```

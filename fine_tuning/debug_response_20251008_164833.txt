@@ -1,0 +1,85 @@
+[
+  {
+    "user_query": "lookin for a 1 bed apartmnet in central london, max £1800 pcm, 20 mintues walk to oxford circus",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Oxford Circus, London W1B 4DA",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "property_tags": ["1-bedroom"],
+      "area_vibe": "vibrant, shopping, entertainment",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment near the University of Manchester. Budget is £480 per week, with a maximum commute of 10 miles.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 480,
+      "original_distance_miles": 10,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 2078,
+      "max_travel_time": 50,
+      "property_tags": ["2-bedroom"],
+      "area_vibe": "academic, student-friendly",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I require a spacious one-bedroom apartment in Edinburgh, preferably near the Royal Mile.",
+    "query_metadata": {
+      "style": "formal",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Royal Mile, Edinburgh",
+      "property_tags": ["1-bedroom", "spacious"],
+      "missing_info": ["max_budget", "max_travel_time", "area_vibe"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bed flat in East London, close to Canary Wharf. About £2500 a month, 15 mins max travel.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2500,
+      "max_travel_time": 15,
+      "property_tags": ["3-bedroom", "flat"],
+      "area_vibe": "modern, business district, riverside",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a place for my pet cat near a park in London. Any budget, anywhere.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "soft_preferences": "pet-friendly, near park",
+      "property_tags": ["pet-friendly"],
+      "amenities_of_interest": ["park"],
+      "missing_info": ["destination", "max_budget", "max_travel_time", "number_of_bedrooms"],
+      "city_context": "London"
+    }
+  }
+]

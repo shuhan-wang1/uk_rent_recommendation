@@ -1,0 +1,128 @@
+[
+  {
+    "user_query": "Looking for a 1 bed flat, max £1800pcm, near London Bridge. Easy commute to The Shard.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "The Shard, 32 London Bridge St, London SE1 9SG",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "easy commute",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "restaurants", "bars"],
+      "area_vibe": "vibrant, financial district, good transport",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt, West End. Need good nightlife.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "West End, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "lively nightlife, entertainment",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["theatres", "restaurants", "bars", "clubs"],
+      "area_vibe": "lively, entertainment hub",
+      "suggested_search_locations": ["Soho", "Covent Garden", "Leicester Square"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio flat, max £1100 a month, walking distance to King's Cross. Pet friendly for a cat.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, Euston Rd, London N1 9AL",
+      "max_budget": 1100,
+      "max_travel_time": 15,
+      "soft_preferences": "pet-friendly (cat)",
+      "property_tags": ["studio", "flat", "pet-friendly"],
+      "amenities_of_interest": ["transport links", "restaurants", "parks"],
+      "area_vibe": "well-connected, urban, regeneration area",
+      "suggested_search_locations": ["Islington", "Camden", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am interested in finding a three-bedroom house or a large apartment suitable for a family, with a maximum monthly rent of £2500, located within a 30-minute public transport journey to Manchester Piccadilly Station. Proximity to reputable primary schools is a high priority.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Piccadilly, Manchester M60 7RA",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "family-friendly, reputable primary schools",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks", "public transport"],
+      "area_vibe": "suburban, family-oriented, good schools",
+      "suggested_search_locations": ["Chorlton-cum-Hardy", "Didsbury", "Sale"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed near Edinburgh Castle, good views preferred.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "scenic views, historic area",
+      "property_tags": ["2-bedroom", "apartment", "flat"],
+      "amenities_of_interest": ["historic sites", "tourist attractions", "restaurants"],
+      "area_vibe": "historic, central, touristy",
+      "suggested_search_locations": ["Old Town", "New Town", "Grassmarket"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "1 bed flat near New Street Station, around £950/month. Must have a balcony.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Station St, Birmingham B2 4QA",
+      "max_budget": 950,
+      "max_travel_time": 10,
+      "soft_preferences": "balcony",
+      "property_tags": ["1-bedroom", "flat", "balcony"],
+      "amenities_of_interest": ["transport links", "city centre amenities", "restaurants"],
+      "area_vibe": "urban, central, lively",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  }
+]

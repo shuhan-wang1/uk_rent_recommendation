@@ -1,0 +1,197 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in Shoreditch, max £1800 a month, 15 mins walk to Old Street station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "walking distance",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["nightlife", "restaurants", "tech hubs"],
+      "area_vibe": "vibrant, trendy, tech-focused",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed apartment near Piccadilly, £400 a week, within 2 miles.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 2,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1732,
+      "max_travel_time": 10,
+      "soft_preferences": "close to transport",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shops"],
+      "area_vibe": "city centre, convenient",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a spacious three-bedroom apartment in Canary Wharf, budget not exceeding £3000 per month, with a commute of no more than 20 minutes to Bank.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bank Station, London",
+      "max_budget": 3000,
+      "max_travel_time": 20,
+      "soft_preferences": "spacious",
+      "property_tags": ["3-bedroom", "apartment", "luxury"],
+      "amenities_of_interest": ["DLR", "gym", "river views"],
+      "area_vibe": "business district, modern, high-rise",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Any nice places in New Town?",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "city_context": "Edinburgh",
+      "missing_info": ["budget", "number_of_bedrooms", "travel_destination", "travel_time_or_distance"]
+    }
+  },
+  {
+    "user_query": "1 bed apartmnet near Victoria station, max 350 weekly, within 3 km commute.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 350,
+      "original_distance_km": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1515,
+      "max_travel_time": 18,
+      "soft_preferences": "commuter friendly",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "bus routes", "shops"],
+      "area_vibe": "bustling, transport hub",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 2BR apt in the Jewellery Quarter, rent under £1100pcm, 10 min walk to Snow Hill.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Snow Hill Station, Birmingham",
+      "max_budget": 1100,
+      "max_travel_time": 10,
+      "soft_preferences": "walking distance",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "independent shops", "restaurants"],
+      "area_vibe": "historic, artistic, trendy",
+      "suggested_search_locations": ["Jewellery Quarter", "City Centre"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "I need a penthouse in Kensington with a private rooftop garden, 4+ beds, and a personal chef's kitchen. No budget limit, but it must be within 10 minutes drive of Harrods.",
+    "query_metadata": {
+      "style": "formal",
+      "original_time_minutes": 10,
+      "city": "London",
+      "budget": "no_limit"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Harrods, London",
+      "max_budget": "no_limit",
+      "max_travel_time": 10,
+      "soft_preferences": "private rooftop garden, personal chef's kitchen, no budget limit",
+      "property_tags": ["4+-bedroom", "penthouse", "luxury", "high-end"],
+      "amenities_of_interest": ["luxury appliances", "private outdoor space", "exclusive concierge"],
+      "area_vibe": "exclusive, high-end, affluent",
+      "suggested_search_locations": ["Kensington", "Knightsbridge", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Somewhere nice for students near the university.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Manchester",
+      "city_context": "Manchester",
+      "missing_info": ["budget", "number_of_bedrooms", "travel_time_or_distance"]
+    }
+  },
+  {
+    "user_query": "Searching for a pet-friendly studio flat in Brixton, up to £1400/month, 20 mins to Victoria on public transport.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1400,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1400,
+      "max_travel_time": 20,
+      "soft_preferences": "pet-friendly, public transport",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["parks", "public transport links", "live music venues"],
+      "area_vibe": "vibrant, diverse, artistic",
+      "suggested_search_locations": ["Brixton", "Clapham", "Stockwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed apt nr Temple Meads, £1300pm, 1 mile radius.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1300,
+      "original_distance_miles": 1,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads Station",
+      "max_budget": 1300,
+      "max_travel_time": 5,
+      "soft_preferences": "close to station",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre amenities"],
+      "area_vibe": "commuter friendly, urban",
+      "suggested_search_locations": ["Redcliffe", "Old Market", "Temple Quay"],
+      "city_context": "Bristol"
+    }
+  }
+]
+```

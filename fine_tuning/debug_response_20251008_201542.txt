@@ -1,0 +1,183 @@
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1800pm, 20 mins tube",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "property_type": "flat",
+      "number_of_bedrooms": 1,
+      "amenities_of_interest": ["tube station"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed apartmnet near Kings Cross, £450 weekly, 3 milse walk",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1949,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross",
+      "max_budget": 1949,
+      "max_travel_time": 15,
+      "property_type": "apartment",
+      "number_of_bedrooms": 2,
+      "preferred_commute_method": "walk",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "nice 3 bed house in Didsbury, £1500 per mont, 5 km from city centre",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 30,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Didsbury",
+      "max_budget": 1500,
+      "max_travel_time": 30,
+      "property_type": "house",
+      "number_of_bedrooms": 3,
+      "soft_preferences": "nice area",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "studio for rent in Shoreditch, £350 per week, 15 mins to Old Street",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1515,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch",
+      "max_budget": 1515,
+      "max_travel_time": 15,
+      "property_type": "studio",
+      "amenities_of_interest": ["Old Street"],
+      "area_vibe": "vibrant, trendy",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am searching for a spacious two-bedroom apartment within a respectable district of London, specifically within a five-mile radius of Victoria Station, with a maximum monthly rent of two thousand five hundred pounds.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station",
+      "max_budget": 2500,
+      "max_travel_time": 25,
+      "property_type": "apartment",
+      "number_of_bedrooms": 2,
+      "soft_preferences": "spacious, respectable district",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "looking for a pet-friendly flat in Manchester, need a garden",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "destination", "travel_time"],
+      "property_type": "flat",
+      "soft_preferences": "pet-friendly, garden",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2 bedroom flat to rent near Edinburgh University, budget £1300pm, 10 min walk",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 1300,
+      "max_travel_time": 10,
+      "property_type": "flat",
+      "number_of_bedrooms": 2,
+      "preferred_commute_method": "walk",
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "1 bed flat in Moseley, £250 weeekly, 2 mils from city centre",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1083,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Moseley",
+      "max_budget": 1083,
+      "max_travel_time": 10,
+      "property_type": "flat",
+      "number_of_bedrooms": 1,
+      "amenities_of_interest": ["city centre"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "apartment in Bristol, good for cycling",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "destination", "travel_time"],
+      "property_type": "apartment",
+      "soft_preferences": "good for cycling",
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "I need a super quiet, hidden flat in London, maybe with a secret garden entrance, max £3000pm, 30 mins to Liverpool Street",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "destination": "Liverpool Street Station",
+      "max_budget": 3000,
+      "max_travel_time": 30,
+      "property_type": "flat",
+      "soft_preferences": "super quiet, hidden",
+      "amenities_of_interest": ["secret garden entrance"],
+      "notes": "unusual request for 'secret garden entrance', 'super quiet', 'hidden flat'",
+      "city_context": "London"
+    }
+  }
+]

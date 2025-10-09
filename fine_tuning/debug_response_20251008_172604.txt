@@ -1,0 +1,214 @@
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1800 per month, 20 min walk",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "quiet, residential",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "supermarkets"],
+      "area_vibe": "modern business district with amenities",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "studio apartment in Shoreditch, budget around £400 a week, easy commute to Liverpool Street",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_time_description": "easy commute",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch, London",
+      "max_budget": 1732,
+      "max_travel_time": 30,
+      "soft_preferences": "vibrant nightlife, good transport",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["bars", "restaurants", "galleries"],
+      "area_vibe": "trendy, artistic, nightlife",
+      "suggested_search_locations": ["Hoxton", "Bethnal Green", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bedroom flat in south Londo, need a good school, budget £2500 p/m",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2500,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 2500,
+      "max_travel_time": null,
+      "soft_preferences": "good schools, family-friendly",
+      "property_tags": ["2-bedroom", "flat", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks"],
+      "area_vibe": "residential, family-oriented",
+      "suggested_search_locations": ["Clapham", "Wimbledon", "Dulwich"],
+      "city_context": "London",
+      "missing_information": ["destination_specifics", "max_travel_time"]
+    }
+  },
+  {
+    "user_query": "I need a place to stay urgently for 3 months, near Waterloo, for under £1500",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_description": "urgently",
+      "city": "London",
+      "short_term_rental": "3 months"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "destination": "Waterloo, London",
+      "max_budget": 1500,
+      "max_travel_time": null,
+      "soft_preferences": "short-term rental, furnished",
+      "property_tags": ["furnished", "short-term"],
+      "amenities_of_interest": ["transport links", "convenience stores"],
+      "area_vibe": "central, busy, touristy",
+      "suggested_search_locations": ["Lambeth", "Southwark", "Vauxhall"],
+      "city_context": "London",
+      "edge_case_type": "short_term_rental",
+      "clarification_needed": ["exact move-in date", "specific property type"]
+    }
+  },
+  {
+    "user_query": "3BR apt nr Kensal Rise, max £2800pcm, 10 min from tube",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 2800,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Kensal Rise, London",
+      "max_budget": 2800,
+      "max_travel_time": 10,
+      "soft_preferences": "good transport, quiet neighborhood",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["tube station", "local shops"],
+      "area_vibe": "residential, up-and-coming",
+      "suggested_search_locations": ["Queen's Park", "Willesden Green", "Ladbroke Grove"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed flat near Manchester Uni, max £1200pm, 25 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 1200,
+      "max_travel_time": 25,
+      "soft_preferences": "safe area for students",
+      "property_tags": ["1-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries"],
+      "area_vibe": "student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Apartment in Didsbury, pet friendly, with parking",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Didsbury, Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pet friendly, parking",
+      "property_tags": ["apartment", "pet-friendly", "parking"],
+      "amenities_of_interest": ["parks", "local shops"],
+      "area_vibe": "suburban, leafy, family-friendly",
+      "suggested_search_locations": ["West Didsbury", "East Didsbury", "Withington"],
+      "city_context": "Manchester",
+      "missing_information": ["max_budget", "max_travel_time", "specific property type (e.g., number of bedrooms)"]
+    }
+  },
+  {
+    "user_query": "2 bed property in New Town Edinburgh, up to £1500 a month, walking distance to Princes Street",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_description": "walking distance",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Princes Street, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "historic area, good views",
+      "property_tags": ["2-bedroom", "property"],
+      "amenities_of_interest": ["shops", "restaurants", "cultural sites"],
+      "area_vibe": "historic, central, elegant",
+      "suggested_search_locations": ["New Town", "Stockbridge", "West End"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio to rent in Jewellery Quarter, Birmingham, max £850/month, close to train station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 850,
+      "original_time_description": "close to train station",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Jewellery Quarter, Birmingham",
+      "max_budget": 850,
+      "max_travel_time": 10,
+      "soft_preferences": "good transport, vibrant atmosphere",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "bars", "restaurants"],
+      "area_vibe": "historic, trendy, urban",
+      "suggested_search_locations": ["St Paul's Square", "City Centre", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "familly home in Clifton, Bristl, budget around 2000 pounds, within 3 miles of city centre",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2000,
+      "original_distance_miles": 3,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol City Centre",
+      "max_budget": 2000,
+      "max_travel_time": 15,
+      "soft_preferences": "good schools, green spaces",
+      "property_tags": ["family-home", "house", "garden"],
+      "amenities_of_interest": ["parks", "schools", "local shops"],
+      "area_vibe": "affluent, picturesque, residential",
+      "suggested_search_locations": ["Clifton Village", "Redland", "Cotham"],
+      "city_context": "Bristol"
+    }
+  }
+]

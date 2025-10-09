@@ -1,0 +1,188 @@
+[
+  {
+    "user_query": "Please find a two-bedroom apartment suitable for a professional couple near Canary Wharf, with a maximum monthly rent of £2500 and a commute no longer than thirty minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "suitable for professional couple",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links", "restaurants", "gyms"],
+      "area_vibe": "modern, business district, vibrant nightlife",
+      "suggested_search_locations": ["Isle of Dogs", "Limehouse", "Poplar", "Crossharbour"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1BR apt nr Brit Museum, £400pw max, 2mi walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 2,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, Great Russell St, London WC1B 3DG",
+      "max_budget": 1732,
+      "max_travel_time": 10,
+      "soft_preferences": "walking distance",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["museums", "cultural sites", "cafes"],
+      "area_vibe": "historic, academic, tourist-friendly",
+      "suggested_search_locations": ["Bloomsbury", "Holborn", "Fitzrovia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "need a place in London, cheap and quick commute to work",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "affordable",
+      "property_tags": [],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a 3 bed house in South Manchester, family-friendly area, around £1500 per month. Needs good schools nearby and close to parks. Max 4 miles from city centre for work.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 4,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester City Centre",
+      "max_budget": 1500,
+      "max_travel_time": 20,
+      "soft_preferences": "family-friendly, good schools, close to parks",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["schools", "parks", "playgrounds"],
+      "area_vibe": "suburban, family-oriented, green spaces",
+      "suggested_search_locations": ["Didsbury", "Chorlton-cum-Hardy", "Withington"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I require a one-bedroom flat for a postgraduate student in Edinburgh, close to the University of Edinburgh main campus. Budget not exceeding £900 per month, and public transport access within 15 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Old College, South Bridge, Edinburgh EH8 9YL",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "postgraduate student-friendly",
+      "property_tags": ["1-bedroom", "flat", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "public transport"],
+      "area_vibe": "student neighborhood, academic, historic",
+      "suggested_search_locations": ["Newington", "Marchmont", "Old Town"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I'm searching for a spacious three-bedroom property in London, ideally a house, that is convenient for both Regent's Park and also St Pancras International station, as I travel frequently. My maximum budget is £3000 per month, and I'd like the commute to either location to be under 45 minutes, with good transport links being paramount. Pet-friendly is a must.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 3000,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Regent's Park OR St Pancras International Station",
+      "max_budget": 3000,
+      "max_travel_time": 45,
+      "soft_preferences": "pet-friendly, good transport links, convenient for frequent travel",
+      "property_tags": ["3-bedroom", "house", "spacious"],
+      "amenities_of_interest": ["parks", "train station", "public transport"],
+      "area_vibe": "well-connected, green spaces, diverse",
+      "suggested_search_locations": ["Camden Town", "King's Cross", "Euston", "Primrose Hill"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Hey, need a cool 2 bed pad in Northern Quarter, Manchester. Around £1100 a month, walking distance to bars and stuff.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Northern Quarter, Manchester",
+      "max_budget": 1100,
+      "max_travel_time": 15,
+      "soft_preferences": "lively, walking distance to entertainment",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["bars", "restaurants", "music venues", "boutique shops"],
+      "area_vibe": "trendy, artistic, vibrant nightlife",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Piccadilly"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a cheap studio near New Street Station, Birmingham. Max £700pm, quick journey to work.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 700,
+      "original_time_minutes": 12,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Station St, Birmingham B2 4QA",
+      "max_budget": 700,
+      "max_travel_time": 12,
+      "soft_preferences": "affordable, quick commute",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "city centre amenities"],
+      "area_vibe": "urban, convenient, bustling",
+      "suggested_search_locations": ["Birmingham City Centre", "Digbeth", "Jewellery Quarter"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Is there anything available in London, but only if it's haunted? And I only want to pay like £100 a month, close to a secret garden.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 100,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 100,
+      "max_travel_time": null,
+      "soft_preferences": "haunted, close to a secret garden",
+      "property_tags": [],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  }
+]

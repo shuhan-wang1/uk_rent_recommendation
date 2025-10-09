@@ -1,0 +1,126 @@
+```json
+[
+  {
+    "user_query": "1 bed apt nr London Bridge, max £1800pm, 20 mins to office",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "quiet building",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["London Bridge Station", "restaurants", "shops"],
+      "area_vibe": "vibrant, central, good for professionals",
+      "suggested_search_locations": ["Borough", "Southwark", "Tower Bridge"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Manchester Uni, £400 a week, 3 miles max",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly area, good transport links",
+      "property_tags": ["2-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "supermarkets", "pubs"],
+      "area_vibe": "student neighborhood, lively, diverse",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a nice 3 bed flat in South London, flexible on budget.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "reason": "specific budget and desired commute time/destination not provided",
+      "destination": "South London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "nice area, potentially family-friendly",
+      "property_tags": ["3-bedroom", "family-friendly"],
+      "amenities_of_interest": ["parks", "schools", "local shops"],
+      "area_vibe": "residential, green spaces, community feel",
+      "suggested_search_locations": ["Clapham", "Balham", "Dulwich", "Wandsworth"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment within a respectable distance of the University of Edinburgh, with a maximum monthly rent of £1600.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1600,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 1600,
+      "max_travel_time": null,
+      "soft_preferences": "academic environment, quiet study spaces nearby",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["university", "libraries", "cultural sites", "cafes"],
+      "area_vibe": "historic, academic, peaceful",
+      "suggested_search_locations": ["Marchmont", "Newington", "Old Town", "Bruntsfield"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio to rent, cheap, any area in London, ASAP",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London (anywhere)",
+      "max_budget": 900,
+      "max_travel_time": null,
+      "soft_preferences": "affordable, immediate availability",
+      "property_tags": ["studio"],
+      "amenities_of_interest": ["supermarkets", "transport links"],
+      "area_vibe": "diverse, depends on specific area",
+      "suggested_search_locations": ["East London (e.g., Stratford, Canning Town)", "South London (e.g., Croydon, Lewisham)"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed flat near Birmingham New Street, around £900 per month, 2km walk",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 900,
+      "original_distance_km": 2,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 900,
+      "max_travel_time": 12,
+      "soft_preferences": "good transport links, city living",
+      "property_tags": ["1-bedroom", "city-centre"],
+      "amenities_of_interest": ["train station", "shops", "restaurants", "bars"],
+      "area_vibe": "city center, busy, professional",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth", "Southside"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

@@ -1,0 +1,210 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1800/month, 20 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["DLR station", "shops", "restaurants"],
+      "area_vibe": "financial district, modern, vibrant",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed apartmnet near MediaCityUK, budget 400 pw, 3 mile commut",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "MediaCityUK, Salford",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good for media professionals",
+      "property_tags": ["2-bedroom", "apartment", "modern"],
+      "amenities_of_interest": ["Metrolink", "BBC", "ITV", "shops"],
+      "area_vibe": "media hub, contemporary, riverside",
+      "suggested_search_locations": ["Salford Quays", "Ordsall", "Trafford"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment close to the University of Edinburgh, with a maximum monthly budget of two thousand pounds, and a travel time not exceeding 15 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 2000,
+      "max_travel_time": 15,
+      "soft_preferences": "quiet, secure, walking distance to campus",
+      "property_tags": ["one-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "libraries", "cafes"],
+      "area_vibe": "historic, academic, central",
+      "suggested_search_locations": ["Old Town", "Newington", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio apt nr London Bridge, 10 min walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "London Bridge, London",
+      "max_budget": null,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["London Bridge station", "The Shard", "Borough Market"],
+      "area_vibe": "vibrant, historic, touristy",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "3 bed house around Jewellery Quarter, up to £1500pm, 25 mins by bus",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 25,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Jewellery Quarter, Birmingham",
+      "max_budget": 1500,
+      "max_travel_time": 25,
+      "soft_preferences": "family-friendly, good schools",
+      "property_tags": ["3-bedroom", "house"],
+      "amenities_of_interest": ["bus routes", "local shops", "parks"],
+      "area_vibe": "historic, creative, residential",
+      "suggested_search_locations": ["Hockley", "Great Barr", "Harborne"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "2BR flat nr Kings Cross, £450pw, 7km max travel",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 450,
+      "original_distance_km": 7,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1949,
+      "max_travel_time": 42,
+      "soft_preferences": "good transport links, lively area",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["King's Cross St Pancras", "Euston", "restaurants", "shops"],
+      "area_vibe": "transport hub, redeveloped, trendy",
+      "suggested_search_locations": ["Islington", "Camden", "Angel"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 1 bed flat, max £800, under 15 mins travel.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 800,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 800,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a 2 bed apartmant in Shoreditch area, arond 2200 pound per mont, quick commut to City",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2200,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch, London",
+      "max_budget": 2200,
+      "max_travel_time": 15,
+      "soft_preferences": "vibrant, artistic, nightlife",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["Old Street station", "bars", "art galleries", "tech companies"],
+      "area_vibe": "trendy, creative, bustling",
+      "suggested_search_locations": ["Hoxton", "Spitalfields", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio apt in Bristol city centre, max £1000, easy walk to Harbourside",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol City Centre",
+      "max_budget": 1000,
+      "max_travel_time": 10,
+      "soft_preferences": "central, convenient, modern",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["Harbourside", "shops", "restaurants", "bus links"],
+      "area_vibe": "lively, urban, cultural",
+      "suggested_search_locations": ["Redcliffe", "Old Market", "Clifton"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "A two-bedroom residence within a convenient distance of Victoria Station, with a monthly expenditure not exceeding two thousand five hundred pounds.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "well-connected, safe, quiet residential",
+      "property_tags": ["two-bedroom", "residence"],
+      "amenities_of_interest": ["Victoria Station", "parks", "theatres"],
+      "area_vibe": "central, transport hub, government district",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  }
+]
+```

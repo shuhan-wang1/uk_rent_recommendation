@@ -1,0 +1,165 @@
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1800pm, short commute please",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "short commute",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "business district"],
+      "area_vibe": "modern, professional, riverside",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Piccadilly Stn, £400pw, w/in 3mi",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester M60 7RA",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre"],
+      "area_vibe": "urban, well-connected",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment close to the University of Edinburgh, with a monthly rent not exceeding £1500 and a maximum travel duration of 25 minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 25,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Edinburgh EH8 9YL",
+      "max_budget": 1500,
+      "max_travel_time": 25,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "student facilities"],
+      "area_vibe": "student neighborhood, historic",
+      "suggested_search_locations": ["Old Town", "Newington", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Looking for a flat in London, 2 beds.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "clarify budget, destination, and desired travel time",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Family home in Birmingham, 3 beds, need good schools nearby.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "good schools, clarify budget and travel time",
+      "property_tags": ["3-bedroom", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks"],
+      "area_vibe": "residential, family-oriented",
+      "suggested_search_locations": [],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Need a studio apt near London Bridge statin, max £1300 per month, 10 minuts commut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station, London SE1 9SG",
+      "max_budget": 1300,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["train station", "city centre"],
+      "area_vibe": "bustling, central, well-connected",
+      "suggested_search_locations": ["Borough", "Southwark", "Tower Bridge"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom residence within 4 kilometers of Manchester Metropolitan University, with a rental budget not exceeding £1100 weekly.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 1100,
+      "original_distance_km": 4,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Metropolitan University, Manchester M15 6BH",
+      "max_budget": 4763,
+      "max_travel_time": 24,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "residence", "student-friendly"],
+      "amenities_of_interest": ["university", "student accommodation", "libraries"],
+      "area_vibe": "student area, city centre proximity",
+      "suggested_search_locations": ["Hulme", "Rusholme", "City Centre"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Pet-friendly flat in North London, 1 bed, max £1600pcm, easy access to green spaces.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1600,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "North London",
+      "max_budget": 1600,
+      "max_travel_time": null,
+      "soft_preferences": "pet-friendly, easy access to green spaces",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["parks", "pet facilities"],
+      "area_vibe": "leafy, residential, community-focused",
+      "suggested_search_locations": ["Highbury", "Islington", "Hampstead", "Finsbury Park"],
+      "city_context": "London"
+    }
+  }
+]

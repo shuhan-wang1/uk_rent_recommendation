@@ -1,0 +1,113 @@
+```json
+[
+  {
+    "user_query": "1BR apt nr KX, max £1500pm, 20 mins commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1500,
+      "max_travel_time": 20,
+      "soft_preferences": "quiet, professional area",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["tube station", "restaurants"],
+      "area_vibe": "transport hub with good connectivity",
+      "suggested_search_locations": ["Islington", "Camden", "Euston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am searching for a two-bedroom apartment suitable for a professional couple, located within four miles of the Spinningfields business district in Manchester, with a maximum rental budget of four hundred pounds per week.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": null,
+      "original_budget_weekly": 400,
+      "original_time_minutes": null,
+      "original_distance_miles": 4,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": 1732,
+      "max_travel_time": 20,
+      "soft_preferences": "suitable for professional couple, good security",
+      "property_tags": ["2-bedroom", "apartment", "professional-friendly"],
+      "amenities_of_interest": ["gym", "parking", "restaurants"],
+      "area_vibe": "upscale business district, vibrant nightlife",
+      "suggested_search_locations": ["Salford Quays", "Ancoats", "Deansgate"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a flat in Edinburgh, maybe near the uni, around 1000 a month, 1 bed.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "University of Edinburgh",
+      "max_budget": 1000,
+      "max_travel_time": null,
+      "soft_preferences": "student-friendly, safe area",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["university", "public transport"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": ["Newington", "Marchmont", "Old Town"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed flat, good for families, near Victoria Station, max £2200 a month, within 5 km.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": null,
+      "original_distance_km": 5,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2200,
+      "max_travel_time": 30,
+      "soft_preferences": "family-friendly, good schools nearby",
+      "property_tags": ["2-bedroom", "flat", "family-friendly"],
+      "amenities_of_interest": ["parks", "schools", "supermarkets"],
+      "area_vibe": "residential, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Vauxhall"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio apt B'ham, needs good transport, £300pw max, 15 min to city centre.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": null,
+      "original_budget_weekly": 300,
+      "original_time_minutes": 15,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 1299,
+      "max_travel_time": 15,
+      "soft_preferences": "good transport links, safe for single occupant",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["bus stop", "train station", "shops"],
+      "area_vibe": "urban, lively",
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Chinese Quarter"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

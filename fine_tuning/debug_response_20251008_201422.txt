@@ -1,0 +1,192 @@
+```json
+[
+  {
+    "user_query": "1BR apt nr KX, max £1800pm, 20 min tube commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross St. Pancras",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["tube station", "shops"],
+      "area_vibe": "central, well-connected",
+      "suggested_search_locations": ["Bloomsbury", "Clerkenwell", "Islington"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a two-bedroom apartment near the University of Manchester, budget £1500 per month, within a 25-minute commute.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 1500,
+      "max_travel_time": 25,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "public transport"],
+      "area_vibe": "student-friendly, academic",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Hulme"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed flat in East London, budget around £2200, don't want to commute more than 40 mins to Shoreditch.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 40,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch",
+      "max_budget": 2200,
+      "max_travel_time": 40,
+      "property_tags": ["3-bedroom", "flat"],
+      "area_vibe": "vibrant, trendy",
+      "suggested_search_locations": ["Bethnal Green", "Dalston", "Hackney"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio flat in Edinburgh, £800pw",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 3464,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "max_budget": 3464,
+      "property_tags": ["studio", "flat"],
+      "city_context": "Edinburgh",
+      "clarification_needed": ["destination", "max_travel_time"]
+    }
+  },
+  {
+    "user_query": "Looking for a decent 1 bed flat, close to Waterloo, up to £1750 a month, maybe 15 mins walk?",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1750,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station",
+      "max_budget": 1750,
+      "max_travel_time": 15,
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["public transport", "restaurants", "theatre"],
+      "area_vibe": "lively, touristy",
+      "suggested_search_locations": ["South Bank", "Lambeth", "Borough"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt near Canary Wharf, £2500pm, 30min transit max.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["DLR", "shops", "gym"],
+      "area_vibe": "modern, business district",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious studio apartment in North London, with a budget not exceeding £1600 per month, within 45 minutes of the British Museum.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum",
+      "max_budget": 1600,
+      "max_travel_time": 45,
+      "soft_preferences": "spacious",
+      "property_tags": ["studio", "apartment"],
+      "suggested_search_locations": ["Camden", "Islington", "Bloomsbury", "Hampstead"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need an apartmnet, 2 bed, near Piccadilly, max £1300pm but pref cheap, don't want long commut, like 20 min",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1300,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1300,
+      "max_travel_time": 20,
+      "soft_preferences": "cheap",
+      "property_tags": ["2-bedroom", "apartment"],
+      "area_vibe": "city centre, accessible",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Enquire regarding a three-bedroom property in Bristol, within 5 miles of the city centre.",
+    "query_metadata": {
+      "style": "formal",
+      "original_time_minutes": 25,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Bristol City Centre",
+      "max_travel_time": 25,
+      "property_tags": ["3-bedroom"],
+      "city_context": "Bristol",
+      "clarification_needed": ["max_budget"]
+    }
+  },
+  {
+    "user_query": "A one-bedroom apartment in Birmingham city centre, with a maximum rent of £950 per month, within 10 minutes walking distance.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 950,
+      "max_travel_time": 10,
+      "property_tags": ["1-bedroom", "apartment"],
+      "area_vibe": "urban, convenient",
+      "amenities_of_interest": ["shops", "restaurants", "public transport"],
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Gay Village"],
+      "city_context": "Birmingham"
+    }
+  }
+]
+```

@@ -1,0 +1,209 @@
+```json
+[
+  {
+    "user_query": "1 bed flat in central London, max £1800pm, near a Tube station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Central London",
+      "max_budget": 1800,
+      "max_travel_time": null,
+      "soft_preferences": "near a Tube station",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["tube station", "public transport"],
+      "area_vibe": "vibrant, accessible",
+      "suggested_search_locations": ["Zone 1 London", "Covent Garden", "Soho"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Canary Wharf, £400pw, 10 min walk to work",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1732,
+      "max_travel_time": 10,
+      "soft_preferences": "walking distance to work",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["workplace proximity"],
+      "area_vibe": "business district, modern",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Greenwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio flat Ldn, under £1000",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1000,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": 1000,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["studio"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": ["East London", "South London"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "3 bed apartmnet in Clapham, max 2500 p/m, easy commut to Victoria",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2500,
+      "original_time_description": "easy commute",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2500,
+      "max_travel_time": 20,
+      "soft_preferences": "easy commute",
+      "property_tags": ["3-bedroom", "family-friendly"],
+      "amenities_of_interest": ["transport links", "schools"],
+      "area_vibe": "lively, family-oriented",
+      "suggested_search_locations": ["Clapham", "Battersea", "Brixton"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a really quirky place in East London, with an art studio space, budget flexible",
+    "query_metadata": {
+      "style": "casual",
+      "budget_flexibility": "flexible",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "destination": "East London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "quirky aesthetics, art studio space",
+      "property_tags": ["unique", "creative space"],
+      "amenities_of_interest": ["studio", "natural light"],
+      "area_vibe": "artistic, bohemian, vibrant",
+      "suggested_search_locations": ["Shoreditch", "Hackney Wick", "Dalston"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Manchester Uni, max £1200pm, 25 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 1200,
+      "max_travel_time": 25,
+      "soft_preferences": "safe area for students",
+      "property_tags": ["2-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries"],
+      "area_vibe": "student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1BR in Didsbury, MCR, must have parking",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Didsbury, Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "must have parking",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["parking"],
+      "area_vibe": "suburban, leafy",
+      "suggested_search_locations": ["Didsbury Village", "West Didsbury"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2 bed apt Edi, nr Royal Mile, £1500 per month, 15 min walk to work",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "walking distance to work",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["workplace proximity", "historic sites"],
+      "area_vibe": "historic, central, touristy",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "One bedroom apartment in the Jewellery Quarter, Birmingham, maximum budget of £950 per calendar month, within 2 miles of the city centre.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 950,
+      "original_distance_miles": 2,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 950,
+      "max_travel_time": 10,
+      "soft_preferences": "within Jewellery Quarter",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["shops", "restaurants", "public transport"],
+      "area_vibe": "boutique, historic, urban",
+      "suggested_search_locations": ["Jewellery Quarter", "St Paul's Square"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Studio apt in Bristl, 15 min cycle to Temple Meads, arnd 800-900 per month",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_range_monthly": "800-900",
+      "original_time_minutes": 15,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bristol Temple Meads station",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "cycling distance",
+      "property_tags": ["studio"],
+      "amenities_of_interest": ["cycle paths", "train station"],
+      "area_vibe": "vibrant, well-connected",
+      "suggested_search_locations": ["Redcliffe", "Old Market", "Totterdown"],
+      "city_context": "Bristol"
+    }
+  }
+]
+```

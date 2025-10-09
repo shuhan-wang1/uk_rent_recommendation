@@ -1,0 +1,107 @@
+[
+  {
+    "user_query": "Looking for a 1 bed flat in East London, maybe Shoreditch or Hackney. Max £1800pcm, lively area, good transport links.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Shoreditch, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "soft_preferences": "lively area, good transport links",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["restaurants", "bars", "art galleries"],
+      "area_vibe": "vibrant, trendy, nightlife",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Hackney", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Waterloo Stn, max £600pw, <20min commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 2598,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London",
+      "max_budget": 2598,
+      "max_travel_time": 20,
+      "soft_preferences": "",
+      "property_tags": ["2-bedroom", "central"],
+      "amenities_of_interest": ["train station", "theatres", "restaurants"],
+      "area_vibe": "bustling, central, touristy",
+      "suggested_search_locations": ["Waterloo", "Southbank", "Lambeth", "Borough"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment in Manchester city centre, proximity to Piccadilly Gardens, budget not exceeding one thousand two hundred pounds per calendar month, with convenient access to public transportation for a maximum journey of fifteen minutes.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Piccadilly Gardens, Manchester",
+      "max_budget": 1200,
+      "max_travel_time": 15,
+      "soft_preferences": "convenient access to public transportation",
+      "property_tags": ["1-bedroom", "city-centre"],
+      "amenities_of_interest": ["public transport", "shops", "restaurants"],
+      "area_vibe": "urban, vibrant, central",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I need a 2 bed flat in Edinburgh, somewhere nice with good views, don't care about the price too much.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Edinburgh",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "nice area, good views",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["scenic areas", "parks", "historical sites"],
+      "area_vibe": "picturesque, historic",
+      "suggested_search_locations": ["Stockbridge", "Morningside", "New Town"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Looking for an apartmnet in Birminghm, close to New Street Station. Commut under 10mins. Prefer furnished.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": null,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "New Street Station, Birmingham",
+      "max_budget": null,
+      "max_travel_time": 10,
+      "soft_preferences": "furnished",
+      "property_tags": ["furnished"],
+      "amenities_of_interest": ["train station", "shops"],
+      "area_vibe": "central, commercial",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  }
+]

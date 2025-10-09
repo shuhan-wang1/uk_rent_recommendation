@@ -1,0 +1,105 @@
+```json
+[
+  {
+    "user_query": "I am seeking a one-bedroom apartment in Central London, with a maximum monthly rent of £1800. Proximity to London Bridge, ideally within a 20-minute commute, is essential.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "central"],
+      "amenities_of_interest": ["transport hub", "restaurants"],
+      "area_vibe": "bustling, financial district",
+      "suggested_search_locations": ["Southwark", "Borough", "City of London"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I need a 2 bed apartmnet near MediaCityUK, max £1100 a month. Commut should be under 15 min.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "MediaCityUK, Salford, Manchester",
+      "max_budget": 1100,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good internet",
+      "property_tags": ["2-bedroom", "modern"],
+      "amenities_of_interest": ["tram access", "restaurants", "gyms"],
+      "area_vibe": "vibrant, media-focused, modern",
+      "suggested_search_locations": ["Salford Quays", "Ordsall", "Castlefield"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Hello, I am currently searching for a living space within the vibrant city of London. My primary requirement is a residence that offers at least two separate sleeping quarters. I'm quite flexible on the exact location, but I would prefer an area with good access to public transport and local amenities. I haven't quite set a budget yet, nor a specific travel time, but I'm open to suggestions for family-friendly neighborhoods. What options might be available given these broad parameters?",
+    "query_metadata": {
+      "style": "verbose",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "required_info": ["max_budget", "destination", "max_travel_time"],
+      "soft_preferences": "family-friendly, good public transport, local amenities",
+      "property_tags": ["2-bedroom+"],
+      "amenities_of_interest": ["parks", "schools", "shops", "transport"],
+      "area_vibe": "family-oriented, quiet",
+      "suggested_search_locations": ["Richmond", "Wimbledon", "Dulwich"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Kindly identify a two-bedroom residence within Edinburgh, situated no more than 3 miles from the University of Edinburgh. My budget is strictly £1500 per calendar month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_distance_miles": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 18,
+      "soft_preferences": "quiet study environment",
+      "property_tags": ["2-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university facilities", "libraries", "cafes"],
+      "area_vibe": "academic, historic, student-oriented",
+      "suggested_search_locations": ["Marchmont", "Newington", "Old Town"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio apt nr Victoria St, London. Budget £400/wk. Need to be there ASAP, 10 mins max walk.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Street, London",
+      "max_budget": 1732,
+      "max_travel_time": 10,
+      "soft_preferences": "close to work, furnished",
+      "property_tags": ["studio", "central"],
+      "amenities_of_interest": ["transport links", "shops", "restaurants"],
+      "area_vibe": "busy, commercial, transport hub",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Victoria"],
+      "city_context": "London"
+    }
+  }
+]
+```

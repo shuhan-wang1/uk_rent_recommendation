@@ -1,0 +1,208 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Shoreditch, max £1800pm. Need to be able to walk to Old Street in 15 mins.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London EC1V 9DS",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "walkable to Old Street",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["public transport", "restaurants", "bars"],
+      "area_vibe": "vibrant, trendy, tech hub",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment within a 30-minute commute to the British Museum, with a maximum budget of £2500 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "The British Museum, Great Russell Street, London WC1B 3DG",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["museums", "cultural institutions", "public transport"],
+      "area_vibe": "central, cultural, busy",
+      "suggested_search_locations": ["Bloomsbury", "Holborn", "Euston", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Want a place in Manchester, 2 bed, pet friendly, good vibe.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": [],
+      "area_vibe": "good vibe",
+      "suggested_search_locations": [],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1BR apt nr EDI, £1200pw, 20 mins to Waverley.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 1200,
+      "original_time_minutes": 20,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Waverley station, Princes Street, Edinburgh EH1 1BB",
+      "max_budget": 5196,
+      "max_travel_time": 20,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre"],
+      "area_vibe": "central, historic",
+      "suggested_search_locations": ["New Town", "Old Town", "Abbeyhill"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed apartmnet in Birmingahm, max £1500pm, 10 min commut to New Street station.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street station, Station Street, Birmingham B2 4QA",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre"],
+      "area_vibe": "urban, convenient",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Studio flat near London Bridge, budget around £1500/month, easy access to tube.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station, London SE1 9SG",
+      "max_budget": 1500,
+      "max_travel_time": null,
+      "soft_preferences": "easy tube access",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["tube station", "restaurants", "markets"],
+      "area_vibe": "lively, historic, touristy",
+      "suggested_search_locations": ["Borough", "Bermondsey", "Southwark"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a family home in Bristol, good schools.",
+    "query_metadata": {
+      "style": "mixed",
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "good schools",
+      "property_tags": ["family-home"],
+      "amenities_of_interest": ["schools"],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "I need a 2 bedroom apartment, up to £2200 per month, anywhere in London. Must have a balcony.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2200,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London (general search)",
+      "max_budget": 2200,
+      "max_travel_time": null,
+      "soft_preferences": "balcony",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Student accommodation, 1 bed near Manchester Uni, £400 weekly, 1 mile walk.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_time_miles": 1,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 1732,
+      "max_travel_time": 5,
+      "soft_preferences": "student accommodation",
+      "property_tags": ["1-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "student facilities"],
+      "area_vibe": "student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "A one-bedroom apartment to rent in West London, 3km from Hammersmith station, maximum £1900 per month, with parking.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1900,
+      "original_time_km": 3,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Hammersmith station, London W6 7JL",
+      "max_budget": 1900,
+      "max_travel_time": 18,
+      "soft_preferences": null,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["parking", "public transport"],
+      "area_vibe": "residential, transport hub",
+      "suggested_search_locations": ["Shepherd's Bush", "Barons Court", "Chiswick"],
+      "city_context": "London"
+    }
+  }
+]
+```

@@ -1,0 +1,88 @@
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Victoria Station, budget around £1800pcm, can commute up to 30 mins.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 30,
+      "property_tags": ["1-bedroom", "flat"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Piccadilly. Budget: £550pw. Travel max 6km.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 550,
+      "original_distance_km": 6,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 2382,
+      "max_travel_time": 36,
+      "property_tags": ["2-bedroom", "apartment"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I am seeking a spacious three-bedroom apartment suitable for a family, ideally located within a five-mile radius of the University of Edinburgh. My maximum monthly budget is £2500, and I prefer a neighborhood with parks and good schools.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 2500,
+      "original_distance_miles": 5,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh",
+      "max_budget": 2500,
+      "max_travel_time": 25,
+      "soft_preferences": "family-friendly, good schools",
+      "property_tags": ["3-bedroom", "family-friendly"],
+      "amenities_of_interest": ["parks", "schools"],
+      "area_vibe": "residential, green spaces",
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a place in London, 2 bed, near a tube station.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "near a tube station",
+      "property_tags": ["2-bedroom"],
+      "clarification_needed_fields": ["max_budget", "max_travel_time", "specific_destination"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a studio flat in Birmingham, city centre area, up to £850 per month. Good for professionals.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 850,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham City Centre",
+      "max_budget": 850,
+      "max_travel_time": 15,
+      "soft_preferences": "suitable for professionals",
+      "property_tags": ["studio", "professional-friendly"],
+      "area_vibe": "urban, lively",
+      "city_context": "Birmingham"
+    }
+  }
+]

@@ -1,0 +1,111 @@
+```json
+[
+  {
+    "user_query": "2 bed apartmnet in central Londo, max £2000 per month, 15 minut walk to Picadilly Circus",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Piccadilly Circus, London",
+      "max_budget": 2000,
+      "max_travel_time": 15,
+      "soft_preferences": "central London, walkable",
+      "property_tags": ["2-bedroom"],
+      "amenities_of_interest": ["theatre", "restaurants", "shopping"],
+      "area_vibe": "vibrant, touristy, entertainment hub",
+      "suggested_search_locations": ["Soho", "Covent Garden", "Mayfair"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed flat for rent in Manchestr near Arndale Centre, around £950 pm, good for commut by bus",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 950,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Arndale, Market St, Manchester M4 3AQ",
+      "max_budget": 950,
+      "max_travel_time": 20,
+      "soft_preferences": "good public transport access, bus routes",
+      "property_tags": ["1-bedroom"],
+      "amenities_of_interest": ["shopping centres", "public transport"],
+      "area_vibe": "city centre, shopping, accessible",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "3BR apt nr London Bridge, £600pw",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 600,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "London Bridge, London",
+      "max_budget": 2598,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["3-bedroom"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London",
+      "clarification_questions": ["What is your preferred maximum travel time to London Bridge?", "Are there any specific amenities or area vibes you are looking for?"]
+    }
+  },
+  {
+    "user_query": "looking for a cozy 1 bed flat in Edinburgh, maybe near Edinburgh Uni, max £1100 a month, walking distance",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": null,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Edinburgh, Old College, South Bridge, Edinburgh EH8 9YL",
+      "max_budget": 1100,
+      "max_travel_time": 15,
+      "soft_preferences": "cozy, walking distance to university",
+      "property_tags": ["1-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "cafes", "bookstores"],
+      "area_vibe": "historic, student-friendly, vibrant",
+      "suggested_search_locations": ["Old Town", "Newington", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "need a place with a pool and gym in Londn, no budget limit, asap",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "pool, gym",
+      "property_tags": ["luxury", "amenity-rich"],
+      "amenities_of_interest": ["swimming pool", "gym"],
+      "area_vibe": null,
+      "suggested_search_locations": [],
+      "city_context": "London",
+      "clarification_questions": ["What is your preferred maximum budget?", "Are you looking for a specific number of bedrooms?", "What areas of London are you interested in?", "Is there a specific move-in date you are aiming for?"]
+    }
+  }
+]
+```

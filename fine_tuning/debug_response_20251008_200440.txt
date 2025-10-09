@@ -1,0 +1,202 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in central London, max £1800pm, close to Victoria Station, about 20 mins commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "central, safe",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["public transport", "shops"],
+      "area_vibe": "bustling, well-connected",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a 2 bed apartmnet near Manchestor Piccadilly, budget up to 1000 per month, max 15 mintues walk.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1000,
+      "max_travel_time": 15,
+      "soft_preferences": "walking distance to station",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre"],
+      "area_vibe": "urban, vibrant",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Piccadilly Basin"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Flat to rent in Shoreditch, preferably 2 beds, dog friendly.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_information": ["budget", "max_travel_time", "destination_specifics"],
+      "destination": "Shoreditch, London",
+      "soft_preferences": "dog-friendly",
+      "property_tags": ["2-bedroom", "flat"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a studio apartment for rent in Edinburgh, maximum £750/month, within 3 miles of the Old Town.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 750,
+      "original_distance_miles": 3,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Old Town",
+      "max_budget": 750,
+      "max_travel_time": 15,
+      "soft_preferences": "historic area, good access to attractions",
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["historic sites", "cultural venues"],
+      "area_vibe": "historic, charming",
+      "suggested_search_locations": ["New Town", "Tollcross", "Marchmont"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "I require a 3-bedroom property for my family, situated within a 25-minute travel radius of Canary Wharf, with a budget ceiling of £3500 monthly. Must have good schools nearby.",
+    "query_metadata": {
+      "style": "verbose",
+      "original_budget_monthly": 3500,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 3500,
+      "max_travel_time": 25,
+      "soft_preferences": "good schools, family-friendly",
+      "property_tags": ["3-bedroom", "house", "apartment"],
+      "amenities_of_interest": ["schools", "parks", "family amenities"],
+      "area_vibe": "residential, professional",
+      "suggested_search_locations": ["Isle of Dogs", "Greenwich", "Stratford"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a cheap 1 bed flat near Bullring, budget around £600-£700 a month, no more than 10 mins away.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 700,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Bullring Shopping Centre, Birmingham",
+      "max_budget": 700,
+      "max_travel_time": 10,
+      "soft_preferences": "affordable, close to amenities",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["shopping", "entertainment", "restaurants"],
+      "area_vibe": "city centre, lively",
+      "suggested_search_locations": ["Digbeth", "Southside", " Jewellery Quarter"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Find me a pet-friendly apartment for a young professional, 2 bed, max £2200 per month, 45 minutes commute to Waterloo Station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 45,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London",
+      "max_budget": 2200,
+      "max_travel_time": 45,
+      "soft_preferences": "pet-friendly, suitable for young professional",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["public transport", "parks", "social venues"],
+      "area_vibe": "diverse, good for young professionals",
+      "suggested_search_locations": ["Clapham", "Brixton", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Small place, just for me, close to work. I work at the Spinningfields area.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_information": ["budget", "max_travel_time"],
+      "destination": "Spinningfields, Manchester",
+      "soft_preferences": "close to work, single occupancy",
+      "property_tags": ["studio", "1-bedroom"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Apartment with 2 bedrooms wanted in Bristol, max £1500pm, close to Bristol Uni, about 2km distance.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1500,
+      "original_distance_km": 2,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Bristol",
+      "max_budget": 1500,
+      "max_travel_time": 12,
+      "soft_preferences": "student-friendly, walkable",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "libraries", "student life"],
+      "area_vibe": "student-oriented, lively",
+      "suggested_search_locations": ["Clifton", "Redland", "Cotham"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Looking for a really quirky, unique apartment in East London, with good natural light and maybe a roof terrace. Budget around £2000-£2500pm, walking distance to an Underground station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "East London",
+      "max_budget": 2500,
+      "max_travel_time": 15,
+      "soft_preferences": "quirky, unique, good natural light, roof terrace, walking distance to underground",
+      "property_tags": ["apartment", "unique property"],
+      "amenities_of_interest": ["underground station", "cafes", "art galleries"],
+      "area_vibe": "bohemian, trendy, artistic",
+      "suggested_search_locations": ["Shoreditch", "Dalston", "Hackney", "Bethnal Green"],
+      "city_context": "London"
+    }
+  }
+]
+```

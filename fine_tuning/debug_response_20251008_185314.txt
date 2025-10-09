@@ -1,0 +1,169 @@
+```json
+[
+  {
+    "user_query": "Looking for a 1 bed flat in central London, max £1800 per month, 15 mins to London Bridge",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1800,
+      "max_travel_time": 15,
+      "soft_preferences": "central area",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["transport links", "restaurants", "shops"],
+      "area_vibe": "vibrant, bustling, business district",
+      "suggested_search_locations": ["Borough", "Southwark", "Bankside"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I require a two-bedroom apartment near Manchester University, with a budget of £400 per week, within 3 miles.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Rd, Manchester M13 9PL",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["university", "libraries", "student facilities"],
+      "area_vibe": "student-friendly, academic, lively",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a cheap studio flat near King's Cross, around £300 weekly, 2 km max commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 300,
+      "original_distance_km": 2,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, Euston Rd, London N1 9AL",
+      "max_budget": 1299,
+      "max_travel_time": 12,
+      "soft_preferences": "cheap",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["transport links", "restaurants", "cultural attractions"],
+      "area_vibe": "bustling, well-connected, urban",
+      "suggested_search_locations": ["Clerkenwell", "Islington", "Camden Town"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Apartment in Edinburgh, close to the Royal Mile.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["apartment"],
+      "amenities_of_interest": ["tourist attractions", "historic sites"],
+      "area_vibe": "historic, touristy, lively",
+      "suggested_search_locations": ["Old Town", "Canongate"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Seeking a three-bedroom residence in South Kensington, not exceeding £3500 per month, with a maximum travel duration of 20 minutes to Victoria Station.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 3500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London SW1V 1JU",
+      "max_budget": 3500,
+      "max_travel_time": 20,
+      "soft_preferences": "luxury",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["museums", "parks", "high-end shops"],
+      "area_vibe": "affluent, cultural, elegant",
+      "suggested_search_locations": ["South Kensington", "Chelsea", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr New Street Stn, £250pw, 10 min commute.",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 250,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Station St, Birmingham B2 4QA",
+      "max_budget": 1083,
+      "max_travel_time": 10,
+      "soft_preferences": null,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["transport links", "city centre facilities"],
+      "area_vibe": "urban, convenient, bustling",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Looking for an apartmnet in Mancester, sumwhere nice.",
+    "query_metadata": {
+      "style": "with_typos",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "nice area",
+      "property_tags": ["apartment"],
+      "amenities_of_interest": [],
+      "area_vibe": null,
+      "suggested_search_locations": ["Northern Quarter", "Didsbury", "Chorlton"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "A comfy 2 bed flat in Canary Wharf, £2500/month, 5 mins walk to tube or 2 miles from Tower Bridge.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 5,
+      "original_distance_miles": 2,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2500,
+      "max_travel_time": 25,
+      "soft_preferences": "comfy",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["tube station", "financial district", "riverside walks"],
+      "area_vibe": "modern, business-oriented, waterfront",
+      "suggested_search_locations": ["Isle of Dogs", "Limehouse", "Poplar"],
+      "city_context": "London"
+    }
+  }
+]
+```

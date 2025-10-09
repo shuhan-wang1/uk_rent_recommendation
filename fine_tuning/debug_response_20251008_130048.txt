@@ -1,0 +1,214 @@
+```json
+[
+  {
+    "user_query": "2 bed flat near London Bridge, £2000pm, 20 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London SE1 9RA",
+      "max_budget": 2000,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links, lively area",
+      "property_tags": ["2-bedroom", "flat", "commuter-friendly"],
+      "amenities_of_interest": ["transport hub", "restaurants", "shops"],
+      "area_vibe": "bustling urban, riverside",
+      "suggested_search_locations": ["Borough", "Southwark", "Bermondsey"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed apartmnet near Manc Uni, £900 per mnth, 15 min walk",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, walkable",
+      "property_tags": ["1-bedroom", "apartment", "student-accommodation"],
+      "amenities_of_interest": ["university", "libraries", "cafes"],
+      "area_vibe": "student neighborhood, vibrant",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Looking for a flat in Shoreditch, max £1800",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Shoreditch, London",
+      "max_budget": 1800,
+      "max_travel_time": null,
+      "soft_preferences": "vibrant area, good nightlife",
+      "property_tags": ["flat"],
+      "amenities_of_interest": ["bars", "restaurants", "art galleries"],
+      "area_vibe": "trendy, artistic, nightlife",
+      "suggested_search_locations": ["Hoxton", "Old Street", "Bethnal Green"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "3BR apt nr Old Town, £1500pm, 10 min cycle",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Old Town, Edinburgh EH1",
+      "max_budget": 1500,
+      "max_travel_time": 10,
+      "soft_preferences": "historic area, good views",
+      "property_tags": ["3-bedroom", "apartment", "cycle-friendly"],
+      "amenities_of_interest": ["historic sites", "museums", "restaurants"],
+      "area_vibe": "historic, touristy, cultural",
+      "suggested_search_locations": ["New Town", "Tollcross", "Fountainbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio flat in Canary Wharf, £450 weekly, 5 miles commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1949,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 1949,
+      "max_travel_time": 25,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["studio", "flat", "professional"],
+      "amenities_of_interest": ["business district", "gyms", "restaurants"],
+      "area_vibe": "modern, business-oriented, upscale",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Need a place near new hospitl, family friendly, 3 beds",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Queen Elizabeth Hospital Birmingham, B15 2GW",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "family friendly, quiet, good schools",
+      "property_tags": ["3-bedroom", "family-home"],
+      "amenities_of_interest": ["hospital", "parks", "schools"],
+      "area_vibe": "residential, suburban",
+      "suggested_search_locations": ["Edgbaston", "Harborne", "Selly Oak"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "I need a penthouse apartment in London, super cheap and next to Big Ben",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Big Ben, London SW1A 0AA",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "super cheap (unrealistic), luxury",
+      "property_tags": ["penthouse", "apartment", "luxury"],
+      "amenities_of_interest": ["landmarks", "tourist attractions", "government buildings"],
+      "area_vibe": "central, prestigious, touristy",
+      "suggested_search_locations": ["Westminster", "Victoria", "St. James's"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2B apt nr Piccadilly, £1100pcm, <20min trvl",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester M60 7RA",
+      "max_budget": 1100,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport, city centre access",
+      "property_tags": ["2-bedroom", "apartment", "commuter-friendly"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "urban, central, well-connected",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1 bed flat near Victoria statin, £1600 per month, 2 km commute",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1600,
+      "original_time_minutes": 12,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Victoria Station, London SW1V 1JU",
+      "max_budget": 1600,
+      "max_travel_time": 12,
+      "soft_preferences": "central, good transport",
+      "property_tags": ["1-bedroom", "flat", "commuter-friendly"],
+      "amenities_of_interest": ["train station", "theatre", "shops"],
+      "area_vibe": "busy, touristy, commercial",
+      "suggested_search_locations": ["Pimlico", "Belgravia", "Westminster"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Family home in Bristol, 3 beds, max £1400pm, 10 mins from Clifton Village",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1400,
+      "original_time_minutes": 10,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clifton Village, Bristol BS8",
+      "max_budget": 1400,
+      "max_travel_time": 10,
+      "soft_preferences": "family-friendly, good schools, green spaces",
+      "property_tags": ["3-bedroom", "family-home", "garden"],
+      "amenities_of_interest": ["parks", "schools", "local shops"],
+      "area_vibe": "affluent, historic, residential",
+      "suggested_search_locations": ["Clifton", "Redland", "Cotham"],
+      "city_context": "Bristol"
+    }
+  }
+]
+```

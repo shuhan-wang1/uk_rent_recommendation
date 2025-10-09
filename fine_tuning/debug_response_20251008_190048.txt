@@ -1,0 +1,157 @@
+[
+  {
+    "user_query": "2 bed flat near London Bridge, max £1800pm, 20 mins commute to work",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["train station", "shops", "restaurants"],
+      "area_vibe": "vibrant, central, busy",
+      "suggested_search_locations": ["Borough", "Bermondsey", "Elephant and Castle"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed apartment in Manchester, £350 per week, within 3 miles of Piccadilly Station",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 350,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station, Manchester",
+      "max_budget": 1516,
+      "max_travel_time": 15,
+      "soft_preferences": "modern, good for singles",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre", "gyms"],
+      "area_vibe": "urban, lively, professional",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Deansgate"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "flat for rent near Victoria Station, 1 bedroom, 15 minutes away",
+    "query_metadata": {
+      "style": "casual",
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget"],
+      "destination": "Victoria Station, London",
+      "max_travel_time": 15,
+      "property_tags": ["1-bedroom", "flat"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Two-bedroom apartment to let in Edinburgh, close to the Royal Mile, maximum £1500 per month, within 2 kilometers",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_distance_km": 2,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1500,
+      "max_travel_time": 12,
+      "soft_preferences": "historic charm, quiet",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["historical sites", "restaurants", "pubs"],
+      "area_vibe": "historic, tourist-friendly, charming",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "3BR apt nr Canary Wharf, £400 pw, 25min commute",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1732,
+      "max_travel_time": 25,
+      "soft_preferences": "modern, close to amenities",
+      "property_tags": ["3-bedroom", "apartment"],
+      "amenities_of_interest": ["business district", "restaurants", "shopping malls"],
+      "area_vibe": "modern, professional, high-rise",
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "looking for a 2 bed appartment in Birminghm, max £1000 pcm, 4 miles from New Street station",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1000,
+      "original_distance_miles": 4,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Birmingham",
+      "max_budget": 1000,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport, city access",
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shopping", "restaurants"],
+      "area_vibe": "urban, developing, central",
+      "suggested_search_locations": ["City Centre", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "something nice in Manchester, good area, not too expensive, for a couple",
+    "query_metadata": {
+      "style": "casual",
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["destination", "budget", "travel_time"],
+      "soft_preferences": "good area, not too expensive, suitable for a couple",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1 bed flat near LSE, £300/wk, 10 mins walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 300,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London School of Economics (LSE), London",
+      "max_budget": 1299,
+      "max_travel_time": 10,
+      "soft_preferences": "student-friendly, safe, quiet for study",
+      "property_tags": ["1-bedroom", "flat", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "cafes"],
+      "area_vibe": "academic, central, bustling",
+      "suggested_search_locations": ["Holborn", "Covent Garden", "Clerkenwell"],
+      "city_context": "London"
+    }
+  }
+]

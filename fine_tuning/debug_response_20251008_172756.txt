@@ -1,0 +1,214 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1500pm, 20 mins tube",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1500,
+      "max_travel_time": 20,
+      "soft_preferences": "close to tube, modern",
+      "property_tags": ["1-bedroom", "modern"],
+      "amenities_of_interest": ["gym", "concierge"],
+      "area_vibe": "bustling business district",
+      "suggested_search_locations": ["Poplar", "Isle of Dogs", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2BR apt nr LSE, £400/wk, 15min walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1732,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London School of Economics and Political Science, London",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, safe",
+      "property_tags": ["2-bedroom", "furnished"],
+      "amenities_of_interest": ["wifi", "laundry"],
+      "area_vibe": "vibrant student area",
+      "suggested_search_locations": ["Holborn", "Covent Garden", "Waterloo"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "apartmnet in cenral london, good commut",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": null,
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment in the vicinity of King's Cross Station, with a maximum monthly rent of £1800 and a commute no longer than 25 minutes by public transport.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 1800,
+      "max_travel_time": 25,
+      "soft_preferences": "well-connected, secure building",
+      "property_tags": ["1-bedroom", "unfurnished"],
+      "amenities_of_interest": ["central heating", "balcony"],
+      "area_vibe": "transport hub, vibrant",
+      "suggested_search_locations": ["Pentonville", "Bloomsbury", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio near Borough Market, must have bike storage, £1200pm, 10 min cycle",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Borough Market, London",
+      "max_budget": 1200,
+      "max_travel_time": 10,
+      "soft_preferences": "secure bike storage, vibrant area",
+      "property_tags": ["studio", "modern"],
+      "amenities_of_interest": ["bike storage", "nearby market"],
+      "area_vibe": "foodie district, lively",
+      "suggested_search_locations": ["London Bridge", "Bermondsey", "Southwark"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Manchester Uni, max £1200pm, 25 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 25,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester, Oxford Road, Manchester M13 9PL",
+      "max_budget": 1200,
+      "max_travel_time": 25,
+      "soft_preferences": "safe area for students",
+      "property_tags": ["2-bedroom", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries"],
+      "area_vibe": "student neighborhood with cafes and study spaces",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "I need a place in Manchester. My budget is reasonable, and I need good access to public transport.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "reasonable budget, good public transport access",
+      "property_tags": null,
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1 bed apt near Edinbrugh Castl, under £900 montly, 15 min walk",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 900,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Edinburgh",
+      "max_budget": 900,
+      "max_travel_time": 15,
+      "soft_preferences": "historic area, good views",
+      "property_tags": ["1-bedroom", "traditional"],
+      "amenities_of_interest": ["city views", "central heating"],
+      "area_vibe": "historic, tourist-friendly",
+      "suggested_search_locations": ["Old Town", "Grassmarket", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio near New St, £750pm, 10min walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": 750,
+      "original_time_minutes": 10,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station, Birmingham",
+      "max_budget": 750,
+      "max_travel_time": 10,
+      "soft_preferences": "city centre, modern",
+      "property_tags": ["studio", "compact"],
+      "amenities_of_interest": ["wifi", "security"],
+      "area_vibe": "bustling city centre",
+      "suggested_search_locations": ["Chinese Quarter", "Jewellery Quarter", "Digbeth"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "A three-bedroom residence near Bristol University, maximum budget £1800 per month, with a commute of no more than 20 minutes by bicycle.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Bristol, Bristol",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "family-friendly, green spaces",
+      "property_tags": ["3-bedroom", "house/apartment"],
+      "amenities_of_interest": ["garden", "parking"],
+      "area_vibe": "residential, academic",
+      "suggested_search_locations": ["Clifton", "Redland", "Cotham"],
+      "city_context": "Bristol"
+    }
+  }
+]
+```

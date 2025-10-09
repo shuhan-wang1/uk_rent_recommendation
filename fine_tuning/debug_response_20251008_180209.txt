@@ -1,0 +1,193 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near Canary Wharf, max £1800pm, 20 mins travel",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["1-bedroom", "flat", "city-living"],
+      "amenities_of_interest": ["DLR station", "shops", "restaurants", "gyms"],
+      "area_vibe": "financial district, modern, vibrant",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Two bedroom apartment for rent close to British Museum, budget £2500 per month, commute within 30 minutes",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2500,
+      "original_time_minutes": 30,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "British Museum, Great Russell Street, London WC1B 3DG",
+      "max_budget": 2500,
+      "max_travel_time": 30,
+      "soft_preferences": "quiet, culturally rich area",
+      "property_tags": ["2-bedroom", "apartment", "central"],
+      "amenities_of_interest": ["museums", "theatres", "restaurants", "universities"],
+      "area_vibe": "cultural, academic, historic",
+      "suggested_search_locations": ["Bloomsbury", "Holborn", "Covent Garden"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "studio flat in Manchester, student friendly",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Manchester",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "student-friendly, good transport to university",
+      "property_tags": ["studio", "flat", "student-friendly"],
+      "amenities_of_interest": ["universities", "libraries", "nightlife", "public transport"],
+      "area_vibe": "student neighborhood",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "City Centre"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "2BR apt nr Waterloo, £600 pw, 4 mi radius",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 600,
+      "original_distance_miles": 4,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Waterloo Station, London SE1 8SW",
+      "max_budget": 2598,
+      "max_travel_time": 20,
+      "soft_preferences": "convenient transport, lively area",
+      "property_tags": ["2-bedroom", "apartment", "central"],
+      "amenities_of_interest": ["Waterloo Station", "South Bank", "theatres", "restaurants"],
+      "area_vibe": "bustling, cultural, well-connected",
+      "suggested_search_locations": ["Southwark", "Lambeth", "Borough"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1 bed apartmnet in Edinburgh, near Royal Mile, £1200 a month, 25 minuts commut",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 25,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1200,
+      "max_travel_time": 25,
+      "soft_preferences": "historic, central location",
+      "property_tags": ["1-bedroom", "apartment", "historic"],
+      "amenities_of_interest": ["Edinburgh Castle", "Holyrood Palace", "pubs", "tourist attractions"],
+      "area_vibe": "historic, touristy, lively",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "3 bed house in Birmingham, good schools nearby, £1500 per calendar month, travel to New Street Station in 15 mins",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "soft_preferences": "family-friendly, good schools",
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["schools", "parks", "community centres", "public transport"],
+      "area_vibe": "suburban, family-oriented",
+      "suggested_search_locations": ["Moseley", "Harborne", "Edgbaston"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "flat near Regent's Park, budget -£500 per month, max 10 minutes walk",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": -500,
+      "original_time_minutes": 10,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "unclear_request",
+      "destination": "Regent's Park, London",
+      "max_budget": -500,
+      "max_travel_time": 10,
+      "soft_preferences": "green spaces, quiet",
+      "property_tags": ["flat"],
+      "amenities_of_interest": ["Regent's Park", "London Zoo", "cafes"],
+      "area_vibe": "affluent, green, peaceful",
+      "suggested_search_locations": ["Marylebone", "Primrose Hill", "Camden Town"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Spinningfields, max £1400pcm, 3km radius",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1400,
+      "original_distance_km": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Spinningfields, Manchester",
+      "max_budget": 1400,
+      "max_travel_time": 18,
+      "soft_preferences": "modern, vibrant city life",
+      "property_tags": ["2-bedroom", "flat", "city-living"],
+      "amenities_of_interest": ["restaurants", "bars", "shops", "financial district"],
+      "area_vibe": "upscale, modern, bustling",
+      "suggested_search_locations": ["Deansgate", "Castlefield", "Northern Quarter"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio apt in Shoreditch",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_monthly": null,
+      "original_time_minutes": null,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": "Shoreditch, London",
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": "trendy, artistic, nightlife",
+      "property_tags": ["studio", "apartment", "trendy"],
+      "amenities_of_interest": ["art galleries", "independent shops", "bars", "restaurants"],
+      "area_vibe": "hip, vibrant, creative",
+      "suggested_search_locations": ["Hoxton", "Old Street", "Bethnal Green"],
+      "city_context": "London"
+    }
+  }
+]
+```

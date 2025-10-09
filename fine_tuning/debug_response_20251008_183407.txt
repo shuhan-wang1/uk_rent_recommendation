@@ -1,0 +1,222 @@
+```json
+[
+  {
+    "user_query": "2 bed flat near Waterloo, max £2000pm, 20 mins commute",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2000,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Waterloo Station, London",
+      "max_budget": 2000,
+      "max_travel_time": 20,
+      "property_tags": ["2-bedroom"],
+      "area_vibe": "central, well-connected",
+      "suggested_search_locations": ["Southwark", "Lambeth North", "Elephant & Castle"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "One bedroom apartment close to Manchester Piccadilly, budget £1500 per month, within 15 minutes travel",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1500,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1500,
+      "max_travel_time": 15,
+      "property_tags": ["1-bedroom"],
+      "area_vibe": "city centre, vibrant",
+      "suggested_search_locations": ["Northern Quarter", "Ancoats", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "1BR apt nr LSE",
+    "query_metadata": {
+      "style": "abbreviated",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "travel_time"],
+      "destination": "London School of Economics and Political Science, Houghton Street, London WC2A 2AE",
+      "property_tags": ["1-bedroom"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Family home with 3 beds, near Edinburgh Castle. Budget £1800pm, 10 miles max.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1800,
+      "original_distance_miles": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle, Castlehill, Edinburgh EH1 2NG",
+      "max_budget": 1800,
+      "max_travel_time": 50,
+      "property_tags": ["3-bedroom", "family-friendly"],
+      "soft_preferences": "good schools, quiet area",
+      "area_vibe": "historic, residential",
+      "suggested_search_locations": ["Morningside", "Marchmont", "Stockbridge"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Studio flat in Shoreditch, around £400 per week. Need to be near Old Street station, 15 mins walk.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "property_tags": ["studio"],
+      "area_vibe": "vibrant, trendy, tech hub",
+      "amenities_of_interest": ["bars", "restaurants", "tech companies"],
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Islington"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Two-bedroom apartment for rent, within 3 km of Birmingham New Street station. Maximum budget £1300 per month.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1300,
+      "original_distance_km": 3,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1300,
+      "max_travel_time": 18,
+      "property_tags": ["2-bedroom"],
+      "area_vibe": "city centre, modern",
+      "amenities_of_interest": ["shopping", "transport links"],
+      "suggested_search_locations": ["Jewellery Quarter", "Digbeth", "Southside"],
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Looking for a 1 bed in Clapham, when's it available?",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["budget", "travel_time", "availability_date"],
+      "destination": "Clapham, London",
+      "property_tags": ["1-bedroom"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "apartmnet in city center, max £1000pm, commut 20mins",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["destination"],
+      "max_budget": 1000,
+      "max_travel_time": 20,
+      "property_tags": ["apartment"],
+      "city_context": "Manchester",
+      "suggested_destination_clarification": "Manchester city centre specific landmarks or districts"
+    }
+  },
+  {
+    "user_query": "3 bed fam apt near Victoria, £600 weekly, 15min max travel",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 600,
+      "original_time_minutes": 15,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Victoria Station, London",
+      "max_budget": 2598,
+      "max_travel_time": 15,
+      "property_tags": ["3-bedroom", "family-friendly"],
+      "soft_preferences": "good transport, schools",
+      "area_vibe": "well-connected, residential",
+      "suggested_search_locations": ["Pimlico", "Westminster", "Belgravia"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Student accommodation, 1 bed near UoB, budget £850 per month, 10 min walk.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 850,
+      "original_time_minutes": 10,
+      "city": "Bristol"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Bristol, Beacon House, Queen's Rd, Bristol BS8 1QU",
+      "max_budget": 850,
+      "max_travel_time": 10,
+      "property_tags": ["1-bedroom", "student-friendly"],
+      "area_vibe": "student neighborhood, lively",
+      "amenities_of_interest": ["university", "cafes", "pubs"],
+      "suggested_search_locations": ["Clifton", "Redland", "Cotham"],
+      "city_context": "Bristol"
+    }
+  },
+  {
+    "user_query": "Professional looking for a 2-bedroom property, close to Canary Wharf. Budget up to £2800 per month, with a maximum 25-minute commute.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 2800,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London E14",
+      "max_budget": 2800,
+      "max_travel_time": 25,
+      "property_tags": ["2-bedroom", "professional-friendly"],
+      "area_vibe": "modern, business district",
+      "soft_preferences": "gym access, good DLR links",
+      "amenities_of_interest": ["restaurants", "bars", "gyms", "financial institutions"],
+      "suggested_search_locations": ["Isle of Dogs", "Poplar", "Limehouse"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "What's available for rent?",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["property_type", "location", "budget", "travel_time"],
+      "message": "Please provide more details to help with your search, such as location, number of bedrooms, and budget.",
+      "city_context": "London"
+    }
+  }
+]
+```

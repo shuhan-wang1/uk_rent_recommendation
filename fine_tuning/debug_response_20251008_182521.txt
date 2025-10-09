@@ -1,0 +1,167 @@
+[
+  {
+    "user_query": "Looking for a 1 bed flat in London, near Canary Wharf. Max £1800pm, 20 mins commute.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Canary Wharf, London",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "modern, good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["DLR station", "supermarket", "gym"],
+      "area_vibe": "financial district, modern, active",
+      "suggested_search_locations": ["Canary Wharf", "Isle of Dogs", "Poplar"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "2 bed apt near Manchester Uni, £400 weekly, 3 miles away is fine.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_weekly": 400,
+      "original_distance_miles": 3,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "University of Manchester",
+      "max_budget": 1732,
+      "max_travel_time": 15,
+      "soft_preferences": "student-friendly, furnished",
+      "property_tags": ["2-bedroom", "apartment", "student-friendly"],
+      "amenities_of_interest": ["university", "libraries", "pubs"],
+      "area_vibe": "student neighborhood, lively",
+      "suggested_search_locations": ["Fallowfield", "Rusholme", "Victoria Park"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Need a place in London, 3 bedrooms. What's available?",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "destination": null,
+      "max_budget": null,
+      "max_travel_time": null,
+      "soft_preferences": null,
+      "property_tags": ["3-bedroom"],
+      "amenities_of_interest": null,
+      "area_vibe": null,
+      "suggested_search_locations": null,
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a one bedroom apartment in Edinburgh, close to the Royal Mile. Budget is £1000 per month, 15 minutes travel.",
+    "query_metadata": {
+      "style": "mixed",
+      "original_budget_monthly": 1000,
+      "original_time_minutes": 15,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Royal Mile, Edinburgh",
+      "max_budget": 1000,
+      "max_travel_time": 15,
+      "soft_preferences": "historic area, good for tourists",
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["historic sites", "restaurants", "shops"],
+      "area_vibe": "historic, touristy, central",
+      "suggested_search_locations": ["Old Town", "New Town", "Tollcross"],
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "2 bed flat near Kings Cross, max £2200pm, 25 mintues commut.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 2200,
+      "original_time_minutes": 25,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "King's Cross Station, London",
+      "max_budget": 2200,
+      "max_travel_time": 25,
+      "soft_preferences": "well-connected, vibrant",
+      "property_tags": ["2-bedroom", "flat"],
+      "amenities_of_interest": ["train station", "underground", "restaurants", "theatre"],
+      "area_vibe": "transport hub, cultural, busy",
+      "suggested_search_locations": ["King's Cross", "Euston", "Clerkenwell"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "I need a penthouse apartment in central Manchester for £500 a month, walking distance to Piccadilly station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 500,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "edge_case",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 500,
+      "max_travel_time": null,
+      "soft_preferences": "luxurious, high-end",
+      "property_tags": ["penthouse", "apartment"],
+      "amenities_of_interest": ["city views", "concierge"],
+      "area_vibe": "city centre, upscale",
+      "suggested_search_locations": ["Northern Quarter", "Spinningfields"],
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Studio flat in Shoreditch area, £1500pm, 2km from Old Street Station.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1500,
+      "original_distance_km": 2,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Old Street Station, London",
+      "max_budget": 1500,
+      "max_travel_time": 12,
+      "soft_preferences": "trendy, artistic",
+      "property_tags": ["studio", "flat"],
+      "amenities_of_interest": ["art galleries", "boutique shops", "bars"],
+      "area_vibe": "hip, vibrant, creative",
+      "suggested_search_locations": ["Shoreditch", "Hoxton", "Old Street"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Family home 3 beds near Birmingham New Street. £1200 a month, 20 mins by bus.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1200,
+      "original_time_minutes": 20,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 1200,
+      "max_travel_time": 20,
+      "soft_preferences": "family-friendly, good schools",
+      "property_tags": ["3-bedroom", "house", "family-home"],
+      "amenities_of_interest": ["schools", "parks", "bus routes"],
+      "area_vibe": "residential, suburban, community-focused",
+      "suggested_search_locations": ["Edgbaston", "Harborne", "Moseley"],
+      "city_context": "Birmingham"
+    }
+  }
+]

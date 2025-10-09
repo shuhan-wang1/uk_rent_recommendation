@@ -1,0 +1,151 @@
+```json
+[
+  {
+    "user_query": "1 bed flat near London Bridge, max £1800pm, 20 mins tube",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 1800,
+      "original_time_minutes": 20,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "London Bridge Station",
+      "max_budget": 1800,
+      "max_travel_time": 20,
+      "soft_preferences": "good transport links",
+      "property_tags": ["1-bedroom", "flat"],
+      "amenities_of_interest": ["restaurants", "nightlife", "train station"],
+      "area_vibe": "bustling, central, good for commuters",
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Looking for a two-bedroom apartment close to Manchester Piccadilly. Budget up to £1100 per month, within 15 minutes travel.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 1100,
+      "original_time_minutes": 15,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Manchester Piccadilly Station",
+      "max_budget": 1100,
+      "max_travel_time": 15,
+      "property_tags": ["2-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "shops", "city centre"],
+      "area_vibe": "urban, convenient, accessible",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Flat for rent in London, need 2 beds, pet friendly.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["destination", "max_budget", "max_travel_time"],
+      "soft_preferences": "pet-friendly",
+      "property_tags": ["2-bedroom", "flat"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "Studio apt nr Edinburgh Castle, £700 weekly, 10 min walk",
+    "query_metadata": {
+      "style": "abbreviated",
+      "original_budget_weekly": 700,
+      "original_time_minutes": 10,
+      "city": "Edinburgh"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Edinburgh Castle",
+      "max_budget": 3031,
+      "max_travel_time": 10,
+      "property_tags": ["studio", "apartment"],
+      "amenities_of_interest": ["historical sites", "tourist attractions", "city centre"],
+      "area_vibe": "historic, vibrant, touristy",
+      "city_context": "Edinburgh"
+    }
+  },
+  {
+    "user_query": "Need a 3 bed house in South London, max £2500/month, within 5 miles of Clapham Common.",
+    "query_metadata": {
+      "style": "casual",
+      "original_budget_monthly": 2500,
+      "original_distance_miles": 5,
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Clapham Common",
+      "max_budget": 2500,
+      "max_travel_time": 25,
+      "property_tags": ["3-bedroom", "house", "family-friendly"],
+      "amenities_of_interest": ["parks", "schools", "local shops"],
+      "area_vibe": "family-friendly, green spaces, suburban feel",
+      "suggested_search_locations": ["Balham", "Tooting", "Brixton"],
+      "city_context": "London"
+    }
+  },
+  {
+    "user_query": "1-bed apartmnet near MediaCityUK in Manc, budget £950pm, commute 20 mins.",
+    "query_metadata": {
+      "style": "with_typos",
+      "original_budget_monthly": 950,
+      "original_time_minutes": 20,
+      "city": "Manchester"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "MediaCityUK, Salford",
+      "max_budget": 950,
+      "max_travel_time": 20,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["media", "entertainment", "restaurants", "waterside"],
+      "area_vibe": "modern, vibrant, media hub",
+      "city_context": "Manchester"
+    }
+  },
+  {
+    "user_query": "Seeking a one-bedroom apartment in Birmingham, close to New Street Station. My budget is £800 per month, and I prefer to be within 3 km travel distance.",
+    "query_metadata": {
+      "style": "formal",
+      "original_budget_monthly": 800,
+      "original_distance_km": 3,
+      "city": "Birmingham"
+    },
+    "expected_json": {
+      "status": "success",
+      "destination": "Birmingham New Street Station",
+      "max_budget": 800,
+      "max_travel_time": 18,
+      "property_tags": ["1-bedroom", "apartment"],
+      "amenities_of_interest": ["train station", "city centre amenities", "shopping"],
+      "area_vibe": "urban, central, well-connected",
+      "city_context": "Birmingham"
+    }
+  },
+  {
+    "user_query": "Student accommodation in London, close to Kings College, need a cheap studio.",
+    "query_metadata": {
+      "style": "casual",
+      "city": "London"
+    },
+    "expected_json": {
+      "status": "clarification_needed",
+      "missing_info": ["max_budget", "max_travel_time"],
+      "destination": "King's College London",
+      "property_tags": ["studio", "student-friendly"],
+      "soft_preferences": "cheap",
+      "amenities_of_interest": ["university", "libraries", "student services"],
+      "area_vibe": "student neighborhood",
+      "city_context": "London"
+    }
+  }
+]
+```
