@@ -7,6 +7,14 @@ import requests
 OLLAMA_BASE_URL = "http://localhost:11434"
 MODEL_NAME = "llama3.2:1b"  # Change to your model (qwen2.5:1.5b, llama3.2:3b, etc.)
 
+USE_FINETUNED_MODEL = True
+# ========================================
+FINETUNED_BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"  # or path to Ollama's download
+FINETUNED_ADAPTER_PATH = "./student_model_lora/"     # Your LoRA adapters directory
+# ========================================
+  # Default model if not using fine-tuned
+
+
 def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 6000) -> str:
     """Call Ollama with better defaults"""
     url = f"{OLLAMA_BASE_URL}/api/generate"
@@ -26,11 +34,25 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 6000) -> 
     if system_prompt:
         payload["system"] = system_prompt
     
+    # DEBUG: Print what we're sending
+    print(f"[DEBUG] Ollama URL: {url}")
+    print(f"[DEBUG] Model: {MODEL_NAME}")
+    print(f"[DEBUG] Prompt length: {len(prompt)} chars")
+    print(f"[DEBUG] Has system prompt: {system_prompt is not None}")
+    
     try:
         response = requests.post(url, json=payload, timeout=timeout)
-        response.raise_for_status()
+        
+        # DEBUG: Print response status
+        print(f"[DEBUG] Response status: {response.status_code}")
+        
+        response.raise_for_status()  # This line throws the 404 error
         result = response.json()
         return result.get("response", "")
+    except requests.exceptions.HTTPError as e:
+        print(f"❌ Ollama HTTP error: {e}")
+        print(f"[DEBUG] Response text: {response.text[:500]}")
+        return None
     except requests.exceptions.Timeout:
         print(f"⚠️  Ollama timeout after {timeout}s")
         return None
@@ -125,8 +147,42 @@ Fill in the values. Return ONLY the JSON object, nothing else."""
     }
 
 def clarify_and_extract_criteria(user_query: str) -> dict:
-    """Extract criteria from user query - V5 with better soft_preferences extraction"""
-
+    """Extract criteria from user query - now supports fine-tuned model"""
+    
+    
+    if USE_FINETUNED_MODEL:
+        try:
+            print("[INFO] Attempting to use fine-tuned model...")
+            from finetuned_parser import get_finetuned_parser
+            
+            parser = get_finetuned_parser(FINETUNED_BASE_MODEL, FINETUNED_ADAPTER_PATH)
+            result = parser.parse_query(user_query)
+            
+            print("[INFO] ✓ Used fine-tuned model for parsing")
+            
+            # Validate result has required fields
+            if result.get('status') == 'success':
+                required = ['destination', 'max_budget', 'max_travel_time']
+                if all(result.get(field) for field in required):
+                    return result
+                else:
+                    print("[WARN] Fine-tuned model missing required fields, falling back to Ollama")
+            elif result.get('status') == 'error':
+                print(f"[WARN] Fine-tuned model returned error: {result.get('data', {}).get('message')}")
+                print("[INFO] Falling back to Ollama")
+            
+        except ImportError as e:
+            print(f"[ERROR] Could not import finetuned_parser: {e}")
+            print("[INFO] Falling back to Ollama")
+        except Exception as e:
+            print(f"[ERROR] Fine-tuned model failed: {e}")
+            import traceback
+            traceback.print_exc()
+            print("[INFO] Falling back to Ollama")
+    else:
+        print("[INFO] Using Ollama (USE_FINETUNED_MODEL = False)")
+    
+    # EXISTING: Original Ollama-based parsing (fallback)
     system_prompt = """You are a JSON extraction tool. You MUST return ONLY valid JSON, no explanations.
 Extract UK rental search criteria from user requests.
 If a specific place is mentioned (e.g., 'UCL', 'King's Cross'), use it as the destination.
@@ -169,7 +225,6 @@ JSON OUTPUT:"""
     
     print(f"[DEBUG] Raw Ollama response length: {len(response_text)} chars")
     print(f"[DEBUG] First 300 chars: {response_text[:300]}")
-    print(f"[DEBUG] Last 200 chars: {response_text[-200:]}")
     
     parsed_json = extract_first_json(response_text)
     
@@ -182,7 +237,6 @@ JSON OUTPUT:"""
         has_required = all(parsed_json.get(field) for field in required)
         
         if has_required:
-            # ENHANCEMENT: If soft_preferences is empty, try to extract key concerns from query
             if not parsed_json.get('soft_preferences'):
                 query_lower = user_query.lower()
                 concerns = []
@@ -205,7 +259,6 @@ JSON OUTPUT:"""
             return retry_with_simple_prompt(user_query)
     else:
         print("[ERROR] Could not parse JSON from Ollama response")
-        print(f"[DEBUG] Full response:\n{response_text}")
         return retry_with_simple_prompt(user_query)
 
 def refine_criteria_with_answer(original_query: str, user_answer: str) -> dict:
@@ -256,7 +309,7 @@ def _get_property_url(prop: dict) -> str:
     return ''
 
 def generate_recommendations(properties_data: list[dict], user_query: str, soft_preferences: str) -> dict | None:
-    """Generate personalized property recommendations - FIXED to use crime data correctly"""
+    """Generate personalized property recommendations with natural explanations"""
 
     print(f"\n🤖 [RECOMMENDATION ENGINE] Starting...")
     print(f"   Properties to analyze: {len(properties_data)}")
@@ -266,79 +319,122 @@ def generate_recommendations(properties_data: list[dict], user_query: str, soft_
 
     top_props = properties_data[:5]
     
+    # Prepare property data for the model
     simple_props = []
     for i, prop in enumerate(top_props):
         url = _get_property_url(prop)
         travel_time = prop.get('travel_time_minutes', 'N/A')
         images = prop.get('Images', [])
         
-        # FIXED: Properly extract crime data
+        # Extract crime data
         crime_data = prop.get('crime_data_summary', {})
         crimes = crime_data.get('total_crimes_6m', 0)
         crime_trend = crime_data.get('crime_trend', 'unknown')
+        top_crime_types = crime_data.get('top_crime_types', [])
         
-        # DEBUG: Print to verify data is present
-        print(f"   [DEBUG] Property {i+1}: {crimes} crimes, trend: {crime_trend}")
-
+        # Extract amenities
+        amenities = prop.get('amenities_nearby', {})
+        
         simple_prop = {
             'id': i + 1,
             'address': prop.get('Address', 'Unknown')[:70],
             'price': prop.get('Price', 'N/A'),
+            'price_numeric': prop.get('parsed_price', 0),
             'url': url,
             'travel_time_minutes': travel_time,
-            'crimes': crimes,  # Now correctly populated
+            'crimes_6m': crimes,
             'crime_trend': crime_trend,
-            'images': images,
-            'description': prop.get('Description', '')[:200]
+            'top_crime_types': top_crime_types[:2],  # Top 2 crime types
+            'nearby_supermarkets': amenities.get('supermarket_in_1500m', 0),
+            'nearby_parks': amenities.get('park_in_1500m', 0),
+            'nearby_gyms': amenities.get('gym_in_1500m', 0),
+            'description': prop.get('Description', '')[:200],
+            'images': images
         }
         simple_props.append(simple_prop)
 
-    system_prompt = """You are an expert London rental assistant. 
-    
+    # IMPROVED PROMPT: More natural, conversational
+    system_prompt = """You are Alex, a friendly and knowledgeable London rental assistant with years of experience helping people find their perfect home. 
+
+Your task is to write engaging, personalized property recommendations that feel like advice from a trusted friend who really understands the London rental market.
+
 CRITICAL RULES:
-1. You MUST use the EXACT crime numbers from the data
-2. NEVER say "no crimes" or "0 crimes" unless the crimes field is actually 0
-3. NEVER make up statistics - only use provided data
-4. Be honest about safety - high crime numbers deserve honest mention"""
+1. Write in a warm, conversational tone - like you're talking to a friend
+2. Tell a story about each property - don't just list facts
+3. Compare properties naturally (e.g., "While Property 1 is closer, Property 2 offers better value...")
+4. Be honest about downsides (high crime, expensive, etc.) but frame them constructively
+5. Use specific numbers to back up your points, but weave them into the narrative
+6. Consider the user's priorities and explain WHY each property matches or doesn't match
+7. Each explanation should be 3-5 sentences, not just one sentence of facts"""
 
-    prompt = f"""User is looking for: {user_query}
-Preferences: {soft_preferences}
+    # Extract key user concerns
+    user_concerns = []
+    if soft_preferences:
+        sp_lower = soft_preferences.lower()
+        if 'crime' in sp_lower or 'safe' in sp_lower:
+            user_concerns.append("safety and low crime")
+        if 'quiet' in sp_lower:
+            user_concerns.append("a quiet neighborhood")
+        if 'modern' in sp_lower:
+            user_concerns.append("modern amenities")
+        if 'pet' in sp_lower or 'dog' in sp_lower or 'cat' in sp_lower:
+            user_concerns.append("pet-friendly properties")
 
-Properties (with REAL crime statistics):
+    concerns_text = ", ".join(user_concerns) if user_concerns else "good value and convenience"
+
+    prompt = f"""The user is searching for a London rental with these priorities: {concerns_text}.
+Their original query: "{user_query}"
+
+Here are the top 5 properties that match their criteria:
+
 {json.dumps(simple_props, indent=2)}
 
-VERIFY THE DATA:
-- Property 1 has {simple_props[0]['crimes']} reported crimes
-- Property 2 has {simple_props[1]['crimes']} reported crimes  
-- Property 3 has {simple_props[2]['crimes']} reported crimes
+YOUR TASK:
+Recommend the TOP 3 properties. For each one, write a natural, engaging explanation that:
+- Starts with why this property stands out
+- Discusses the commute (is it quick? convenient?)
+- Addresses safety honestly (use the actual crime numbers and trend)
+- Mentions value for money (is it a good deal for the area?)
+- Notes any standout features (nearby amenities, description highlights)
+- Ends with who this property is perfect for
 
-Create recommendations for top 3 properties.
+EXAMPLE OF GOOD EXPLANATION:
+"This flat in Camden really caught my eye because of its unbeatable 20-minute commute to UCL - you'll actually have time for morning coffee! The area has seen 76 reported crimes over the past 6 months with an increasing trend, which is something to be aware of, but it's typical for this vibrant neighborhood. At £1,850 per month, you're getting solid value for such a convenient location, plus there are 3 supermarkets and 2 parks within walking distance. This is perfect for someone who prioritizes convenience over a super quiet area."
 
-CRITICAL: For EACH property, you MUST mention the crime statistics using the EXACT numbers provided.
+EXAMPLE OF BAD EXPLANATION:
+"20-minute commute, 76 crimes (increasing), £1,850 per month. 3 supermarkets nearby."
 
-Example of CORRECT explanation:
-"This property offers a 20-minute commute. The area has 170 reported crimes over the past 6 months (stable trend). At £2,500 pcm..."
+Now write recommendations for the top 3 properties in this natural, helpful style.
 
-Example of WRONG explanation:
-"This property has no crimes reported." ❌ (Unless crimes field is actually 0)
-
-Return ONLY this JSON:
+Return ONLY this JSON structure:
 {{
   "recommendations": [
     {{
       "rank": 1,
-      "address": "address from property",
+      "address": "full address from data",
       "price": "£X pcm",
       "travel_time": "X minutes",
-      "explanation": "Mention: commute time, ACTUAL crime numbers from data, price value",
-      "url": "url"
+      "explanation": "Your engaging 3-5 sentence explanation here",
+      "url": "property url"
+    }},
+    {{
+      "rank": 2,
+      ...
+    }},
+    {{
+      "rank": 3,
+      ...
     }}
   ]
-}}"""
+}}
 
-    response_text = call_ollama(prompt, system_prompt, timeout=60000)
+Return ONLY valid JSON, no other text."""
+
+    # Call Ollama with longer timeout for better responses
+    response_text = call_ollama(prompt, system_prompt, timeout=90)
 
     if not response_text:
+        print("[INFO] Ollama failed, using rule-based recommendations")
         return create_fallback_recommendations(properties_data, soft_preferences)
 
     parsed = extract_first_json(response_text)
@@ -346,10 +442,12 @@ Return ONLY this JSON:
     if parsed and 'recommendations' in parsed:
         print("\n[DEBUG] Fixing travel times and images...")
         
+        # Match recommendations back to original properties
         for rec in parsed['recommendations']:
             rank = rec.get('rank', 0)
             rec_address = rec.get('address', '').lower().strip()
             
+            # Find matching property
             original_prop = None
             for prop in properties_data:
                 prop_address = prop.get('Address', '').lower().strip()
@@ -375,7 +473,7 @@ Return ONLY this JSON:
         return create_fallback_recommendations(properties_data, soft_preferences)
 
 def create_fallback_recommendations(properties_data: list[dict], soft_preferences: str = "") -> dict:
-    """FIXED: High-quality fallback that correctly uses crime data"""
+    """High-quality fallback with natural explanations"""
     print("   🔧 Creating intelligent rule-based recommendations...")
     
     sorted_props = sorted(
@@ -396,61 +494,57 @@ def create_fallback_recommendations(properties_data: list[dict], soft_preference
         address = prop.get('Address', 'Unknown')
         description = prop.get('Description', '')
         
-        # FIXED: Correctly access nested crime data
+        # Extract crime data
         crime_data = prop.get('crime_data_summary', {})
         crime_count = crime_data.get('total_crimes_6m', 0)
         crime_trend = crime_data.get('crime_trend', 'unknown')
         top_crimes = crime_data.get('top_crime_types', [])
         
-        # DEBUG
-        print(f"   [FALLBACK DEBUG] Property {i+1}: {crime_count} crimes ({crime_trend})")
-        
+        # Extract area name
         area_parts = address.split(',')
         area = area_parts[1].strip() if len(area_parts) > 1 else "the area"
         
+        # Build natural explanation
+        explanation_parts = []
+        
+        # Opening sentence - personalized based on rank
+        if i == 0:
+            explanation_parts.append(f"This is my top recommendation! Located in {area}, it offers the quickest commute at just {travel_time} minutes, which means you'll spend less time on the tube and more time enjoying London.")
+        elif i == 1:
+            explanation_parts.append(f"Coming in as a strong second choice, this {area} property provides a {travel_time}-minute commute - just a bit longer than my top pick but potentially worth it depending on your priorities.")
+        elif i == 2:
+            explanation_parts.append(f"Here's an interesting alternative in {area} with a {travel_time}-minute journey to UCL that offers some unique advantages.")
+        else:
+            explanation_parts.append(f"Option #{i+1} in {area} gives you a {travel_time}-minute commute and some features worth considering.")
+        
+        # Price and value
         if isinstance(travel_time, (int, float)) and parsed_price > 0 and travel_time > 0:
             value_score = parsed_price / travel_time
             if value_score < 60:
-                value_assessment = "exceptional value"
+                explanation_parts.append(f"At {price}, this is exceptional value - you're getting a great location without breaking the bank.")
             elif value_score < 80:
-                value_assessment = "good value"
+                explanation_parts.append(f"Priced at {price}, it's competitively priced for the area and commute time.")
             else:
-                value_assessment = "premium pricing"
+                explanation_parts.append(f"At {price}, this is at the premium end for the commute time, but that might reflect the quality or location.")
         else:
-            value_assessment = "competitive pricing"
+            explanation_parts.append(f"Priced at {price}.")
         
-        explanation_parts = []
-        
-        if i == 0:
-            explanation_parts.append(f"🥇 **Top choice**: Located in {area}, this property offers the shortest commute at just {travel_time} minutes to UCL.")
-        elif i == 1:
-            explanation_parts.append(f"🥈 **Runner-up**: In {area}, with a {travel_time}-minute commute to UCL.")
-        elif i == 2:
-            explanation_parts.append(f"🥉 **Alternative**: Situated in {area}, {travel_time} minutes from UCL.")
-        else:
-            explanation_parts.append(f"**Option #{i+1}**: In {area}, {travel_time}-minute journey to UCL.")
-        
-        explanation_parts.append(f"Priced at {price}, offering {value_assessment}.")
-        
-        # ALWAYS include crime data if available (not just when user asks)
+        # Safety discussion - always included but framed naturally
         if crime_count > 0:
             if crime_count < 100:
-                safety_desc = f"very safe area with {crime_count} reported incidents in the past 6 months"
+                explanation_parts.append(f"The neighborhood feels quite safe with only {crime_count} incidents reported over the past 6 months ({crime_trend} trend), which is below average for London.")
             elif crime_count < 200:
-                safety_desc = f"moderate safety level with {crime_count} incidents over 6 months"
+                explanation_parts.append(f"Safety-wise, there were {crime_count} incidents in the area over 6 months ({crime_trend} trend) - about average for a busy London neighborhood.")
             else:
-                safety_desc = f"higher crime area with {crime_count} incidents in 6 months"
-            
-            trend_desc = f"({crime_trend} trend)"
+                explanation_parts.append(f"I should mention that the area has seen {crime_count} incidents in the past 6 months ({crime_trend} trend), which is higher than some other neighborhoods, so security might be something to check when viewing.")
             
             if top_crimes:
-                crime_types = " and ".join(top_crimes[:2])
-                explanation_parts.append(f"**Safety**: This is a {safety_desc} {trend_desc}. Most common: {crime_types}.")
-            else:
-                explanation_parts.append(f"**Safety**: This is a {safety_desc} {trend_desc}.")
-        elif crime_count == 0 and crime_trend != 'unknown':
-            explanation_parts.append(f"**Safety**: No crimes reported in this area over the past 6 months.")
+                crime_types = " and ".join(top_crimes[:2]).lower()
+                explanation_parts.append(f"Most incidents were {crime_types}.")
+        elif crime_trend != 'unknown':
+            explanation_parts.append(f"Great news on safety - no crimes were reported in this immediate area over the past 6 months!")
         
+        # Property features from description
         if description and len(description) > 20:
             desc_lower = description.lower()
             highlights = []
@@ -458,17 +552,23 @@ def create_fallback_recommendations(properties_data: list[dict], soft_preference
             if 'newly renovated' in desc_lower or 'new build' in desc_lower:
                 highlights.append("newly renovated")
             elif 'modern' in desc_lower:
-                highlights.append("modern")
+                highlights.append("modern finish")
             
             if 'garden' in desc_lower:
-                highlights.append("garden")
+                highlights.append("private garden")
             if 'balcony' in desc_lower or 'terrace' in desc_lower:
-                highlights.append("balcony/terrace")
+                highlights.append("balcony")
             if 'parking' in desc_lower:
                 highlights.append("parking")
             
             if highlights:
-                explanation_parts.append(f"Features: {', '.join(highlights[:4])}.")
+                explanation_parts.append(f"Nice touches include: {', '.join(highlights[:3])}.")
+        
+        # Who it's perfect for
+        if i == 0 and crime_count < 100 and travel_time < 25:
+            explanation_parts.append(f"Perfect if you want the best of both worlds - safety and convenience.")
+        elif parsed_price < 2000 and travel_time < 30:
+            explanation_parts.append(f"Ideal for budget-conscious students who still want a reasonable commute.")
         
         explanation = " ".join(explanation_parts)
         
@@ -482,5 +582,5 @@ def create_fallback_recommendations(properties_data: list[dict], soft_preference
             'images': prop.get('Images', [])
         })
     
-    print(f"   ✓ Created {len(recommendations)} context-aware recommendations with REAL crime data")
-    return {'recommendations': recommendations}
+    print(f"   ✓ Created {len(recommendations)} natural recommendations")
+    return {'recommendations': recommendations[:3]}  # Return top 3
