@@ -1,7 +1,7 @@
 # app.py - Fixed to handle Ollama's response structure
 
-import asyncio
-from flask import Flask, request, jsonify, render_template
+import asyncio # 适合网络请求、爬虫、API调用等I/O密集型任务
+from flask import Flask, request, jsonify, render_template # 快速写一个web应用/API服务，jsonify是把Python数据结构转成JSON响应，并自动加上正确的HTTP头
 from flask_cors import CORS
 import json
 import traceback
@@ -9,17 +9,19 @@ from ollama_interface import clarify_and_extract_criteria
 from interactive_main import find_apartments_interactive
 from user_session import add_to_favorites, get_favorites, _session_data
 
-app = Flask(__name__, template_folder='.')
+app = Flask(__name__, template_folder='.') # __name__用来告诉Flask你的应用在哪个Python文件里，‘.’表示当前目录
 CORS(app)
 
-@app.route('/')
+@app.route('/') # 这是Flask的路由装饰器，表示当用户访问网站跟路径时，就会触发下面的函数index()
 def index():
     """Serves the main HTML page."""
     return render_template('apartment-finder-ui.html')
-
+'''
+render_template是用来加载并渲染HTML模板。当访问/时，Flask会调用apartment-finder-ui.html文件并返回给用户浏览器
+'''
 @app.route('/api/search', methods=['POST'])
 def api_search():
-    """API endpoint that replicates the logic from interactive_main.py."""
+    """API endpoint that replicates the logic from interactive_main.py.这个API接口实现了interactive_main.py中的逻辑"""
     data = request.get_json()
     if not data or not data.get('query'):
         return jsonify({"error": "A search query is required."}), 400
@@ -30,7 +32,7 @@ def api_search():
     try:
         # Step 1: Use Ollama to extract criteria
         response = clarify_and_extract_criteria(user_query)
-        print(f"[DEBUG] Ollama response: {json.dumps(response, indent=2)}")
+        print(f"[DEBUG] Ollama response: {json.dumps(response, indent=2)}") # 每层嵌套缩2个空格
 
         # Handle clarification needed
         if response.get('status') == 'clarification_needed':

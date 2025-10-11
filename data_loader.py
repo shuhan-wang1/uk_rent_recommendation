@@ -27,6 +27,7 @@ def extract_postcode(address: str) -> str | None:
         return postcode
     return None
 
+# 从Rightmove上获取指定位置/价格范围的房源信息，补充清洗一些字段，最后返回一个标准化的房源列表
 def get_live_properties(location_id: str, radius: float, min_price: int, max_price: int, limit: int | None = None) -> list[dict]:
     """
     Updated to preserve image data from scrapers
@@ -34,15 +35,16 @@ def get_live_properties(location_id: str, radius: float, min_price: int, max_pri
     print("\n--- Starting Live Property Scraping ---")
     
     if limit:
-        print(f"/!\\ Scraper limit set to {limit} properties. /!\\")
+        print(f"/!\\ Scraper limit set to {limit} properties. /!\\") # 25 properties
 
     print(f"-> Searching on Rightmove (ID: {location_id})...")
+    # 调用Rightmove的scraper
     rm_properties = find_on_rightmove(
         location_identifier=location_id, radius=radius,
         min_price=min_price, max_price=max_price,
         limit=limit
     )
-    for prop in rm_properties: 
+    for prop in rm_properties:
         prop['Platform'] = 'Rightmove'
         # Ensure Images key exists
         if 'Images' not in prop:

@@ -20,7 +20,7 @@ TEST_PROPERTY_LIMIT = 25
 # REMOVED: The old LOCATION_TO_ID_MAP is no longer needed!
 
 
-async def find_apartments_interactive(criteria: dict):
+async def find_apartments_interactive(criteria: dict): # 这个函数的作用就是可能会遇到I/O等待，允许等待的时候去做其他的任务
     """
     TWO-STAGE APPROACH:
     1. Quick filter using estimated travel times
@@ -40,7 +40,7 @@ async def find_apartments_interactive(criteria: dict):
     print(f"[INFO] Using Location ID: {search_location_id} with radius: {search_radius} miles")
 
     print("\nStep 2: Performing live property search and filtering...")
-    scraper_limit = TEST_PROPERTY_LIMIT if IS_TEST_MODE else None
+    scraper_limit = TEST_PROPERTY_LIMIT if IS_TEST_MODE else None # 25
     
     all_properties = get_live_properties(
         location_id=search_location_id,
@@ -49,16 +49,19 @@ async def find_apartments_interactive(criteria: dict):
         max_price=criteria.get('max_budget', 2000) + 200,
         limit=scraper_limit
     )
-    
+    print(f" -> Retrieved {len(all_properties)} total properties from scrapers.")
+    '''
+    [{'Price': '£1,250 pcm', 'Address': 'Antigallican, London, SE7', 'Description': 'Studio flat', 'URL': 'https://www.rightmove.co.uk/properties/167994398#/?channel=RES_LET', 'Available From': 'Ask agent', 'Images': ['https://media.rightmove.co.uk:443/dir/crop/10:9-16:9/239k/238769/167994398/238769_VAC009ANTI_IMG_00_0000_max_476x317.jpeg', 'https://media.rightmove.co.uk:443/dir/crop/10:9-16:9/239k/238769/167994398/238769_VAC009ANTI_IMG_01_0000_max_476x317.jpeg', 'https://media.rightmove.co.uk:443/dir/crop/10:9-16:9/239k/238769/167994398/238769_VAC009ANTI_IMG_02_0000_max_476x317.jpeg', 'https://media.rightmove.co.uk:443/dir/crop/10:9-16:9/239k/238769/167994398/238769_VAC009ANTI_IMG_03_0000_max_476x317.jpeg', 'https://media.rightmove.co.uk:443/dir/crop/10:9-16:9/239k/238769/167994398/238769_VAC009ANTI_IMG_04_0000_max_476x317.jpeg', 'https://media.rightmove.co.uk:443/dir/crop/10:9-16:9/239k/238769/167994398/238769_VAC009ANTI_IMG_05_0000_max_476x317.jpeg'], 'Platform': 'Rightmove', 'parsed_price': 1250.0, 'postcode': None}]
+    '''
     budget_filtered = filter_by_budget(all_properties, criteria.get('max_budget', 2000))
-    print(f" -> Found {len(budget_filtered)} properties within budget.")
+    print(f" -> Found {len(budget_filtered)} properties within budget.") # 使用budget来filter，形状是list of dict
     
     if not budget_filtered:
         return (None, [])
 
     # STAGE 1: Quick filter using simple distance estimation
     print("\nStep 3a: Quick filtering by estimated travel time...")
-    from free_maps_service import estimate_travel_time_simple
+    from free_maps_service import estimate_travel_time_simple # 通过免费的API进行简单估算
     
     max_travel_time = criteria.get('max_travel_time', 40)
     quick_candidates = []
@@ -67,13 +70,14 @@ async def find_apartments_interactive(criteria: dict):
         estimated_time = estimate_travel_time_simple(
             prop.get('Address', ''), 
             criteria.get('destination')
-        )
+        ) # 没有标出使用哪种交通方式，默认是transit
         
         if estimated_time and estimated_time <= max_travel_time + 10:  # Add 10 min buffer
             prop['estimated_time'] = estimated_time
             quick_candidates.append(prop)
     
     print(f" -> {len(quick_candidates)} properties pass quick filter")
+    print(quick_candidates)
     
     if not quick_candidates:
         print("No properties within estimated travel time.")
@@ -81,12 +85,18 @@ async def find_apartments_interactive(criteria: dict):
     
     # STAGE 2: Accurate travel times for top candidates only
     print("\nStep 3b: Getting accurate travel times for top candidates...")
+    '''
+    先根据快速估算的通勤时间排序
+    挑选前15个最有希望的房源，避免后面计算太慢
+    并发计算准确通勤时间
+    '''
     
-    # Sort by estimated time and take top 15
+    # Sort by estimated time and take top 15 
     quick_candidates.sort(key=lambda x: x.get('estimated_time', 999))
-    top_candidates = quick_candidates[:15]
+    top_candidates = quick_candidates[:15] # 形状是list of dict
     
-    loop = asyncio.get_running_loop()
+    loop = asyncio.get_running_loop() # 并行执行
+    # loop.run_in_executor(executor, func, *args)
     travel_time_tasks = [
         loop.run_in_executor(
             None, 
@@ -108,15 +118,18 @@ async def find_apartments_interactive(criteria: dict):
             prop['travel_time_minutes'] = travel_time
             enrichment_candidates.append(prop)
             print(f"   ✓ {prop.get('Address')[:50]}... ({travel_time} mins)")
-    
+    print(enrichment_candidates)
+
     if not enrichment_candidates:
         print("No properties found within accurate travel time.")
         return (None, [])
 
     print(f"\n -> Found {len(enrichment_candidates)} final candidates. Starting enrichment...")
+    # 在已经筛选出来的候选房源基础上，进一步补充和加工额外的信息，让推荐结果更完整、更符合用户偏好
     
     enrichment_tasks = [enrich_property_data(prop, criteria) for prop in enrichment_candidates]
-    final_candidates = await asyncio.gather(*enrichment_tasks)
+    final_candidates = await asyncio.gather(*enrichment_tasks) # 形状是list of dict
+    print(final_candidates)
     
     print(f"\nStep 4: Generating recommendations...")
     soft_preferences = criteria.get("soft_preferences", "")

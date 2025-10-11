@@ -36,7 +36,7 @@ def search_crime_data(area: str) -> str:
         return "No area provided for crime search."
     return get_search_snippets(f'"{area} crime rate" official statistics')
 
-def search_cost_of_living(area: str) -> str:
+def search_cost_of_living(area: str) -> str: # 生活成本
     """使用更精确的查询搜索生活成本信息。"""
     if not area:
         return "No area provided for cost of living search."

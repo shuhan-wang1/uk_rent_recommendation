@@ -7,10 +7,18 @@ import requests
 OLLAMA_BASE_URL = "http://localhost:11434"
 MODEL_NAME = "llama3.2:1b"
 
-def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 60) -> str:
+def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 60) -> str: # 封装的一个调用Ollama API的函数
     """Call Ollama with better defaults"""
-    url = f"{OLLAMA_BASE_URL}/api/generate"
+    url = f"{OLLAMA_BASE_URL}/api/generate" # Ollama提供了一个本地REST API
     
+    '''
+    Ollama常用的参数:
+    必须参数:
+    model: 模型的名称
+    prompt: 你想让模型回答的内容
+    stream: 是否流式返回结果，True表示逐步返回，False表示一次性返回完整结果
+    options: 其他可选参数的字典
+    '''
     payload = {
         "model": MODEL_NAME,
         "prompt": prompt,
@@ -26,7 +34,7 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 60) -> st
         payload["system"] = system_prompt
     
     try:
-        response = requests.post(url, json=payload, timeout=timeout)
+        response = requests.post(url, json=payload, timeout=timeout) # 发送POST请求
         response.raise_for_status()
         result = response.json()
         return result.get("response", "")
@@ -47,6 +55,12 @@ def extract_first_json(text: str) -> dict | None:
         # Handle unicode escapes properly
         cleaned_text = text.strip()
         return json.loads(cleaned_text)
+    
+        '''
+        text = '{"name": "Alice", "age": 25}'
+        data = {"age": 25, "name": "Alice", "age": 25}
+        '''
+
     except (json.JSONDecodeError, TypeError) as e:
         print(f"   JSON parse error: {str(e)[:100]}")
         pass
@@ -116,36 +130,38 @@ Replace the placeholders with actual values. Return only the JSON."""
         }
     }
 
-def clarify_and_extract_criteria(user_query: str) -> dict:
+def clarify_and_extract_criteria(user_query: str) -> dict: # 输出一个结构化JSON，里面包含租房需求的关键信息
     """Extract criteria from user query with clearer instructions"""
     
     system_prompt = """You are a UK rental search assistant. Extract information from user queries and return ONLY a JSON object with the extracted data. Never return schemas or explanations."""
     
-    prompt = f"""Extract rental criteria from this request: "{user_query}"
+    prompt = f"""
+    Extract rental criteria from this request: "{user_query}"
 
-Return ONLY this JSON structure with actual values filled in:
+    Return ONLY this JSON structure with actual values filled in:
 
-{{
-  "status": "success",
-  "destination": "University College London",
-  "max_budget": 1500,
-  "max_travel_time": 30,
-  "soft_preferences": "cares about safety and security",
-  "property_tags": [],
-  "amenities_of_interest": ["police station", "well-lit streets"],
-  "area_vibe": "safe, secure area",
-  "suggested_search_locations": ["Bloomsbury", "King's Cross", "Camden"],
-  "city_context": "London"
-}}
+    {{
+    "status": "success",
+    "destination": "University College London",
+    "max_budget": 1500,
+    "max_travel_time": 30,
+    "soft_preferences": "cares about safety and security",
+    "property_tags": [],
+    "amenities_of_interest": ["police station", "well-lit streets"],
+    "area_vibe": "safe, secure area",
+    "suggested_search_locations": ["Bloomsbury", "King's Cross", "Camden"],
+    "city_context": "London"
+    }}
 
-Rules:
-1. If destination, max_budget, AND max_travel_time are ALL clear → set "status": "success"
-2. If any of those 3 are missing → set "status": "clarification_needed" and add "question": "What information is missing?"
-3. Extract actual values from the user's request
-4. If user mentions safety/crime → add it to soft_preferences and amenities_of_interest
-5. Suggest 3 neighborhoods near the destination for suggested_search_locations
+    Rules:
+    1. If destination, max_budget, AND max_travel_time are ALL clear → set "status": "success"
+    2. If any of those 3 are missing → set "status": "clarification_needed" and add "question": "What information is missing?"
+    3. Extract actual values from the user's request
+    4. If user mentions safety/crime → add it to soft_preferences and amenities_of_interest
+    5. Suggest 3 neighborhoods near the destination for suggested_search_locations
 
-Return ONLY the JSON object, nothing else."""
+    Return ONLY the JSON object, nothing else.
+    """
 
     response_text = call_ollama(prompt, system_prompt, timeout=60)
     
@@ -155,9 +171,28 @@ Return ONLY the JSON object, nothing else."""
     print(f"[DEBUG] Raw Ollama response: {response_text[:500]}")
     
     parsed_json = extract_first_json(response_text)
+    '''
+    [DEBUG] Raw Ollama response: {
+  "status": "success",
+  "destination": "University College London",
+  "max_budget": 1500,
+  "max_travel_time": 30,
+  "soft_preferences": "cares about safety and security",
+  "property_tags": [],
+  "amenities_of_interest": ["police station", "well-lit streets"],
+  "area_vibe": "safe, secure area",
+  "suggested_search_locations": [
+    "Bloomsbury",
+    "King's Cross",
+    "Camden"
+  ],
+  "city_context": "London",
+  "question": null
+}
+    '''
     
     if parsed_json:
-        # Validate it's not a schema
+        # Validate it's not a schema 结构描述
         if "$schema" in parsed_json or "properties" in parsed_json:
             print("[ERROR] Model returned schema instead of data. Retrying with simpler prompt...")
             return retry_with_simple_prompt(user_query)

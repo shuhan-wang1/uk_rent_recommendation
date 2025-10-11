@@ -63,3 +63,27 @@ async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
                 enriched_prop[key] = value
             
     return enriched_prop
+
+'''
+enrich前:
+{
+  "Address": "Abbey Road, London",
+  "Price": "£1500 pcm",
+  "Bedrooms": 2,
+  "travel_time_minutes": 18
+}
+enrich后:
+{
+  "Address": "Abbey Road, London",
+  "Price": "£1500 pcm",
+  "Bedrooms": 2,
+  "travel_time_minutes": 18,
+  "cost_of_living": {"rent_index": 72, "groceries_index": 65},
+  "amenities_nearby": ["Tesco", "Gym", "Regent's Park"],
+  "crime_data_summary": {"safety_score": "High", "crime_rate": "Low"},
+  "environmental_data": {"air_quality": "Good", "noise_level": "Moderate"},
+  "description_tags": ["spacious", "student-friendly", "modern kitchen"],
+  "travel_time_transit": 19,
+  "travel_time_cycling": 8
+}
+'''

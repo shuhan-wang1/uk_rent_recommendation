@@ -3,7 +3,7 @@
 from cache_service import get_from_cache, set_to_cache, create_cache_key
 
 UK_LOCATIONS = {
-    # London - Use REGION IDs instead of STATION IDs (more stable)
+    # London - Use REGION IDs instead of STATION IDs (more stable) 是Rightmove网站的内部区域ID
     'london': ('REGION^87490', 5.0),
     'greater london': ('REGION^87490', 5.0),
 
@@ -45,6 +45,7 @@ def get_best_location_id(suggested_locations: list[str], fallback_city: str = "L
     """Tries to find a Rightmove ID from suggested locations."""
     
     print(f"\n[LOCATION RESOLVER] Analyzing suggestions: {suggested_locations}")
+    # [LOCATION RESOLVER] Analyzing suggestions: ['Bloomsbury', "King's Cross", 'Camden']
     
     # Try each suggested location
     for location in suggested_locations:
@@ -58,13 +59,13 @@ def get_best_location_id(suggested_locations: list[str], fallback_city: str = "L
             print(f"  ✗ No match for '{location}'")
     
     # Fallback to city
-    print(f"\n[WARN] No match found. Trying city: '{fallback_city}'")
+    print(f"\n[WARN] No match found. Trying city: '{fallback_city}'") # [WARN] No match found. Trying city: 'London'
     fallback_result = find_location_match(fallback_city)
     
     if fallback_result:
         location_id, radius = fallback_result
         radius = validate_radius(radius)
-        print(f"  ✓ Using city fallback: {location_id} (radius: {radius} miles)")
+        print(f"  ✓ Using city fallback: {location_id} (radius: {radius} miles)") # ✓ Using city fallback: REGION^87490 (radius: 5.0 miles)
         return (location_id, radius)
     
     # Ultimate fallback

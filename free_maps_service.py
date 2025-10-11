@@ -137,6 +137,7 @@ def _get_coordinates(address: str) -> dict | None:
 
 
 def calculate_travel_time(origin_address: str, destination_address: str, mode: str = "transit") -> int | None:
+    # 实现一个完全免费的通勤时间估算器，不依赖Google Maps等收费API, 而是用直线距离+城市经验速度来估算不同出行时间的时间
     """
     COMPLETELY FREE - Distance-based estimation only
     NO external routing API needed!
@@ -190,6 +191,20 @@ def calculate_travel_time(origin_address: str, destination_address: str, mode: s
     
     set_to_cache(cache_key, total_minutes)
     return total_minutes
+
+'''
+出发地：Abbey Road, London
+
+目的地：University College London
+
+直线距离：3 km → 实际距离：3.9 km
+
+步行：3.9 / 5 km/h * 60 ≈ 47 min
+
+骑行：3.9 / 15 km/h * 60 ≈ 15 min
+
+公交：3.9 / 20 km/h * 60 ≈ 12 min + 7 min 等车 ≈ 19 min
+'''
 
 
 # Alias for compatibility

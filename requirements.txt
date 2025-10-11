@@ -2,8 +2,9 @@ beautifulsoup4==4.14.2
 ddgs==9.6.0
 flask==2.2.5
 flask_cors==6.0.1
-googlemaps==4.10.0
-pandas==2.0.3
+# googlemaps==4.10.0
+# pandas==2.0.3
+pandas
 # protobuf==3.20.0
 protobuf==4.25.3
 # protobuf==3.20.3
