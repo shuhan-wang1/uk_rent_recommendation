@@ -92,8 +92,8 @@ class Tool:
         }
 
 
-class ToolRegistry:
-    """工具注册中心"""
+class ToolRegistry: # 我有很多个工具Tool，谁来统一管理、协调、让LLM知道它们都存在
+    """工具注册中心, 负责存放、检索、组织多个Tool实例"""
     def __init__(self):
         self.tools: Dict[str, Tool] = {}
     
