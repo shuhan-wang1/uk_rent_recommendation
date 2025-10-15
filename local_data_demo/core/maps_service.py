@@ -2,12 +2,13 @@
 
 import requests
 import googlemaps
-from config import GOOGLE_MAPS_API_KEY
 from datetime import datetime
 import pandas as pd
-from cache_service import get_from_cache, set_to_cache, create_cache_key
 from collections import Counter
 import asyncio
+import math
+from config import GOOGLE_MAPS_API_KEY, OPENROUTESERVICE_API_KEY, USE_TRAVEL_SERVICE
+from .cache_service import get_from_cache, set_to_cache, create_cache_key
 
 # Initialize Google Maps Client
 gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
@@ -62,16 +63,16 @@ def _get_coordinates(address: str) -> dict | None:
 
 def calculate_travel_time(origin_address: str, destination_address: str, mode: str = "transit") -> int | None:
     """
-    Calculate travel time using Google Maps Directions API.
-    Automatically converts landmark names to specific addresses.
+    统一的出行时间计算接口。
+    根据 config.py 的设置自动选择使用 Google Maps 或 OpenRouteService。
     """
     if not origin_address or not destination_address:
         return None
     
-    # CRITICAL FIX: Normalize both addresses for routing
+    # Normalize addresses for routing
     origin_normalized = _normalize_address_for_routing(origin_address)
     destination_normalized = _normalize_address_for_routing(destination_address)
-        
+    
     cache_key = create_cache_key('calculate_travel_time', origin_normalized, destination_normalized, mode)
     cached_result = get_from_cache(cache_key)
     if cached_result is not None:
@@ -250,3 +251,158 @@ def get_environmental_data(address: str) -> dict:
     }
     set_to_cache(cache_key, summary)
     return summary
+
+
+def estimate_travel_time_simple(origin_address: str, destination_address: str, mode: str = "transit") -> int | None:
+    """
+    Simple distance-based travel time estimation (no API calls).
+    Used for quick filtering in the first stage.
+    More accurate results use calculate_travel_time().
+    """
+    if not origin_address or not destination_address:
+        return None
+    
+    cache_key = create_cache_key('estimate_travel_time_simple', origin_address, destination_address, mode)
+    cached_result = get_from_cache(cache_key)
+    if cached_result is not None:
+        return cached_result
+    
+    # Try to get coordinates
+    origin_coords = _get_coordinates(origin_address)
+    dest_coords = _get_coordinates(destination_address)
+    
+    if not origin_coords or not dest_coords:
+        return None
+    
+    # Calculate straight-line distance using Haversine formula
+    R = 6371  # Earth radius in kilometers
+    
+    lat1_rad = math.radians(origin_coords['lat'])
+    lat2_rad = math.radians(dest_coords['lat'])
+    dlat = math.radians(dest_coords['lat'] - origin_coords['lat'])
+    dlng = math.radians(dest_coords['lng'] - origin_coords['lng'])
+    
+    a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlng/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    
+    distance_km = R * c
+    
+    # Apply realistic multiplier (actual route is ~1.3x straight line)
+    actual_distance = distance_km * 1.3
+    
+    # Calculate time based on mode
+    if mode in ['transit', 'driving']:
+        speed = 20  # km/h average
+        base_time = (actual_distance / speed) * 60
+        wait_time = min(10, distance_km * 2)
+        total_minutes = int(base_time + wait_time)
+    elif mode in ['bicycling', 'cycling-regular']:
+        speed = 15  # km/h
+        total_minutes = int((actual_distance / speed) * 60)
+    elif mode in ['walking', 'foot-walking']:
+        speed = 5  # km/h
+        total_minutes = int((actual_distance / speed) * 60)
+    else:
+        speed = 20
+        total_minutes = int((actual_distance / speed) * 60 + 5)
+    
+    set_to_cache(cache_key, total_minutes)
+    return total_minutes
+
+
+def get_nearby_supermarkets_detailed(address: str, radius: int = 1000) -> list[dict]:
+    """
+    Get detailed list of nearby supermarkets using OpenStreetMap Overpass API.
+    
+    Returns list of dicts with: name, type, address, distance_m
+    This is a FREE alternative to Google Places API.
+    """
+    cache_key = create_cache_key('supermarkets_detailed_v1', address, radius)
+    cached_result = get_from_cache(cache_key)
+    if cached_result:
+        return cached_result
+    
+    print(f"    -> [OSM] Getting supermarkets near: {address}")
+    
+    location = _get_coordinates(address)
+    if not location:
+        print(f"    -> [OSM] Could not geocode address: {address}")
+        return []
+    
+    # Use OpenStreetMap Overpass API (completely free, no key needed)
+    url = "https://overpass-api.de/api/interpreter"
+    
+    # Query for supermarkets and convenience stores
+    query = f"""
+    [out:json][timeout:15];
+    (
+      node["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
+      way["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
+      node["shop"="convenience"](around:{radius},{location['lat']},{location['lng']});
+    );
+    out center;
+    """
+    
+    try:
+        import time
+        time.sleep(1)  # Rate limiting for free API
+        response = requests.post(url, data={'data': query}, timeout=15)
+        
+        if response.status_code != 200:
+            print(f"    -> [OSM] API error {response.status_code}")
+            return []
+        
+        data = response.json()
+        supermarkets = []
+        
+        for element in data.get('elements', [])[:10]:  # Top 10
+            tags = element.get('tags', {})
+            
+            # Get coordinates
+            if element['type'] == 'node':
+                shop_lat = element['lat']
+                shop_lng = element['lon']
+            else:  # way (building polygon)
+                center = element.get('center', {})
+                shop_lat = center.get('lat')
+                shop_lng = center.get('lon')
+            
+            if not shop_lat or not shop_lng:
+                continue
+            
+            # Calculate distance using Haversine formula
+            lat1_rad = math.radians(location['lat'])
+            lat2_rad = math.radians(shop_lat)
+            dlat = math.radians(shop_lat - location['lat'])
+            dlng = math.radians(shop_lng - location['lng'])
+            
+            a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlng/2)**2
+            c = 2 * math.asin(math.sqrt(a))
+            distance_km = 6371 * c
+            distance_m = int(distance_km * 1000)
+            
+            # Extract info
+            name = tags.get('name', 'Unnamed Shop')
+            shop_type = tags.get('shop', 'supermarket')
+            street = tags.get('addr:street', '')
+            housenumber = tags.get('addr:housenumber', '')
+            
+            supermarkets.append({
+                'name': name,
+                'type': shop_type,
+                'address': f"{housenumber} {street}".strip() or "Address not available",
+                'distance_m': distance_m,
+                'lat': shop_lat,
+                'lng': shop_lng
+            })
+        
+        # Sort by distance
+        supermarkets.sort(key=lambda x: x['distance_m'])
+        
+        print(f"    ✓ [OSM] Found {len(supermarkets)} supermarkets within {radius}m")
+        set_to_cache(cache_key, supermarkets)
+        return supermarkets
+        
+    except Exception as e:
+        print(f"    -> [OSM] Error: {e}")
+        return []

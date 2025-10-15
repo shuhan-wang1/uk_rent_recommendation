@@ -1,13 +1,13 @@
 # enrichment.py - FIXED VERSION
 
 import asyncio
-from travel_service import calculate_travel_time
-from maps_service import (
+from .maps_service import (
+    calculate_travel_time,
     find_nearby_places, 
     get_crime_data_by_location,
     get_environmental_data
 )
-from web_search import search_cost_of_living
+from .web_search import search_cost_of_living
 
 async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
     """

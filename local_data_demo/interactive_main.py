@@ -2,17 +2,12 @@
 
 import asyncio
 import json
-from data_loader import get_live_properties, filter_by_budget
-# Switched from gemini_interface to ollama_interface
-# from gemini_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
-from ollama_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
-from enrichment import enrich_property_data
-# from maps_service import calculate_travel_time
-# from free_maps_service import calculate_travel_time
-from travel_service import calculate_travel_time
-
-from user_session import add_to_favorites, print_favorites, add_to_history
-from location_resolver import get_best_location_id  # NEW IMPORT
+from core.data_loader import get_live_properties, filter_by_budget
+from core.llm_interface import clarify_and_extract_criteria, generate_recommendations, refine_criteria_with_answer
+from core.enrichment_service import enrich_property_data
+from core.maps_service import calculate_travel_time, estimate_travel_time_simple
+from core.user_session import add_to_favorites, print_favorites, add_to_history
+from core.location_service import get_rightmove_location_identifier
 
 # Global test switch
 IS_TEST_MODE = True
@@ -27,15 +22,21 @@ async def find_apartments_interactive(criteria: dict):
     1. Quick filter using estimated travel times
     2. Accurate calculation only for top candidates
     """
-    from location_resolver import get_best_location_id
     
     suggested_locations = criteria.get('suggested_search_locations', [])
     city_context = criteria.get('city_context', 'London')
     
-    search_location_id, search_radius = get_best_location_id(
-        suggested_locations, 
-        fallback_city=city_context
-    )
+    # Use the first suggested location, or fallback to city context
+    location_to_search = suggested_locations[0] if suggested_locations else city_context
+    search_location_id = get_rightmove_location_identifier(location_to_search)
+    
+    # If no specific location ID found, default to London
+    if not search_location_id:
+        print(f"[WARN] Could not find specific location ID for '{location_to_search}'. Defaulting to London.")
+        search_location_id = 'REGION^87490'
+        search_radius = 5.0
+    else:
+        search_radius = 5.0
     
     print(f"\n[INFO] Searching in: {city_context}")
     print(f"[INFO] Using Location ID: {search_location_id} with radius: {search_radius} miles")
@@ -59,7 +60,6 @@ async def find_apartments_interactive(criteria: dict):
 
     # STAGE 1: Quick filter using simple distance estimation
     print("\nStep 3a: Quick filtering by estimated travel time...")
-    from free_maps_service import estimate_travel_time_simple
     
     max_travel_time = criteria.get('max_travel_time', 40)
     

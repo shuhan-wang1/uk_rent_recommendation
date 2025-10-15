@@ -3,12 +3,20 @@
 import pandas as pd
 import re
 import ast # Used to safely parse the string representation of the image list
+import os
 
 # --- This is the new function to load data from your fake CSV ---
-def load_mock_properties_from_csv(filename: str = 'fake_property_listings.csv') -> list[dict]:
+def load_mock_properties_from_csv(filename: str = None) -> list[dict]:
     """
     Loads property listings from a local CSV file for testing and demo purposes.
+    If filename is not provided, will look in the data/ directory.
     """
+    # If no filename provided, use default path
+    if filename is None:
+        # Get the directory of this file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(os.path.dirname(current_dir), 'data', 'fake_property_listings.csv')
+    
     try:
         df = pd.read_csv(filename)
         # Convert the string representation of a list into an actual list
@@ -18,6 +26,7 @@ def load_mock_properties_from_csv(filename: str = 'fake_property_listings.csv') 
         return properties
     except FileNotFoundError:
         print(f"/!\\ ERROR: Mock data file not found at '{filename}'. Please create it. /!\\")
+        return []
         return []
     except Exception as e:
         print(f"/!\\ ERROR: Failed to read mock data file: {e} /!\\")

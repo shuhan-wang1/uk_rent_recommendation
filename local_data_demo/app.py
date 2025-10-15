@@ -5,16 +5,14 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import json
 import traceback
-from ollama_interface import clarify_and_extract_criteria, generate_recommendations, call_ollama
-from user_session import add_to_favorites, get_favorites, _session_data
-from web_search import get_search_snippets
-from free_maps_service import get_crime_data_by_location
 import re
-
-# RAG Imports from new files
-from data_loader import load_mock_properties_from_csv
-from rag_coordinator import RAGCoordinator
-from enrichment import enrich_property_data
+from core.llm_interface import clarify_and_extract_criteria, generate_recommendations, call_ollama
+from core.user_session import add_to_favorites, get_favorites, _session_data
+from core.web_search import get_search_snippets
+from core.maps_service import get_crime_data_by_location
+from core.data_loader import load_mock_properties_from_csv
+from core.enrichment_service import enrich_property_data
+from rag.rag_coordinator import RAGCoordinator
 
 app = Flask(__name__, template_folder='.')
 CORS(app)
@@ -24,6 +22,7 @@ CORS(app)
 print("[STARTUP] Initializing RAG Coordinator...")
 try:
     rag_coordinator = RAGCoordinator()
+    print("✓ [STARTUP] RAGCoordinator initialized successfully")
 except Exception as e:
     print(f"❌ FATAL ERROR during RAG initialization:")
     print(f"   Error type: {type(e).__name__}")
@@ -31,12 +30,23 @@ except Exception as e:
     import traceback
     traceback.print_exc()
     raise  # Re-raise to see full stack trace
-rag_coordinator = RAGCoordinator()
+
+print("[STARTUP] Loading mock properties from CSV...")
 all_properties = load_mock_properties_from_csv()
+print(f"✓ [STARTUP] Loaded {len(all_properties)} properties from CSV")
+
 if all_properties:
-    print("[STARTUP] Building FAISS index for property embeddings... (This may take a moment)") # <-- ADDED THIS LINE
-    rag_coordinator.property_store.build_index(all_properties)
-    print("✓ [STARTUP] FAISS index built successfully. Starting server...") # <-- ADDED THIS LINE
+    print("[STARTUP] Building FAISS index for property embeddings... (This may take a moment)")
+    try:
+        rag_coordinator.property_store.build_index(all_properties)
+        print("✓ [STARTUP] FAISS index built successfully. Starting server...")
+    except Exception as e:
+        print(f"❌ ERROR building FAISS index: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
+else:
+    print("⚠️  WARNING: No properties loaded from CSV. RAG search may not work properly.")
 # ------------------------------------
 
 # Store last search results for chat context
@@ -108,7 +118,7 @@ async def api_search():
         max_travel_time = criteria.get('max_travel_time', 40)
         
         # Calculate travel times concurrently
-        from travel_service import calculate_travel_time
+        from core.maps_service import calculate_travel_time
         loop = asyncio.get_event_loop()
         
         travel_time_tasks = [
@@ -219,7 +229,7 @@ def api_chat():
                 print(f"  [FREE SUPERMARKET SEARCH] Using OpenStreetMap for: {address}")
                 
                 # Import the FREE function
-                from free_maps_service import get_nearby_supermarkets_detailed
+                from core.maps_service import get_nearby_supermarkets_detailed
                 
                 # Get detailed supermarket list (completely free!)
                 supermarkets = get_nearby_supermarkets_detailed(address, radius=1000)

@@ -1,7 +1,7 @@
 # rag_coordinator.py
-from property_embeddings import PropertyEmbeddingStore
-from conversation_memory import ConversationMemory
-from area_knowledge import AreaKnowledgeBase
+from .property_embeddings import PropertyEmbeddingStore
+from .conversation_memory import ConversationMemory
+from .area_knowledge import AreaKnowledgeBase
 
 class RAGCoordinator:
     def __init__(self):
@@ -13,22 +13,33 @@ class RAGCoordinator:
         """Multi-source retrieval with reranking"""
         
         # 1. Semantic property search
+        print(f"    -> [RAG] Starting semantic search for: {user_query[:50]}...")
         semantic_results = self.property_store.search(user_query, top_k=20)
+        print(f"    -> [RAG] Got {len(semantic_results)} semantic results")
         
         # 2. Get relevant past conversations
-        past_context = self.conversation_memory.retrieve_relevant_history(
-            user_query, n_results=3
-        )
+        past_context = []
+        try:
+            past_context = self.conversation_memory.retrieve_relevant_history(
+                user_query, n_results=3
+            )
+        except Exception as e:
+            print(f"    -> [RAG] Warning: Could not retrieve conversation history: {e}")
         
         # 3. Retrieve area-specific knowledge
-        location = criteria.get('destination')
-        area_info = self.area_knowledge.get_context(location)
+        area_info = []
+        try:
+            location = criteria.get('destination')
+            area_info = self.area_knowledge.get_context(location) if location else []
+        except Exception as e:
+            print(f"    -> [RAG] Warning: Could not retrieve area knowledge: {e}")
         
         # 4. Hybrid scoring (semantic + rules)
         scored_results = self._hybrid_rank(
             semantic_results, criteria, area_info
         )
         
+        print(f"    -> [RAG] Returning {len(scored_results)} ranked results")
         return scored_results, past_context, area_info
     
     def _hybrid_rank(self, properties, criteria, area_info):

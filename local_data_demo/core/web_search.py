@@ -1,7 +1,7 @@
 # web_search.py
 
 from ddgs import DDGS
-from cache_service import get_from_cache, set_to_cache, create_cache_key
+from .cache_service import get_from_cache, set_to_cache, create_cache_key
 
 def get_search_snippets(query: str, max_results: int = 3) -> str:
     """
