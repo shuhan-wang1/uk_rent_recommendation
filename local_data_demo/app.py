@@ -13,9 +13,19 @@ from core.maps_service import get_crime_data_by_location
 from core.data_loader import load_mock_properties_from_csv
 from core.enrichment_service import enrich_property_data
 from rag.rag_coordinator import RAGCoordinator
+from core.tool_system import create_tool_registry
 
 app = Flask(__name__, template_folder='.')
 CORS(app)
+
+# --- Tool System Setup (从 fengyuan-agent 迁移) ---
+print("[STARTUP] Initializing Tool System...")
+try:
+    tool_registry = create_tool_registry()
+    print(f"✓ [STARTUP] Tool System initialized with {len(tool_registry.tools)} tools")
+except Exception as e:
+    print(f"⚠️  [STARTUP] Warning: Tool System initialization failed: {e}")
+    tool_registry = None
 
 # --- RAG Setup as per markdown ---
 # Initialize the coordinator and build the index at startup
@@ -197,7 +207,7 @@ def markdown_to_html(text):
 
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
-    """Enhanced chat endpoint with FREE supermarket search (OpenStreetMap)"""
+    """Enhanced chat endpoint with Tool System integration for multi-source POI search"""
     data = request.get_json()
     if not data or not data.get('message'):
         return jsonify({"error": "Message is required"}), 400
@@ -208,7 +218,7 @@ def api_chat():
     try:
         search_keywords = ['cost of living', 'crime rate', 'crime', 'safe', 'safety', 
                           'area like', 'neighborhood', 'transport', 'schools', 
-                          'restaurants', 'supermarket', 'shop', 'store', 'grocery',
+                          'restaurants', 'supermarket', 'shop', 'store', 'grocery', 'lidl', 'aldi',
                           'vibe', 'vibrant', 'bus', 'tube', 'train']
         needs_search = any(keyword in user_message.lower() for keyword in search_keywords)
         
@@ -224,27 +234,71 @@ def api_chat():
         if needs_search and context.get('property'):
             address = context['property'].get('address', '')
             
-            # SUPERMARKET QUERY - Now uses FREE OpenStreetMap API
-            if any(word in user_message.lower() for word in ['supermarket', 'shop', 'store', 'grocery']):
-                print(f"  [FREE SUPERMARKET SEARCH] Using OpenStreetMap for: {address}")
+            # SUPERMARKET/CHAIN QUERY - Now uses Tool System with multi-source search
+            if any(word in user_message.lower() for word in ['supermarket', 'shop', 'store', 'grocery', 'lidl', 'aldi']):
+                print(f"  [Tool System] Supermarket search for: {address}")
                 
-                # Import the FREE function
-                from core.maps_service import get_nearby_supermarkets_detailed
+                # 检测用户是否要找特定品牌
+                chains_to_search = []
+                if 'lidl' in user_message.lower():
+                    chains_to_search.append('Lidl')
+                if 'aldi' in user_message.lower():
+                    chains_to_search.append('Aldi')
+                if 'sainsbury' in user_message.lower():
+                    chains_to_search.append('Sainsbury')
+                if 'tesco' in user_message.lower():
+                    chains_to_search.append('Tesco')
                 
-                # Get detailed supermarket list (completely free!)
-                supermarkets = get_nearby_supermarkets_detailed(address, radius=1000)
+                # 如果没有指定特定品牌，使用默认列表
+                if not chains_to_search:
+                    chains_to_search = ['Lidl', 'Aldi', 'Sainsbury', 'Tesco']
+                
+                # 使用工具系统执行搜索（如果可用）
+                supermarkets = []
+                if tool_registry:
+                    try:
+                        # 通过 Tool System 执行异步搜索
+                        async def run_tool_search():
+                            result = await tool_registry.execute_tool(
+                                'search_supermarkets',
+                                address=address,
+                                chains=chains_to_search,
+                                radius_m=2000
+                            )
+                            return result.data if result.success else []
+                        
+                        # 在同步环境中运行异步任务
+                        loop = None
+                        try:
+                            loop = asyncio.get_event_loop()
+                        except RuntimeError:
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                        
+                        supermarkets = loop.run_until_complete(run_tool_search())
+                        print(f"  ✓ [Tool System] Found {len(supermarkets)} supermarkets")
+                    except Exception as e:
+                        print(f"  ⚠️  [Tool System] Tool execution failed: {e}, falling back to direct search")
+                        from core.maps_service import get_nearby_supermarkets_detailed
+                        supermarkets = get_nearby_supermarkets_detailed(address, radius=2000, chains=chains_to_search)
+                else:
+                    # Fallback if tool registry not available
+                    from core.maps_service import get_nearby_supermarkets_detailed
+                    supermarkets = get_nearby_supermarkets_detailed(address, radius=2000, chains=chains_to_search)
                 
                 if supermarkets:
                     # Format the data nicely
                     supermarket_text = "\n".join([
-                        f"- {shop['name']} ({shop['type']}) - {shop['address']} - {shop['distance_m']}m away"
-                        for shop in supermarkets[:8]  # Top 8
+                        f"- {shop['name']} ({shop['type']}) - {shop['address']} - "
+                        f"{('~' if shop.get('distance_m') is None else '')}{shop.get('distance_m', 'N/A')}m away"
+                        for shop in supermarkets[:10]  # Top 10
                     ])
                     
                     prompt = f"""The user asked: "{user_message}"
 Property address: {address}
+Searching for chains: {', '.join(chains_to_search)}
 
-VERIFIED SUPERMARKETS from OpenStreetMap (within 1km):
+VERIFIED SUPERMARKETS (multi-source: OSM + web fallback):
 {supermarket_text}
 
 Total found: {len(supermarkets)}
@@ -253,17 +307,19 @@ INSTRUCTIONS:
 1. List the supermarkets exactly as shown above
 2. Include their names, types, and distances
 3. Do NOT add any stores not in this list
-4. If user asks about specific chains, check if they're in the list
+4. Highlight if this includes user-requested chains (e.g., Lidl, Aldi)
+5. If no specific chains found, mention and suggest alternatives
 
 Provide a helpful, friendly response using ONLY this verified data."""
 
                 else:
                     prompt = f"""The user asked: "{user_message}"
 Property address: {address}
+Searched for: {', '.join(chains_to_search)}
 
-OpenStreetMap search result: NO supermarkets found within 1km.
+Multi-source search result: NO supermarkets found within 2km (tried OSM and web search).
 
-Respond honestly: "I searched OpenStreetMap and couldn't find any supermarkets within 1km of this address. The nearest shops might be slightly further away. Would you like me to search within a 2km radius instead?" """
+Respond honestly: "I searched multiple sources and couldn't find {', '.join(chains_to_search)} within 2km of this address. This could mean the area is underrepresented in public data. Would you like me to search a wider radius or look for alternatives?" """
             
             # TRANSPORT/TUBE QUERY
             elif any(word in user_message.lower() for word in ['tube', 'train', 'station', 'transport']):

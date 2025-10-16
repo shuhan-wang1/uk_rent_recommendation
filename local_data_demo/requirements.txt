@@ -12,3 +12,7 @@ chromadb
 beautifulsoup4
 requests
 python-dotenv
+googlemaps
+flask
+flask-cors
+faiss-cpu

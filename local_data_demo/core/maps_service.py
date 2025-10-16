@@ -79,7 +79,7 @@ def calculate_travel_time(origin_address: str, destination_address: str, mode: s
         print(f"  -> [Cache HIT] Travel time for: {origin_address} ({mode})")
         return cached_result
 
-    print(f"  -> [Google Maps API] Getting travel time: {origin_address} → {destination_normalized} ({mode})")
+    print(f"  -> [Google Maps API] Getting travel time: {origin_address} -> {destination_normalized} ({mode})")
     
     try:
         now = datetime.now()
@@ -99,11 +99,11 @@ def calculate_travel_time(origin_address: str, destination_address: str, mode: s
         if directions_result and 'legs' in directions_result[0]:
             duration_seconds = directions_result[0]['legs'][0]['duration']['value']
             minutes = round(duration_seconds / 60)
-            print(f"  ✓ [Google Maps] Route found: {minutes} mins")
+            print(f"  [OK] [Google Maps] Route found: {minutes} mins")
             set_to_cache(cache_key, minutes)
             return minutes
         else:
-            print(f"  ⚠️  [Google Maps] No route found")
+            print(f"  [WARN]  [Google Maps] No route found")
             return None
             
     except Exception as e:
@@ -153,7 +153,7 @@ def get_crime_data_by_location(address: str) -> dict | None:
         print(f"     ❌ Could not geocode address: {address}")
         return {"error": "Could not geocode address.", "total_crimes_6m": "Unknown"}
     
-    print(f"     ✓ Coordinates: {location['lat']}, {location['lng']}")
+    print(f"     [OK] Coordinates: {location['lat']}, {location['lng']}")
 
     base_date = datetime.now().replace(day=1) - pd.DateOffset(months=2)
     dates_to_fetch = [(base_date - pd.DateOffset(months=i)).strftime('%Y-%m') for i in range(6)]
@@ -162,25 +162,25 @@ def get_crime_data_by_location(address: str) -> dict | None:
     for date_str in dates_to_fetch:
         api_url = f"https://data.police.uk/api/crimes-at-location?date={date_str}&lat={location['lat']}&lng={location['lng']}"
         try:
-            print(f"     → Fetching {date_str}...")
+            print(f"     -> Fetching {date_str}...")
             response = requests.get(api_url, timeout=5)
             response.raise_for_status()
             crimes = response.json()
             
             if crimes:
-                print(f"       ✓ Found {len(crimes)} crimes in {date_str}")
+                print(f"       [OK] Found {len(crimes)} crimes in {date_str}")
                 all_crimes.extend(crimes)
             else:
                 print(f"       • No crimes in {date_str}")
         except requests.exceptions.Timeout:
-            print(f"       ⚠️  Timeout for {date_str}")
+            print(f"       [WARN]  Timeout for {date_str}")
             continue
         except requests.exceptions.RequestException as e:
             print(f"       ❌ API error for {date_str}: {e}")
             continue
 
     if not all_crimes:
-        print(f"     ⚠️  WARNING: No crime data found for any month!")
+        print(f"     [WARN]  WARNING: No crime data found for any month!")
         summary = {
             "total_crimes_6m": "Unknown", 
             "crime_trend": "unknown", 
@@ -190,7 +190,7 @@ def get_crime_data_by_location(address: str) -> dict | None:
         set_to_cache(cache_key, summary)
         return summary
 
-    print(f"     ✓ TOTAL: {len(all_crimes)} crimes across 6 months")
+    print(f"     [OK] TOTAL: {len(all_crimes)} crimes across 6 months")
     
     crimes_by_month = Counter(crime['month'] for crime in all_crimes)
     sorted_months = sorted(crimes_by_month.keys())
@@ -310,99 +310,214 @@ def estimate_travel_time_simple(origin_address: str, destination_address: str, m
     return total_minutes
 
 
-def get_nearby_supermarkets_detailed(address: str, radius: int = 1000) -> list[dict]:
+def get_nearby_supermarkets_detailed(address: str, radius: int = 2000, 
+                                     chains: list[str] | None = None) -> list[dict]:
     """
-    Get detailed list of nearby supermarkets using OpenStreetMap Overpass API.
+    多源超市搜索 - 智能级联搜索策略
     
-    Returns list of dicts with: name, type, address, distance_m
-    This is a FREE alternative to Google Places API.
+    搜索顺序：
+    1. OSM品牌查询（brand=Lidl等）- 精准
+    2. OSM通用超市查询（shop=supermarket等）- 通用
+    3. 网页搜索回退 - 最后手段
+    
+    参数：
+    - address: 搜索的地址
+    - radius: 搜索半径（米）
+    - chains: 目标超市品牌列表，如['Lidl', 'Aldi']，默认['Lidl', 'Aldi', 'Sainsbury', 'Tesco']
+    
+    返回：超市列表，按距离排序
     """
-    cache_key = create_cache_key('supermarkets_detailed_v1', address, radius)
+    if chains is None:
+        chains = ['Lidl', 'Aldi', 'Sainsbury', 'Tesco']
+    
+    cache_key = create_cache_key('supermarkets_detailed_v2_multi', address, radius, tuple(chains))
     cached_result = get_from_cache(cache_key)
     if cached_result:
+        print(f"    -> [缓存] 找到超市缓存: {address}")
         return cached_result
     
-    print(f"    -> [OSM] Getting supermarkets near: {address}")
+    print(f"    [SEARCH] [多源搜索] 搜索超市: {chains} near {address}")
     
     location = _get_coordinates(address)
     if not location:
-        print(f"    -> [OSM] Could not geocode address: {address}")
+        print(f"    -> [多源搜索] 无法地理编码: {address}")
         return []
     
-    # Use OpenStreetMap Overpass API (completely free, no key needed)
+    results = []
+    
+    # ===== 方法1：OSM品牌查询 =====
+    print(f"      方法1: OSM品牌查询...")
     url = "https://overpass-api.de/api/interpreter"
     
-    # Query for supermarkets and convenience stores
-    query = f"""
-    [out:json][timeout:15];
-    (
-      node["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
-      way["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
-      node["shop"="convenience"](around:{radius},{location['lat']},{location['lng']});
-    );
-    out center;
-    """
+    for chain in chains:
+        query = f"""
+        [out:json][timeout:10];
+        (
+          node["brand"="{chain}"]["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
+          node["brand"="{chain}"](around:{radius},{location['lat']},{location['lng']});
+          way["brand"="{chain}"]["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
+          way["brand"="{chain}"](around:{radius},{location['lat']},{location['lng']});
+        );
+        out center;
+        """
+        
+        try:
+            import time as time_module
+            time_module.sleep(0.5)
+            response = requests.post(url, data={'data': query}, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                brand_results = _parse_osm_elements(data.get('elements', []), location, chain)
+                results.extend(brand_results)
+                print(f"        [OK] {chain}: 找到 {len(brand_results)} 家")
+        except Exception as e:
+            print(f"        [WARN]  {chain} 搜索出错: {e}")
     
-    try:
-        import time
-        time.sleep(1)  # Rate limiting for free API
-        response = requests.post(url, data={'data': query}, timeout=15)
+    # ===== 方法2：通用超市搜索 =====
+    if len(results) < 3:
+        print(f"      方法2: OSM通用超市搜索 (已找到 {len(results)} 家，需要补充)...")
+        query = f"""
+        [out:json][timeout:15];
+        (
+          node["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
+          way["shop"="supermarket"](around:{radius},{location['lat']},{location['lng']});
+          node["shop"="convenience"](around:{radius},{location['lat']},{location['lng']});
+          way["shop"="convenience"](around:{radius},{location['lat']},{location['lng']});
+        );
+        out center;
+        """
         
-        if response.status_code != 200:
-            print(f"    -> [OSM] API error {response.status_code}")
-            return []
+        try:
+            import time as time_module
+            time_module.sleep(1)
+            response = requests.post(url, data={'data': query}, timeout=15)
+            
+            if response.status_code == 200:
+                data = response.json()
+                generic_results = _parse_osm_elements(data.get('elements', []), location, 'generic')
+                
+                # 去重：只添加新的超市
+                existing_names = {r.get('name', '').lower() for r in results}
+                new_results = [r for r in generic_results if r.get('name', '').lower() not in existing_names]
+                results.extend(new_results)
+                print(f"        [OK] 通用搜索: 找到 {len(new_results)} 家新超市")
+        except Exception as e:
+            print(f"        [WARN]  通用搜索出错: {e}")
+    
+    # ===== 方法3：网页搜索回退 =====
+    if not results:
+        print(f"      方法3: 网页搜索回退...")
+        try:
+            from .web_search import get_search_snippets
+            
+            for chain in chains[:2]:  # 只搜索前两个品牌
+                try:
+                    query_text = f"{chain} supermarket near {address} London"
+                    snippets = get_search_snippets(query_text, max_results=2)
+                    
+                    for snippet in snippets:
+                        title = snippet.get('title', '')
+                        if chain.lower() in title.lower():
+                            web_result = {
+                                'name': title,
+                                'type': 'supermarket',
+                                'address': snippet.get('snippet', 'Web result'),
+                                'distance_m': None,
+                                'source': 'web_search',
+                                'url': snippet.get('link', '')
+                            }
+                            results.append(web_result)
+                except Exception as e:
+                    print(f"        [WARN]  {chain} 网页搜索出错: {e}")
+        except Exception as e:
+            print(f"        [WARN]  网页搜索模块不可用: {e}")
+    
+    # ===== 最终处理 =====
+    # 去重、排序和限制数量
+    results = _deduplicate_supermarkets(results)
+    results.sort(key=lambda x: x.get('distance_m', 999999) if x.get('distance_m') else 999999)
+    results = results[:10]  # 最多返回10个
+    
+    print(f"    [OK] [多源搜索] 总共找到 {len(results)} 家超市")
+    set_to_cache(cache_key, results)
+    return results
+
+
+def _parse_osm_elements(elements: list, location: dict, source: str = 'osm') -> list[dict]:
+    """
+    解析OSM API返回的元素列表
+    """
+    supermarkets = []
+    
+    for element in elements:
+        tags = element.get('tags', {})
         
-        data = response.json()
-        supermarkets = []
+        # 获取坐标
+        if element['type'] == 'node':
+            shop_lat = element['lat']
+            shop_lng = element['lon']
+        else:  # way (building)
+            center = element.get('center', {})
+            shop_lat = center.get('lat')
+            shop_lng = center.get('lon')
         
-        for element in data.get('elements', [])[:10]:  # Top 10
-            tags = element.get('tags', {})
-            
-            # Get coordinates
-            if element['type'] == 'node':
-                shop_lat = element['lat']
-                shop_lng = element['lon']
-            else:  # way (building polygon)
-                center = element.get('center', {})
-                shop_lat = center.get('lat')
-                shop_lng = center.get('lon')
-            
-            if not shop_lat or not shop_lng:
-                continue
-            
-            # Calculate distance using Haversine formula
-            lat1_rad = math.radians(location['lat'])
-            lat2_rad = math.radians(shop_lat)
-            dlat = math.radians(shop_lat - location['lat'])
-            dlng = math.radians(shop_lng - location['lng'])
-            
-            a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlng/2)**2
-            c = 2 * math.asin(math.sqrt(a))
-            distance_km = 6371 * c
-            distance_m = int(distance_km * 1000)
-            
-            # Extract info
-            name = tags.get('name', 'Unnamed Shop')
-            shop_type = tags.get('shop', 'supermarket')
-            street = tags.get('addr:street', '')
-            housenumber = tags.get('addr:housenumber', '')
-            
-            supermarkets.append({
-                'name': name,
-                'type': shop_type,
-                'address': f"{housenumber} {street}".strip() or "Address not available",
-                'distance_m': distance_m,
-                'lat': shop_lat,
-                'lng': shop_lng
-            })
+        if not shop_lat or not shop_lng:
+            continue
         
-        # Sort by distance
-        supermarkets.sort(key=lambda x: x['distance_m'])
+        # 计算距离（Haversine公式）
+        lat1_rad = math.radians(location['lat'])
+        lat2_rad = math.radians(shop_lat)
+        dlat = math.radians(shop_lat - location['lat'])
+        dlng = math.radians(shop_lng - location['lng'])
         
-        print(f"    ✓ [OSM] Found {len(supermarkets)} supermarkets within {radius}m")
-        set_to_cache(cache_key, supermarkets)
-        return supermarkets
+        a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlng/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        distance_m = int(6371000 * c)
         
-    except Exception as e:
-        print(f"    -> [OSM] Error: {e}")
-        return []
+        # 提取信息
+        name = tags.get('name', 'Unnamed Shop')
+        shop_type = tags.get('shop', 'supermarket')
+        street = tags.get('addr:street', '')
+        housenumber = tags.get('addr:housenumber', '')
+        brand = tags.get('brand', '')
+        
+        supermarkets.append({
+            'name': name,
+            'type': shop_type,
+            'address': f"{housenumber} {street}".strip() or "Address not available",
+            'distance_m': distance_m,
+            'lat': shop_lat,
+            'lng': shop_lng,
+            'brand': brand,
+            'source': source
+        })
+    
+    return supermarkets
+
+
+def _deduplicate_supermarkets(results: list[dict]) -> list[dict]:
+    """
+    去重超市结果：按名称和距离
+    优先级：osm_brand > osm_generic > web_search
+    """
+    seen_names = set()
+    dedup_results = []
+    
+    # 优先级排序
+    priority_map = {'osm': 0, 'generic': 1, 'web_search': 2}
+    results_sorted = sorted(
+        results,
+        key=lambda x: (
+            priority_map.get(x.get('source', 'web_search'), 999),
+            x.get('distance_m', 999999) if x.get('distance_m') else 999999
+        )
+    )
+    
+    for result in results_sorted:
+        name_lower = result.get('name', '').lower()
+        if name_lower not in seen_names:
+            seen_names.add(name_lower)
+            dedup_results.append(result)
+    
+    return dedup_results
