@@ -521,3 +521,161 @@ def _deduplicate_supermarkets(results: list[dict]) -> list[dict]:
             dedup_results.append(result)
     
     return dedup_results
+
+
+def get_nearby_places_osm(address: str, amenity_type: str, radius_m: int = 1500) -> list[dict]:
+    """
+    Get nearby places using OpenStreetMap Overpass API (FREE - no API key needed)
+    
+    Args:
+        address: Property address
+        amenity_type: Type of amenity (gym, park, restaurant, hospital, library, school)
+        radius_m: Search radius in meters (default 1500m = 1.5km)
+    
+    Returns:
+        List of nearby places with name, distance, address/location
+    """
+    cache_key = create_cache_key('get_nearby_places_osm', address, amenity_type, radius_m)
+    cached_result = get_from_cache(cache_key)
+    if cached_result:
+        print(f"  -> [Cache HIT] OSM {amenity_type} data for: {address}")
+        return cached_result
+    
+    print(f"  -> [Overpass API] Getting {amenity_type} locations near: {address}")
+    
+    # Get coordinates for the property
+    location = _get_coordinates(address)
+    if not location:
+        print(f"     ❌ Could not geocode address: {address}")
+        return []
+    
+    lat, lng = location['lat'], location['lng']
+    print(f"     [OK] Coordinates: {lat:.4f}, {lng:.4f}")
+    
+    # Map amenity types to OSM tags
+    osm_amenity_map = {
+        'gym': [('leisure', 'fitness_centre'), ('leisure', 'sports_centre'), ('sport', 'gym')],
+        'park': [('leisure', 'park')],
+        'restaurant': [('amenity', 'restaurant')],
+        'cafe': [('amenity', 'cafe'), ('amenity', 'coffee_shop')],
+        'hospital': [('amenity', 'hospital'), ('amenity', 'clinic')],
+        'library': [('amenity', 'library')],
+        'school': [('amenity', 'school')],
+        'supermarket': [('shop', 'supermarket')],
+    }
+    
+    osm_tags = osm_amenity_map.get(amenity_type, [])
+    if not osm_tags:
+        print(f"     ERROR: Unknown amenity type: {amenity_type}")
+        return []
+    
+    # Calculate bounding box (approximate)
+    # 1 degree latitude ≈ 111 km, 1 degree longitude ≈ 111 km * cos(latitude)
+    lat_offset = (radius_m / 1000) / 111.0
+    lng_offset = (radius_m / 1000) / (111.0 * math.cos(math.radians(lat)))
+    
+    south = lat - lat_offset
+    west = lng - lng_offset
+    north = lat + lat_offset
+    east = lng + lng_offset
+    
+    # Build Overpass API query - proper syntax
+    # Combine multiple tags with separate queries
+    tag_queries = []
+    for key, value in osm_tags:
+        tag_queries.append(f'node["{key}"="{value}"]({south:.6f},{west:.6f},{north:.6f},{east:.6f});')
+        tag_queries.append(f'way["{key}"="{value}"]({south:.6f},{west:.6f},{north:.6f},{east:.6f});')
+    
+    queries_part = '\n  '.join(tag_queries)
+    
+    overpass_query = f"""[out:json];
+(
+  {queries_part}
+);
+out center;"""
+    
+    print(f"     [OK] Using Overpass API for {amenity_type} search")
+    
+    overpass_url = "https://overpass-api.de/api/interpreter"
+    
+    try:
+        response = requests.post(overpass_url, data=overpass_query, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        places = []
+        
+        for element in data.get('elements', []):
+            # Get coordinates - Overpass uses 'lon', not 'lng'
+            if 'center' in element:
+                place_lat = element['center']['lat']
+                place_lon = element['center']['lon']
+            elif 'lat' in element and 'lon' in element:
+                place_lat = element['lat']
+                place_lon = element['lon']
+            else:
+                continue
+            
+            # Calculate distance
+            distance_m = calculate_distance_m(lat, lng, place_lat, place_lon)
+            
+            if distance_m > radius_m:
+                continue
+            
+            # Get name
+            tags = element.get('tags', {})
+            name = tags.get('name', 'Unknown ' + amenity_type)
+            
+            # Get address if available
+            address_parts = []
+            if 'street' in tags:
+                address_parts.append(tags['street'])
+            if 'housenumber' in tags:
+                address_parts.insert(0, tags['housenumber'])
+            if 'postcode' in tags:
+                address_parts.append(tags['postcode'])
+            
+            place_address = ', '.join(address_parts) if address_parts else f"({place_lat:.4f}, {place_lon:.4f})"
+            
+            places.append({
+                'name': name,
+                'type': amenity_type,
+                'distance_m': round(distance_m),
+                'address': place_address,
+                'lat': place_lat,
+                'lon': place_lon,  # Use 'lon' to match Overpass API conventions
+                'source': 'osm'
+            })
+        
+        # Sort by distance
+        places.sort(key=lambda x: x['distance_m'])
+        
+        print(f"     [OK] Found {len(places)} {amenity_type} locations within {radius_m}m")
+        set_to_cache(cache_key, places)
+        return places
+        
+    except requests.exceptions.Timeout:
+        print(f"     [WARN] Overpass API timeout - try again later")
+        return []
+    except requests.exceptions.RequestException as e:
+        print(f"     [WARN] Overpass API error: {e}")
+        print(f"     [INFO] This may be due to rate limiting. Returning empty results.")
+        return []
+    except Exception as e:
+        print(f"     [WARN] Error processing Overpass data: {e}")
+        return []
+
+
+def calculate_distance_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Calculate distance between two coordinates in meters using Haversine formula"""
+    R = 6371000  # Earth's radius in meters
+    
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    delta_lat = math.radians(lat2 - lat1)
+    delta_lng = math.radians(lng2 - lng1)
+    
+    a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lng / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    
+    return R * c

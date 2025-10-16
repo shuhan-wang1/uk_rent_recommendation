@@ -6,8 +6,8 @@ from flask_cors import CORS
 import json
 import traceback
 import re
-from core.llm_interface import clarify_and_extract_criteria, generate_recommendations, call_ollama
-from core.user_session import add_to_favorites, get_favorites, _session_data
+from core.llm_interface import clarify_and_extract_criteria, generate_recommendations, call_ollama, refine_criteria_with_answer
+from core.user_session import add_to_favorites, get_favorites, _session_data, set_pending_criteria, get_pending_criteria, clear_pending_criteria, has_pending_clarification, is_clarification_response
 from core.web_search import get_search_snippets
 from core.maps_service import get_crime_data_by_location
 from core.data_loader import load_mock_properties_from_csv
@@ -44,6 +44,13 @@ except Exception as e:
 print("[STARTUP] Loading mock properties from CSV...")
 all_properties = load_mock_properties_from_csv()
 print(f"✓ [STARTUP] Loaded {len(all_properties)} properties from CSV")
+
+# ✅ FIXED: 确保在建立索引前处理所有属性，添加 parsed_price
+if all_properties:
+    from core.data_loader import parse_price
+    for prop in all_properties:
+        if 'parsed_price' not in prop:
+            prop['parsed_price'] = parse_price(prop.get('Price'))
 
 if all_properties:
     print("[STARTUP] Building FAISS index for property embeddings... (This may take a moment)")
@@ -93,6 +100,16 @@ def generate_recommendations_with_rag(properties: list[dict], user_query: str, p
 async def api_search():
     """
     API endpoint enhanced with the RAG workflow.
+    ✅ FIXED: 现在支持澄清流程 (clarification flow)
+    
+    流程:
+    1. 新查询 -> 调用 clarify_and_extract_criteria()
+       - 如果返回 clarification_needed -> 保存到 pending_criteria，返回澄清问题
+       - 如果返回 success -> 进行搜索
+    
+    2. 澄清回复 -> 调用 refine_criteria_with_answer()
+       - 合并用户回复，返回完整条件
+       - 进行搜索
     """
     global last_search_results
     
@@ -101,27 +118,57 @@ async def api_search():
         return jsonify({"error": "A search query is required."}), 400
 
     user_query = data.get('query')
-    print(f"Received query from UI: {user_query}")
+    print(f"\n{'='*60}")
+    print(f"[API] Received query from UI: {user_query}")
+    print(f"[API] Has pending clarification: {has_pending_clarification()}")
+    print(f"{'='*60}")
 
     try:
-        # 1. Extract criteria
-        criteria_response = clarify_and_extract_criteria(user_query)
-        print(f"[DEBUG] Ollama criteria response: {json.dumps(criteria_response, indent=2)}")
+        # ✅ 步骤 0: 检查是否是对澄清问题的回复
+        if has_pending_clarification() and is_clarification_response(user_query):
+            print("[API] ✓ 这是对澄清问题的回复")
+            pending = get_pending_criteria()
+            print(f"[API] 原始条件: {json.dumps(pending, indent=2)}")
+            
+            # 使用 refine_criteria_with_answer() 来合并用户回复
+            criteria_response = refine_criteria_with_answer(pending, user_query)
+            print(f"[API] 合并后条件: {json.dumps(criteria_response, indent=2)}")
+            
+            # 如果合并后仍然需要澄清，返回新的澄清问题
+            if criteria_response.get('status') != 'success':
+                set_pending_criteria(criteria_response)
+                return jsonify(criteria_response), 200
+            
+            # 否则清除待处理状态
+            clear_pending_criteria()
+            criteria = criteria_response
+            
+        else:
+            # 新的搜索查询
+            print("[API] → 这是新的搜索查询")
+            criteria_response = clarify_and_extract_criteria(user_query)
+            print(f"[DEBUG] 初始条件提取: {json.dumps(criteria_response, indent=2)}")
 
-        if criteria_response.get('status') != 'success':
-            return jsonify(criteria_response), 200
+            # ✅ 如果需要澄清，保存到 pending_criteria 并返回澄清问题
+            if criteria_response.get('status') != 'success':
+                print("[API] → 需要澄清")
+                set_pending_criteria(criteria_response)
+                return jsonify(criteria_response), 200
 
-        criteria = criteria_response
+            criteria = criteria_response
+
+        # ✅ 到这里，我们有了成功的条件（status == 'success'）
+        print("[API] ✓ 成功获得搜索条件，开始搜索...")
 
         # 2. RAG-enhanced retrieval
-        print("\nStep 2: Performing RAG-enhanced retrieval...")
+        print("\n[STEP 2] 执行 RAG 增强检索...")
         ranked_properties, past_context, area_info = rag_coordinator.enhanced_search(
             user_query, criteria
         )
-        print(f" -> Found {len(ranked_properties)} semantically similar properties.")
+        print(f" → 找到 {len(ranked_properties)} 个相似房源")
         
         # 3. CALCULATE TRAVEL TIMES for top candidates
-        print("\nStep 3: Calculating travel times for top candidates...")
+        print("\n[STEP 3] 为前候选者计算出行时间...")
         top_candidates = ranked_properties[:15]  # Check more to ensure we get 5 within time limit
         
         destination = criteria.get('destination', 'University College London')
@@ -147,15 +194,15 @@ async def api_search():
         candidates_with_travel = []
         for prop, travel_time in zip(top_candidates, travel_times):
             if isinstance(travel_time, Exception):
-                print(f"  ⚠️  Travel time error for {prop.get('Address', '')[:50]}: {travel_time}")
+                print(f"  ⚠️  出行时间错误 {prop.get('Address', '')[:50]}: {travel_time}")
                 continue
             
             if travel_time and travel_time <= max_travel_time:
                 prop['travel_time_minutes'] = travel_time
                 candidates_with_travel.append(prop)
-                print(f"  ✓ {prop.get('Address', '')[:50]}: {travel_time} mins")
+                print(f"  ✓ {prop.get('Address', '')[:50]}: {travel_time} 分钟")
             else:
-                print(f"  ✗ {prop.get('Address', '')[:50]}: {travel_time} mins (too far)")
+                print(f"  ✗ {prop.get('Address', '')[:50]}: {travel_time} 分钟 (超过限制)")
         
         if not candidates_with_travel:
             return jsonify({
@@ -164,20 +211,26 @@ async def api_search():
             })
         
         # 4. Enrich top 5 with web data
-        print(f"\nStep 4: Enriching top {min(5, len(candidates_with_travel))} candidates...")
+        print(f"\n[STEP 4] 为前 {min(5, len(candidates_with_travel))} 个候选者充实数据...")
         top_5 = candidates_with_travel[:5]
         enriched_candidates = await asyncio.gather(*[
             enrich_property_data(prop, criteria) for prop in top_5
         ])
         
+        # ✅ FIXED: 添加预算到每个属性，用于超预算解释
+        max_budget = criteria.get('max_budget', 2000)
+        for prop in enriched_candidates:
+            prop['_max_budget'] = max_budget
+        
         # 5. Generate recommendations with context from RAG
-        print("\nStep 5: Generating recommendations with RAG context...")
+        print("\n[STEP 5] 基于 RAG 上下文生成建议...")
         recommendations = generate_recommendations_with_rag(
             properties=enriched_candidates,
             user_query=user_query,
             past_conversations=past_context,
             area_knowledge=area_info
         )
+
         
         # 6. Store conversation for future retrieval
         print("\nStep 6: Storing interaction in conversation memory...")
@@ -219,7 +272,13 @@ def api_chat():
         search_keywords = ['cost of living', 'crime rate', 'crime', 'safe', 'safety', 
                           'area like', 'neighborhood', 'transport', 'schools', 
                           'restaurants', 'supermarket', 'shop', 'store', 'grocery', 'lidl', 'aldi',
-                          'vibe', 'vibrant', 'bus', 'tube', 'train']
+                          'vibe', 'vibrant', 'bus', 'tube', 'train',
+                          'gym', 'fitness', 'health club', 'sports center', 'leisure',  # POI types
+                          'park', 'green space', 'outdoor',
+                          'restaurant', 'cafe', 'coffee', 'diner', 'eating',
+                          'hospital', 'medical', 'doctor', 'clinic', 'health',
+                          'library', 'books',
+                          'school', 'primary', 'secondary', 'education']
         needs_search = any(keyword in user_message.lower() for keyword in search_keywords)
         
         system_prompt = """You are Alex, a friendly and knowledgeable UK rental assistant. 
@@ -234,8 +293,69 @@ def api_chat():
         if needs_search and context.get('property'):
             address = context['property'].get('address', '')
             
+            # POI QUERY - Gym, Park, Restaurant, Hospital, etc.
+            poi_keywords = {
+                'gym': ['gym', 'fitness', 'health club', 'sports center', 'leisure'],
+                'park': ['park', 'green space', 'outdoor'],
+                'restaurant': ['restaurant', 'cafe', 'coffee', 'diner', 'eating'],
+                'hospital': ['hospital', 'medical', 'doctor', 'clinic', 'health'],
+                'library': ['library', 'books', 'library'],
+                'school': ['school', 'primary', 'secondary', 'education'],
+            }
+            
+            detected_poi = None
+            for poi_type, keywords in poi_keywords.items():
+                if any(keyword in user_message.lower() for keyword in keywords):
+                    detected_poi = poi_type
+                    break
+            
+            # GENERIC POI QUERY (GYM, PARK, RESTAURANT, HOSPITAL, ETC)
+            if detected_poi:
+                print(f"  [Overpass API] {detected_poi.upper()} search for: {address}")
+                from core.maps_service import get_nearby_places_osm
+                
+                poi_data = get_nearby_places_osm(address, detected_poi, radius_m=1500)
+                
+                if poi_data and len(poi_data) > 0:
+                    # Format the detailed location data
+                    poi_text = "\n".join([
+                        f"- {place['name']} - {place['distance_m']}m away ({round(place['distance_m']/1000, 1)}km)"
+                        for place in poi_data[:10]  # Top 10
+                    ])
+                    
+                    prompt = f"""The user asked: "{user_message}"
+Property address: {address}
+
+VERIFIED DATA (OpenStreetMap via Overpass API):
+Found {len(poi_data)} {detected_poi} locations within 1.5km:
+
+{poi_text}
+
+INSTRUCTIONS:
+1. List the {detected_poi} locations exactly as shown above with names and distances
+2. Include distances in both meters and kilometers
+3. Do NOT invent names or locations not in this list
+4. Provide helpful context about which ones are closest
+5. If user asks about travel time, explain that it depends on method (walking, cycling, public transport)
+
+Provide a helpful, friendly response using ONLY this verified data."""
+                else:
+                    prompt = f"""The user asked: "{user_message}"
+Property address: {address}
+
+VERIFIED DATA (OpenStreetMap via Overpass API):
+- Search result: NO {detected_poi} found within 1.5km of this address
+
+INSTRUCTIONS:
+1. Be honest that no {detected_poi} were found in the immediate area
+2. Suggest expanding the search radius
+3. Do NOT invent names or locations
+4. Offer practical alternatives
+
+Respond honestly and helpfully."""
+
             # SUPERMARKET/CHAIN QUERY - Now uses Tool System with multi-source search
-            if any(word in user_message.lower() for word in ['supermarket', 'shop', 'store', 'grocery', 'lidl', 'aldi']):
+            elif any(word in user_message.lower() for word in ['supermarket', 'shop', 'store', 'grocery', 'lidl', 'aldi']):
                 print(f"  [Tool System] Supermarket search for: {address}")
                 
                 # 检测用户是否要找特定品牌
