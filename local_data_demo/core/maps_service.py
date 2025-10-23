@@ -626,6 +626,9 @@ out center;"""
             tags = element.get('tags', {})
             name = tags.get('name', 'Unknown ' + amenity_type)
             
+            # Get cuisine type for restaurants (NEW: 添加菜系识别)
+            cuisine = tags.get('cuisine', None)
+            
             # Get address if available
             address_parts = []
             if 'street' in tags:
@@ -637,7 +640,7 @@ out center;"""
             
             place_address = ', '.join(address_parts) if address_parts else f"({place_lat:.4f}, {place_lon:.4f})"
             
-            places.append({
+            place_data = {
                 'name': name,
                 'type': amenity_type,
                 'distance_m': round(distance_m),
@@ -645,7 +648,13 @@ out center;"""
                 'lat': place_lat,
                 'lon': place_lon,  # Use 'lon' to match Overpass API conventions
                 'source': 'osm'
-            })
+            }
+            
+            # Add cuisine info for restaurants (NEW: 只在餐厅类型时添加)
+            if amenity_type == 'restaurant' and cuisine:
+                place_data['cuisine'] = cuisine
+            
+            places.append(place_data)
         
         # Sort by distance
         places.sort(key=lambda x: x['distance_m'])

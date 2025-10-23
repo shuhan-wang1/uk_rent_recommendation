@@ -207,6 +207,24 @@ async def api_search():
                 "message": "No properties found within your travel time requirement."
             })
         
+        # 🆕 3.5. 去重 - 移除重复的房源地址
+        print(f"\n[STEP 3.5] 检查并去重...")
+        seen_addresses = set()
+        unique_candidates = []
+        
+        for prop in candidates_with_travel:
+            # 标准化地址用于比较（小写，去空格，取前50字符）
+            addr = prop.get('Address', '').lower().strip()[:50]
+            
+            if addr and addr not in seen_addresses:
+                seen_addresses.add(addr)
+                unique_candidates.append(prop)
+            else:
+                print(f"  ⚠️  跳过重复房源: {prop.get('Address', '')[:40]}")
+        
+        print(f"  ✓ 去重后剩余 {len(unique_candidates)} 个唯一房源")
+        candidates_with_travel = unique_candidates
+        
         # 4. Enrich top 5 with web data
         print(f"\n[STEP 4] 为前 {min(5, len(candidates_with_travel))} 个候选者充实数据...")
         top_5 = candidates_with_travel[:5]
@@ -334,6 +352,7 @@ def validate_and_fix_poi_response(llm_response: str, poi_data: list, poi_type: s
 def generate_safe_poi_response(poi_data: list, poi_type: str) -> str:
     """
     生成100%准确的安全响应，完全不依赖LLM
+    🆕 支持餐厅菜系分类
     
     Args:
         poi_data: POI数据列表
@@ -342,8 +361,6 @@ def generate_safe_poi_response(poi_data: list, poi_type: str) -> str:
     Returns:
         格式化的安全响应
     """
-    top_5 = poi_data[:5]
-    
     # 中文类型映射
     type_cn = {
         'restaurant': '餐厅',
@@ -358,26 +375,76 @@ def generate_safe_poi_response(poi_data: list, poi_type: str) -> str:
     
     poi_cn = type_cn.get(poi_type, poi_type)
     
+    # 🆕 如果是餐厅，按菜系分类展示
+    if poi_type == 'restaurant':
+        from core.cuisine_classifier import group_restaurants_by_cuisine, format_cuisine_summary
+        
+        grouped = group_restaurants_by_cuisine(poi_data)
+        cuisine_summary = format_cuisine_summary(grouped)
+        
+        response = f"根据OpenStreetMap的实时数据，这个房源附近的餐厅按菜系分类如下：\n\n"
+        
+        # 按餐厅数量排序菜系
+        sorted_cuisines = sorted(
+            grouped.items(),
+            key=lambda x: len(x[1]['restaurants']),
+            reverse=True
+        )
+        
+        # 展示每个菜系（最多前5个菜系）
+        for cuisine_type, data in sorted_cuisines[:5]:
+            restaurants = data['restaurants'][:3]  # 每个菜系展示前3家
+            cuisine_name = data['name_cn']
+            total_count = len(data['restaurants'])
+            
+            response += f"**{cuisine_name} ({total_count}家)**\n"
+            for i, r in enumerate(restaurants, 1):
+                distance_m = r['distance_m']
+                distance_km = round(distance_m / 1000, 2)
+                response += f"{i}. {r['name']} - {distance_m}米（{distance_km}公里）\n"
+            response += "\n"
+        
+        # 添加总结
+        closest = poi_data[0]['distance_m']
+        response += f"**总结**：\n"
+        response += f"• 1.5公里范围内共找到 {len(poi_data)} 家餐厅\n"
+        response += f"• 最近的餐厅距离只有 {closest} 米\n"
+        response += f"• 菜系分布：\n{cuisine_summary}\n"
+        
+        if closest < 100:
+            response += f"\n💡 餐饮选择非常丰富，楼下就有多家餐厅！"
+        elif closest < 300:
+            response += f"\n💡 周边餐饮选择丰富，步行几分钟即可到达。"
+        else:
+            response += f"\n💡 附近有多种菜系可选，满足不同口味需求。"
+        
+        return response
+    
+    # 非餐厅类型，使用原有逻辑
+    top_5 = poi_data[:5]
+    
     response = f"根据OpenStreetMap的实时数据，这个房源附近最近的{poi_cn}有：\n\n"
     
     for i, place in enumerate(top_5, 1):
         distance_m = place['distance_m']
         distance_km = round(distance_m / 1000, 2)
+        walk_time_min = max(1, round(distance_m / 80))  # 按80米/分钟计算步行时间
         
         # 格式化名称
         name = place['name']
         if name.startswith('Unknown'):
             name = f"未命名的{poi_cn}"
         
-        response += f"{i}. **{name}** - {distance_m}米（{distance_km}公里）\n"
+        response += f"{i}. **{name}** - {distance_m}米（{distance_km}公里），步行约{walk_time_min}分钟\n"
     
     # 添加实用总结
     closest = top_5[0]['distance_m']
+    closest_time = max(1, round(closest / 80))
     farthest_in_top3 = max(p['distance_m'] for p in top_5[:3])
     
     response += f"\n**距离总结**：\n"
-    response += f"• 最近的是 **{top_5[0]['name']}**，只有{closest}米\n"
-    response += f"• 前3家都在{farthest_in_top3}米以内，步行1-2分钟即可到达\n"
+    response += f"• 最近的是 **{top_5[0]['name']}**，只有{closest}米（步行约{closest_time}分钟）\n"
+    response += f"• 前3家都在{farthest_in_top3}米以内\n"
     response += f"• 1.5公里范围内共找到{len(poi_data)}个{poi_cn}\n"
     
     # 根据距离给出建议
@@ -470,23 +537,90 @@ def chat():
                 print(f"[POI SEARCH] 找到 {len(poi_data) if poi_data else 0} 个 {detected_poi}")
                 
                 if poi_data and len(poi_data) > 0:
-                    # 只取前5个最近的，使用JSON格式强制LLM准确使用数据
-                    top_5 = poi_data[:5]
-                    
-                    import json
-                    structured_data = []
-                    for i, place in enumerate(top_5, 1):
-                        structured_data.append({
-                            "rank": i,
-                            "name": place['name'],
-                            "distance_m": place['distance_m'],
-                            "distance_km": round(place['distance_m']/1000, 2),
-                            "coordinates": f"({place['lat']:.4f}, {place['lon']:.4f})"
-                        })
-                    
-                    data_json = json.dumps(structured_data, indent=2, ensure_ascii=False)
-                    
-                    prompt = f"""用户问题："{user_message}"
+                    # 🆕 如果是餐厅查询，添加菜系分类
+                    if detected_poi == 'restaurant':
+                        from core.cuisine_classifier import group_restaurants_by_cuisine, format_cuisine_summary
+                        
+                        # 按菜系分组
+                        grouped = group_restaurants_by_cuisine(poi_data)
+                        cuisine_summary = format_cuisine_summary(grouped)
+                        
+                        print(f"[CUISINE] 菜系统计:\n{cuisine_summary}")
+                        
+                        # 准备详细数据（前10个，按菜系分组）
+                        import json
+                        
+                        # 构建按菜系组织的数据结构
+                        cuisine_data = {}
+                        for cuisine_type, data in grouped.items():
+                            restaurants = data['restaurants'][:5]  # 每个菜系最多5家
+                            cuisine_data[data['name_cn']] = [
+                                {
+                                    "name": r['name'],
+                                    "distance_m": r['distance_m'],
+                                    "distance_km": round(r['distance_m']/1000, 2),
+                                    "cuisine_original": r.get('cuisine', '未标注')
+                                }
+                                for r in restaurants
+                            ]
+                        
+                        data_json = json.dumps(cuisine_data, indent=2, ensure_ascii=False)
+                        
+                        prompt = f"""用户问题："{user_message}"
+房源地址：{address}
+
+===== 真实数据（来自OpenStreetMap，按菜系分类）=====
+{data_json}
+===== 真实数据结束 =====
+
+菜系统计：
+{cuisine_summary}
+
+总共找到 {len(poi_data)} 家餐厅。
+
+严格要求：
+1. 必须按菜系分类介绍餐厅（中餐、意大利菜、日本料理等）
+2. 只能使用上面JSON中的餐厅名称和数据
+3. 必须逐字复制餐厅名称（保持原文）
+4. 必须使用精确的距离数字
+5. 禁止提到任何不在JSON中的餐厅（如"The Delaunay"、"Padella"等）
+6. 每个菜系介绍最近的2-3家餐厅
+
+回答格式示例：
+"根据OpenStreetMap的真实数据，这个房源附近的餐厅按菜系分类如下：
+
+**中餐 (X家)**
+1. [餐厅名] - [距离]米
+2. [餐厅名] - [距离]米
+
+**意大利菜 (X家)**
+1. [餐厅名] - [距离]米
+2. [餐厅名] - [距离]米
+
+**日本料理 (X家)**
+...
+
+总体来说，这个区域的餐饮选择[丰富/一般]，最近的餐厅距离只有[X]米。"
+
+用中文回答，但餐厅名称保持原文（英文）。"""
+                    else:
+                        # 非餐厅类型，使用原有逻辑
+                        top_5 = poi_data[:5]
+                        
+                        import json
+                        structured_data = []
+                        for i, place in enumerate(top_5, 1):
+                            structured_data.append({
+                                "rank": i,
+                                "name": place['name'],
+                                "distance_m": place['distance_m'],
+                                "distance_km": round(place['distance_m']/1000, 2),
+                                "coordinates": f"({place['lat']:.4f}, {place['lon']:.4f})"
+                            })
+                        
+                        data_json = json.dumps(structured_data, indent=2, ensure_ascii=False)
+                        
+                        prompt = f"""用户问题："{user_message}"
 房源地址：{address}
 
 ===== 真实数据（来自OpenStreetMap，禁止修改）=====
@@ -499,7 +633,7 @@ def chat():
 1. 只能使用上面JSON中的5个{detected_poi}
 2. 必须逐字复制名称（不要翻译、不要修改、保持原文）
 3. 必须使用上面显示的精确距离数字
-4. 禁止提到任何其他{detected_poi}名称（尤其是著名的餐厅如"The Delaunay"、"Padella"等）
+4. 禁止提到任何其他{detected_poi}名称
 5. 如果用户问"附近"，理解为500米以内
 6. 必须按距离从近到远排序
 7. 距离数据必须完全匹配JSON中的数字
@@ -547,12 +681,31 @@ OpenStreetMap搜索结果：在1.5公里范围内未找到{detected_poi}。
                     if chain.lower() in user_message.lower():
                         asked_chains.append(chain)
                 
-                # 在数据中查找这些连锁店
+                # 🔍 DEBUG: 打印找到的超市
+                print(f"[SUPERMARKET] 找到 {len(supermarket_data) if supermarket_data else 0} 家超市")
+                if supermarket_data:
+                    print(f"[SUPERMARKET] 前10家超市名称:")
+                    for i, s in enumerate(supermarket_data[:10], 1):
+                        print(f"  {i}. {s['name']} - {s['distance_m']}米")
+                
+                # 在数据中查找这些连锁店（使用更宽松的匹配）
                 if supermarket_data:
                     for chain in asked_chains if asked_chains else target_chains:
-                        matching = [s for s in supermarket_data if chain.lower() in s['name'].lower()]
+                        # 🆕 更智能的匹配逻辑
+                        matching = []
+                        chain_lower = chain.lower().replace("'", "").replace(" ", "")  # sainsbury's -> sainsburys
+                        
+                        for s in supermarket_data:
+                            name_lower = s['name'].lower().replace("'", "").replace(" ", "")
+                            # 检查链名是否在超市名中
+                            if chain_lower in name_lower or name_lower in chain_lower:
+                                matching.append(s)
+                        
                         if matching:
                             found_chains[chain] = matching[0]  # 只取最近的一个
+                            print(f"[SUPERMARKET] ✅ 找到 {chain}: {matching[0]['name']}")
+                        else:
+                            print(f"[SUPERMARKET] ❌ 未找到 {chain}")
                 
                 if found_chains or (not asked_chains and supermarket_data):
                     import json
@@ -578,9 +731,7 @@ OpenStreetMap搜索结果：在1.5公里范围内未找到{detected_poi}。
                         
                         data_json = json.dumps(chains_json, indent=2, ensure_ascii=False)
                         
-                        prompt = f"""用户问题："{user_message}"
-房源地址：{address}
-用户询问的连锁超市：{', '.join([c.upper() for c in asked_chains])}
+                        prompt = f"""房源地址：{address}
 
 ===== 真实数据（来自OpenStreetMap）=====
 {data_json}
@@ -589,61 +740,79 @@ OpenStreetMap搜索结果：在1.5公里范围内未找到{detected_poi}。
 未找到的连锁店：{', '.join(not_found) if not_found else '无'}
 
 严格要求：
-1. 只能使用上面JSON中的超市数据
-2. 如果JSON中没有某个连锁店，明确说"未找到"
-3. 绝对禁止编造地址信息（如果note显示"未提供街道地址"，就说"具体地址未知，坐标为..."）
-4. 必须使用精确的距离数字（完全匹配JSON）
-5. 禁止说多个超市在"同一地址"（除非你能验证坐标完全相同）
-6. 不要编造任何不在JSON中的超市
+1. 不要重复用户的问题
+2. 只能使用上面JSON中的超市数据
+3. 必须显示每个超市的距离（米数和公里数）
+4. 计算并显示步行时间（按80米/分钟计算）
+5. 如果JSON中没有某个连锁店，明确说"未找到"
+6. 绝对禁止编造地址信息
+7. 不要编造任何不在JSON中的超市
 
-回答格式：
-"根据OpenStreetMap数据，在1.5公里范围内找到以下连锁超市：
+回答格式示例：
+"根据OpenStreetMap数据，这个房源附近找到以下超市：
 
-找到的连锁店：
-• [连锁名] - [精确距离]米（[公里数]公里）
+**找到的超市：**
+1. **[超市名]** - [距离]米（[公里]公里），步行约[时间]分钟
+2. **[超市名]** - [距离]米（[公里]公里），步行约[时间]分钟
 
-未找到的连锁店：[列出]
+[如果有未找到的]
+**未找到：** [列出]
 
-建议：如果有未找到的连锁店，建议查看其他超市或扩大搜索范围"
+💡 最近的超市距离只有[X]米，步行[Y]分钟即可到达，购物非常方便。"
 
-用中文回答。"""
+用中文回答，直接给出结果，不要重复问题。"""
                     else:
                         # 用户没有指定连锁，显示所有超市
                         top_supermarkets = []
-                        for s in supermarket_data[:5]:
+                        for s in supermarket_data[:8]:  # 显示前8家
                             top_supermarkets.append({
                                 "name": s['name'],
                                 "distance_m": s['distance_m'],
-                                "distance_km": round(s['distance_m']/1000, 2)
+                                "distance_km": round(s['distance_m']/1000, 2),
+                                "walk_time_min": max(1, round(s['distance_m'] / 80))  # 按80米/分钟计算
                             })
                         
                         data_json = json.dumps(top_supermarkets, indent=2, ensure_ascii=False)
                         
-                        prompt = f"""用户问题："{user_message}"
-房源地址：{address}
+                        prompt = f"""房源地址：{address}
 
 ===== 真实数据（来自OpenStreetMap）=====
 {data_json}
 ===== 真实数据结束 =====
 
-总共找到 {len(supermarket_data)} 家超市，以上是最近的5家。
+总共找到 {len(supermarket_data)} 家超市，以上是最近的{len(top_supermarkets)}家。
 
 严格要求：
-1. 只能使用JSON中的超市名称和距离
-2. 逐字复制名称和距离数字
-3. 不要编造任何信息
+1. 不要重复用户的问题
+2. 只能使用JSON中的超市名称、距离和步行时间
+3. 必须逐字复制名称（保持原文）
+4. 必须显示距离和步行时间（使用JSON中的数据）
+5. 不要编造任何信息
 
-用中文回答，但超市名称保持原文。"""
+回答格式示例：
+"根据OpenStreetMap数据，这个房源附近最近的超市有：
+
+1. **[超市名]** - [距离]米（[公里]公里），步行约[时间]分钟
+2. **[超市名]** - [距离]米（[公里]公里），步行约[时间]分钟
+3. **[超市名]** - [距离]米（[公里]公里），步行约[时间]分钟
+...
+
+💡 最近的超市距离只有[X]米，步行[Y]分钟即可到达。1.5公里范围内共有{len(supermarket_data)}家超市可选。"
+
+用中文回答，超市名称保持原文（英文），直接给出结果，不要重复问题。"""
 
                 else:
-                    prompt = f"""用户问题："{user_message}"
-房源地址：{address}
+                    prompt = f"""房源地址：{address}
 
 OpenStreetMap搜索结果：在1.5公里范围内未找到超市。
 
-严格要求：诚实告诉用户未找到超市，建议扩大搜索范围。不要编造任何超市名称。
+严格要求：
+1. 不要重复用户的问题
+2. 诚实告诉用户在1.5公里范围内未找到超市
+3. 建议扩大搜索范围或使用其他购物方式
+4. 不要编造任何超市名称
 
-用中文回答。"""
+用中文友好地回答，直接给出结果。"""
             
             # TRANSPORT/TUBE QUERY
             elif any(word in user_message.lower() for word in ['tube', 'train', 'station', 'transport']):
