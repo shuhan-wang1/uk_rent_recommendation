@@ -923,7 +923,7 @@ Return ONLY this JSON structure:
 
 Return ONLY valid JSON, no other text."""
 
-    response_text = call_ollama(prompt, system_prompt, timeout=90)
+    response_text = call_ollama(prompt, system_prompt, timeout=6000)
 
     if not response_text:
         print("[INFO] Ollama failed, using rule-based recommendations")

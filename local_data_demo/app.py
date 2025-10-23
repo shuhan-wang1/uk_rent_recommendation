@@ -255,8 +255,146 @@ def markdown_to_html(text):
     text = text.replace('\n', '<br>')
     return text
 
+def validate_and_fix_poi_response(llm_response: str, poi_data: list, poi_type: str) -> str:
+    """
+    强力验证LLM响应，检测并修正编造的内容
+    超级激进模式：如果检测到任何编造迹象，立即替换为安全响应
+    
+    Args:
+        llm_response: LLM生成的原始响应
+        poi_data: 真实的POI数据列表
+        poi_type: POI类型（restaurant, supermarket等）
+    
+    Returns:
+        验证/修正后的响应
+    """
+    if not poi_data:
+        return llm_response
+    
+    # 常见的编造名称（按类型）
+    FAKE_MARKERS = {
+        'restaurant': [
+            'delaunay', 'wolseley', 'padella', 'dishoom', 'simpson', 
+            'hawksmoor', 'the ivy', 'nobu', 'sketch', 'barbary',
+            'roka', 'coya', 'zuma', 'hakkasan', 'gymkhana'
+        ],
+        'supermarket': []
+    }
+    
+    # 获取真实的POI名称（小写）
+    real_names_lower = [p['name'].lower() for p in poi_data[:10]]
+    top_5_names = [p['name'] for p in poi_data[:5]]
+    
+    # 🔥 激进检测1：检查是否包含足够的真实餐厅名
+    found_real_count = sum(1 for name in top_5_names if name in llm_response)
+    
+    if found_real_count < 3:
+        print(f"\n🔥 [AGGRESSIVE VALIDATION] LLM只提到了{found_real_count}/5个真实{poi_type}，强制替换")
+        return generate_safe_poi_response(poi_data, poi_type)
+    
+    # 🔥 激进检测2：检测编造的著名餐厅名
+    fake_names_detected = []
+    markers = FAKE_MARKERS.get(poi_type, [])
+    
+    for fake in markers:
+        if fake in llm_response.lower():
+            # 检查是否真的在数据中
+            if not any(fake in name for name in real_names_lower):
+                fake_names_detected.append(fake)
+    
+    if fake_names_detected:
+        print(f"\n🔥 [AGGRESSIVE VALIDATION] 检测到编造的{poi_type}名: {', '.join(fake_names_detected)}")
+        return generate_safe_poi_response(poi_data, poi_type)
+    
+    # 🔥 激进检测3：检测错误的距离数字
+    real_distances = [str(p['distance_m']) for p in poi_data[:10]]
+    import re
+    
+    distance_pattern = r'(\d+)\s*(?:米|m|meter|metre|miles?)'
+    distances_in_response = re.findall(distance_pattern, llm_response, re.IGNORECASE)
+    
+    # 检查是否有太多不匹配的距离
+    mismatched = 0
+    for dist in distances_in_response:
+        if dist not in real_distances:
+            dist_int = int(dist)
+            # 允许±10米的误差
+            if not any(abs(dist_int - int(rd)) < 10 for rd in real_distances):
+                mismatched += 1
+    
+    if mismatched >= 2:
+        print(f"\n🔥 [AGGRESSIVE VALIDATION] 检测到{mismatched}个错误距离，强制替换")
+        return generate_safe_poi_response(poi_data, poi_type)
+    
+    # 所有检查通过，返回原响应
+    print(f"✅ [VALIDATION] 响应通过验证（包含{found_real_count}个真实{poi_type}）")
+    return llm_response
+
+
+def generate_safe_poi_response(poi_data: list, poi_type: str) -> str:
+    """
+    生成100%准确的安全响应，完全不依赖LLM
+    
+    Args:
+        poi_data: POI数据列表
+        poi_type: POI类型
+    
+    Returns:
+        格式化的安全响应
+    """
+    top_5 = poi_data[:5]
+    
+    # 中文类型映射
+    type_cn = {
+        'restaurant': '餐厅',
+        'cafe': '咖啡厅',
+        'gym': '健身房',
+        'park': '公园',
+        'supermarket': '超市',
+        'hospital': '医院',
+        'library': '图书馆',
+        'school': '学校'
+    }
+    
+    poi_cn = type_cn.get(poi_type, poi_type)
+    
+    response = f"根据OpenStreetMap的实时数据，这个房源附近最近的{poi_cn}有：\n\n"
+    
+    for i, place in enumerate(top_5, 1):
+        distance_m = place['distance_m']
+        distance_km = round(distance_m / 1000, 2)
+        
+        # 格式化名称
+        name = place['name']
+        if name.startswith('Unknown'):
+            name = f"未命名的{poi_cn}"
+        
+        response += f"{i}. **{name}** - {distance_m}米（{distance_km}公里）\n"
+    
+    # 添加实用总结
+    closest = top_5[0]['distance_m']
+    farthest_in_top3 = max(p['distance_m'] for p in top_5[:3])
+    
+    response += f"\n**距离总结**：\n"
+    response += f"• 最近的是 **{top_5[0]['name']}**，只有{closest}米\n"
+    response += f"• 前3家都在{farthest_in_top3}米以内，步行1-2分钟即可到达\n"
+    response += f"• 1.5公里范围内共找到{len(poi_data)}个{poi_cn}\n"
+    
+    # 根据距离给出建议
+    if closest < 100:
+        response += f"\n💡 这些{poi_cn}非常近，楼下就有，非常方便！"
+    elif closest < 300:
+        response += f"\n💡 最近的{poi_cn}步行3-5分钟即可到达，位置很好。"
+    elif closest < 500:
+        response += f"\n💡 最近的{poi_cn}在步行范围内，大约5-8分钟。"
+    else:
+        response += f"\n💡 最近的{poi_cn}距离稍远，但仍在步行范围（10分钟左右）。"
+    
+    return response
+
+
 @app.route('/api/chat', methods=['POST'])
-def api_chat():
+def chat():
     """Enhanced chat endpoint with Tool System integration for multi-source POI search"""
     data = request.get_json()
     if not data or not data.get('message'):
@@ -264,6 +402,14 @@ def api_chat():
     
     user_message = data.get('message')
     context = data.get('context', {})
+    
+    # 🔍 DEBUG: 打印接收到的数据
+    print(f"\n{'='*60}")
+    print(f"[CHAT] 收到消息 (长度 {len(user_message)}): {user_message}")  # 显示完整消息
+    print(f"[CHAT] Context: {context}")
+    if context.get('property'):
+        print(f"[CHAT] Property address: {context['property'].get('address', 'N/A')}")
+    print(f"{'='*60}\n")
     
     try:
         search_keywords = ['cost of living', 'crime rate', 'crime', 'safe', 'safety', 
@@ -275,8 +421,16 @@ def api_chat():
                           'restaurant', 'cafe', 'coffee', 'diner', 'eating',
                           'hospital', 'medical', 'doctor', 'clinic', 'health',
                           'library', 'books',
-                          'school', 'primary', 'secondary', 'education']
+                          'school', 'primary', 'secondary', 'education',
+                          '餐厅', '餐馆', '饭店', '吃饭', '美食']  # 添加中文关键词
         needs_search = any(keyword in user_message.lower() for keyword in search_keywords)
+        
+        print(f"[CHAT] needs_search: {needs_search}")
+        print(f"[CHAT] 消息全文: '{user_message}'")
+        
+        # 初始化POI相关变量（用于后续验证）
+        detected_poi = None
+        poi_data = None
         
         system_prompt = """You are Alex, a friendly and knowledgeable UK rental assistant. 
         CRITICAL RULES:
@@ -292,15 +446,15 @@ def api_chat():
             
             # POI QUERY - Gym, Park, Restaurant, Hospital, etc.
             poi_keywords = {
-                'gym': ['gym', 'fitness', 'health club', 'sports center', 'leisure'],
-                'park': ['park', 'green space', 'outdoor'],
-                'restaurant': ['restaurant', 'cafe', 'coffee', 'diner', 'eating'],
-                'hospital': ['hospital', 'medical', 'doctor', 'clinic', 'health'],
-                'library': ['library', 'books', 'library'],
-                'school': ['school', 'primary', 'secondary', 'education'],
+                'gym': ['gym', 'fitness', 'health club', 'sports center', 'leisure', '健身', '健身房'],
+                'park': ['park', 'green space', 'outdoor', '公园', '绿地'],
+                'restaurant': ['restaurant', 'cafe', 'coffee', 'diner', 'eating', '餐厅', '餐馆', '饭店', '吃饭', '美食'],
+                'hospital': ['hospital', 'medical', 'doctor', 'clinic', 'health', '医院', '诊所', '医疗'],
+                'library': ['library', 'books', '图书馆', '书店'],
+                'school': ['school', 'primary', 'secondary', 'education', '学校', '教育'],
             }
             
-            detected_poi = None
+            # detected_poi 已在函数开始时初始化
             for poi_type, keywords in poi_keywords.items():
                 if any(keyword in user_message.lower() for keyword in keywords):
                     detected_poi = poi_type
@@ -308,135 +462,188 @@ def api_chat():
             
             # GENERIC POI QUERY (GYM, PARK, RESTAURANT, HOSPITAL, ETC)
             if detected_poi:
-                print(f"  [Overpass API] {detected_poi.upper()} search for: {address}")
+                print(f"\n[POI SEARCH] 检测到POI类型: {detected_poi.upper()}")
+                print(f"[POI SEARCH] 搜索地址: {address}")
                 from core.maps_service import get_nearby_places_osm
                 
                 poi_data = get_nearby_places_osm(address, detected_poi, radius_m=1500)
+                print(f"[POI SEARCH] 找到 {len(poi_data) if poi_data else 0} 个 {detected_poi}")
                 
                 if poi_data and len(poi_data) > 0:
-                    # Format the detailed location data
-                    poi_text = "\n".join([
-                        f"- {place['name']} - {place['distance_m']}m away ({round(place['distance_m']/1000, 1)}km)"
-                        for place in poi_data[:10]  # Top 10
-                    ])
+                    # 只取前5个最近的，使用JSON格式强制LLM准确使用数据
+                    top_5 = poi_data[:5]
                     
-                    prompt = f"""The user asked: "{user_message}"
-Property address: {address}
+                    import json
+                    structured_data = []
+                    for i, place in enumerate(top_5, 1):
+                        structured_data.append({
+                            "rank": i,
+                            "name": place['name'],
+                            "distance_m": place['distance_m'],
+                            "distance_km": round(place['distance_m']/1000, 2),
+                            "coordinates": f"({place['lat']:.4f}, {place['lon']:.4f})"
+                        })
+                    
+                    data_json = json.dumps(structured_data, indent=2, ensure_ascii=False)
+                    
+                    prompt = f"""用户问题："{user_message}"
+房源地址：{address}
 
-VERIFIED DATA (OpenStreetMap via Overpass API):
-Found {len(poi_data)} {detected_poi} locations within 1.5km:
+===== 真实数据（来自OpenStreetMap，禁止修改）=====
+{data_json}
+===== 真实数据结束 =====
 
-{poi_text}
+总共找到 {len(poi_data)} 个{detected_poi}，以上是最近的5个。
 
-INSTRUCTIONS:
-1. List the {detected_poi} locations exactly as shown above with names and distances
-2. Include distances in both meters and kilometers
-3. Do NOT invent names or locations not in this list
-4. Provide helpful context about which ones are closest
-5. If user asks about travel time, explain that it depends on method (walking, cycling, public transport)
+严格要求：
+1. 只能使用上面JSON中的5个{detected_poi}
+2. 必须逐字复制名称（不要翻译、不要修改、保持原文）
+3. 必须使用上面显示的精确距离数字
+4. 禁止提到任何其他{detected_poi}名称（尤其是著名的餐厅如"The Delaunay"、"Padella"等）
+5. 如果用户问"附近"，理解为500米以内
+6. 必须按距离从近到远排序
+7. 距离数据必须完全匹配JSON中的数字
 
-Provide a helpful, friendly response using ONLY this verified data."""
+回答格式示例：
+"根据OpenStreetMap的真实数据，这个房源最近的{detected_poi}是：
+
+1. [从JSON逐字复制名称] - [从JSON复制距离]米（[从JSON复制公里数]公里）
+2. [从JSON逐字复制名称] - [从JSON复制距离]米（[从JSON复制公里数]公里）
+...
+
+其中最近的3个都在[X]米以内，步行只需几分钟。"
+
+用中文回答，但{detected_poi}名称必须保持原文（英文）。"""
                 else:
-                    prompt = f"""The user asked: "{user_message}"
-Property address: {address}
+                    prompt = f"""用户问题："{user_message}"
+房源地址：{address}
 
-VERIFIED DATA (OpenStreetMap via Overpass API):
-- Search result: NO {detected_poi} found within 1.5km of this address
+OpenStreetMap搜索结果：在1.5公里范围内未找到{detected_poi}。
 
-INSTRUCTIONS:
-1. Be honest that no {detected_poi} were found in the immediate area
-2. Suggest expanding the search radius
-3. Do NOT invent names or locations
-4. Offer practical alternatives
+严格要求：
+1. 诚实告诉用户在附近未找到{detected_poi}
+2. 建议扩大搜索范围或使用其他方式查找
+3. 绝对禁止编造任何{detected_poi}名称
+4. 不要猜测或推荐不在数据中的地点
 
-Respond honestly and helpfully."""
+用中文诚实、友好地回答。"""
 
             # SUPERMARKET/CHAIN QUERY - Now uses Tool System with multi-source search
-            elif any(word in user_message.lower() for word in ['supermarket', 'shop', 'store', 'grocery', 'lidl', 'aldi']):
-                print(f"  [Tool System] Supermarket search for: {address}")
+            elif any(word in user_message.lower() for word in ['supermarket', 'shop', 'store', 'grocery', 'lidl', 'aldi', 'tesco', 'sainsbury', 'waitrose']):
+                print(f"  [Overpass API] Supermarket search for: {address}")
                 
-                # 检测用户是否要找特定品牌
-                chains_to_search = []
-                if 'lidl' in user_message.lower():
-                    chains_to_search.append('Lidl')
-                if 'aldi' in user_message.lower():
-                    chains_to_search.append('Aldi')
-                if 'sainsbury' in user_message.lower():
-                    chains_to_search.append('Sainsbury')
-                if 'tesco' in user_message.lower():
-                    chains_to_search.append('Tesco')
+                # 检测用户询问的特定连锁超市
+                target_chains = ['tesco', 'sainsbury', 'lidl', 'waitrose', 'aldi', 'co-op', 'marks & spencer', 'm&s']
                 
-                # 如果没有指定特定品牌，使用默认列表
-                if not chains_to_search:
-                    chains_to_search = ['Lidl', 'Aldi', 'Sainsbury', 'Tesco']
+                # 获取OpenStreetMap数据
+                from core.maps_service import get_nearby_places_osm
+                supermarket_data = get_nearby_places_osm(address, 'supermarket', radius_m=1500)
                 
-                # 使用工具系统执行搜索（如果可用）
-                supermarkets = []
-                if tool_registry:
-                    try:
-                        # 通过 Tool System 执行异步搜索
-                        async def run_tool_search():
-                            result = await tool_registry.execute_tool(
-                                'search_supermarkets',
-                                address=address,
-                                chains=chains_to_search,
-                                radius_m=2000
-                            )
-                            return result.data if result.success else []
-                        
-                        # 在同步环境中运行异步任务
-                        loop = None
-                        try:
-                            loop = asyncio.get_event_loop()
-                        except RuntimeError:
-                            loop = asyncio.new_event_loop()
-                            asyncio.set_event_loop(loop)
-                        
-                        supermarkets = loop.run_until_complete(run_tool_search())
-                        print(f"  ✓ [Tool System] Found {len(supermarkets)} supermarkets")
-                    except Exception as e:
-                        print(f"  ⚠️  [Tool System] Tool execution failed: {e}, falling back to direct search")
-                        from core.maps_service import get_nearby_supermarkets_detailed
-                        supermarkets = get_nearby_supermarkets_detailed(address, radius=2000, chains=chains_to_search)
-                else:
-                    # Fallback if tool registry not available
-                    from core.maps_service import get_nearby_supermarkets_detailed
-                    supermarkets = get_nearby_supermarkets_detailed(address, radius=2000, chains=chains_to_search)
+                # 检查用户询问的连锁店是否存在
+                found_chains = {}
+                asked_chains = []
                 
-                if supermarkets:
-                    # Format the data nicely
-                    supermarket_text = "\n".join([
-                        f"- {shop['name']} ({shop['type']}) - {shop['address']} - "
-                        f"{('~' if shop.get('distance_m') is None else '')}{shop.get('distance_m', 'N/A')}m away"
-                        for shop in supermarkets[:10]  # Top 10
-                    ])
+                for chain in target_chains:
+                    if chain.lower() in user_message.lower():
+                        asked_chains.append(chain)
+                
+                # 在数据中查找这些连锁店
+                if supermarket_data:
+                    for chain in asked_chains if asked_chains else target_chains:
+                        matching = [s for s in supermarket_data if chain.lower() in s['name'].lower()]
+                        if matching:
+                            found_chains[chain] = matching[0]  # 只取最近的一个
+                
+                if found_chains or (not asked_chains and supermarket_data):
+                    import json
                     
-                    prompt = f"""The user asked: "{user_message}"
-Property address: {address}
-Searching for chains: {', '.join(chains_to_search)}
+                    # 如果用户询问了特定连锁，只显示找到的连锁店
+                    if asked_chains:
+                        chains_json = []
+                        not_found = []
+                        
+                        for chain in asked_chains:
+                            if chain in found_chains:
+                                data = found_chains[chain]
+                                chains_json.append({
+                                    "chain": chain.upper(),
+                                    "name": data['name'],
+                                    "distance_m": data['distance_m'],
+                                    "distance_km": round(data['distance_m']/1000, 2),
+                                    "coordinates": f"({data['lat']:.4f}, {data['lon']:.4f})",
+                                    "note": "OpenStreetMap未提供街道地址" if data['address'].startswith('(') else data['address']
+                                })
+                            else:
+                                not_found.append(chain.upper())
+                        
+                        data_json = json.dumps(chains_json, indent=2, ensure_ascii=False)
+                        
+                        prompt = f"""用户问题："{user_message}"
+房源地址：{address}
+用户询问的连锁超市：{', '.join([c.upper() for c in asked_chains])}
 
-VERIFIED SUPERMARKETS (multi-source: OSM + web fallback):
-{supermarket_text}
+===== 真实数据（来自OpenStreetMap）=====
+{data_json}
+===== 真实数据结束 =====
 
-Total found: {len(supermarkets)}
+未找到的连锁店：{', '.join(not_found) if not_found else '无'}
 
-INSTRUCTIONS:
-1. List the supermarkets exactly as shown above
-2. Include their names, types, and distances
-3. Do NOT add any stores not in this list
-4. Highlight if this includes user-requested chains (e.g., Lidl, Aldi)
-5. If no specific chains found, mention and suggest alternatives
+严格要求：
+1. 只能使用上面JSON中的超市数据
+2. 如果JSON中没有某个连锁店，明确说"未找到"
+3. 绝对禁止编造地址信息（如果note显示"未提供街道地址"，就说"具体地址未知，坐标为..."）
+4. 必须使用精确的距离数字（完全匹配JSON）
+5. 禁止说多个超市在"同一地址"（除非你能验证坐标完全相同）
+6. 不要编造任何不在JSON中的超市
 
-Provide a helpful, friendly response using ONLY this verified data."""
+回答格式：
+"根据OpenStreetMap数据，在1.5公里范围内找到以下连锁超市：
+
+找到的连锁店：
+• [连锁名] - [精确距离]米（[公里数]公里）
+
+未找到的连锁店：[列出]
+
+建议：如果有未找到的连锁店，建议查看其他超市或扩大搜索范围"
+
+用中文回答。"""
+                    else:
+                        # 用户没有指定连锁，显示所有超市
+                        top_supermarkets = []
+                        for s in supermarket_data[:5]:
+                            top_supermarkets.append({
+                                "name": s['name'],
+                                "distance_m": s['distance_m'],
+                                "distance_km": round(s['distance_m']/1000, 2)
+                            })
+                        
+                        data_json = json.dumps(top_supermarkets, indent=2, ensure_ascii=False)
+                        
+                        prompt = f"""用户问题："{user_message}"
+房源地址：{address}
+
+===== 真实数据（来自OpenStreetMap）=====
+{data_json}
+===== 真实数据结束 =====
+
+总共找到 {len(supermarket_data)} 家超市，以上是最近的5家。
+
+严格要求：
+1. 只能使用JSON中的超市名称和距离
+2. 逐字复制名称和距离数字
+3. 不要编造任何信息
+
+用中文回答，但超市名称保持原文。"""
 
                 else:
-                    prompt = f"""The user asked: "{user_message}"
-Property address: {address}
-Searched for: {', '.join(chains_to_search)}
+                    prompt = f"""用户问题："{user_message}"
+房源地址：{address}
 
-Multi-source search result: NO supermarkets found within 2km (tried OSM and web search).
+OpenStreetMap搜索结果：在1.5公里范围内未找到超市。
 
-Respond honestly: "I searched multiple sources and couldn't find {', '.join(chains_to_search)} within 2km of this address. This could mean the area is underrepresented in public data. Would you like me to search a wider radius or look for alternatives?" """
+严格要求：诚实告诉用户未找到超市，建议扩大搜索范围。不要编造任何超市名称。
+
+用中文回答。"""
             
             # TRANSPORT/TUBE QUERY
             elif any(word in user_message.lower() for word in ['tube', 'train', 'station', 'transport']):
@@ -505,14 +712,36 @@ Price: {prop.get('price', 'N/A')}
 Travel Time: {prop.get('travel_time', 'N/A')}
 Question: {user_message}
 Provide helpful information."""
+        else:
+            # 用户没有提供房源上下文，但问了位置相关的问题
+            if needs_search:
+                response_text = "抱歉，我需要知道具体的房源地址才能为您查询附近的设施。\n\n请您：\n1. 先搜索房源\n2. 点击房源卡片上的'Chat'按钮\n3. 然后在对话框中询问我\n\n或者您可以直接告诉我具体的地址，比如：'伦敦WC1H 0AQ附近有什么餐厅？'"
+                formatted_response = markdown_to_html(response_text)
+                return jsonify({"response": formatted_response})
+            else:
+                # 一般性对话，不涉及位置
+                prompt = f"""User: "{user_message}"
+You are Alex, a friendly UK rental assistant.
+Provide helpful, friendly information."""
         
-        response_text = call_ollama(prompt, system_prompt=system_prompt, timeout=300000)
+        response_text = call_ollama(prompt, system_prompt=system_prompt, timeout=60)
+        
+        # 如果是POI查询，验证并修正响应
+        if detected_poi and poi_data:
+            print(f"\n[VALIDATION] 验证{detected_poi}响应...")
+            try:
+                response_text = validate_and_fix_poi_response(response_text, poi_data, detected_poi)
+                print(f"[VALIDATION] 验证完成")
+            except Exception as validation_error:
+                print(f"⚠️ [VALIDATION] 验证出错: {validation_error}")
+                # 如果验证失败，使用安全响应
+                response_text = generate_safe_poi_response(poi_data, detected_poi)
         
         if response_text:
             formatted_response = markdown_to_html(response_text)
             return jsonify({"response": formatted_response})
         else:
-            return jsonify({"error": "Could not get response from AI"}), 500
+            return jsonify({"error": "Could not get response from AI. The model may be busy or unavailable."}), 500
             
     except Exception as e:
         print(f"❌ Chat error: {e}")

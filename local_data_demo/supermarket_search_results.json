@@ -1,0 +1,173 @@
+[
+  {
+    "name": "Waitrose",
+    "type": "supermarket",
+    "distance_m": 223,
+    "address": "(51.5249, -0.1242)",
+    "lat": 51.5248978,
+    "lon": -0.1241527,
+    "source": "osm"
+  },
+  {
+    "name": "Tian Tian Market",
+    "type": "supermarket",
+    "distance_m": 228,
+    "address": "(51.5242, -0.1240)",
+    "lat": 51.5242161,
+    "lon": -0.1239966,
+    "source": "osm"
+  },
+  {
+    "name": "M&S Foodhall",
+    "type": "supermarket",
+    "distance_m": 686,
+    "address": "(51.5196, -0.1336)",
+    "lat": 51.5196423,
+    "lon": -0.1336008,
+    "source": "osm"
+  },
+  {
+    "name": "Lidl",
+    "type": "supermarket",
+    "distance_m": 696,
+    "address": "(51.5243, -0.1373)",
+    "lat": 51.5242974,
+    "lon": -0.1373422,
+    "source": "osm"
+  },
+  {
+    "name": "Amazon Fresh",
+    "type": "supermarket",
+    "distance_m": 813,
+    "address": "(51.5255, -0.1389)",
+    "lat": 51.5255079,
+    "lon": -0.1389014,
+    "source": "osm"
+  },
+  {
+    "name": "Mestizo Mexican Market",
+    "type": "supermarket",
+    "distance_m": 870,
+    "address": "(51.5275, -0.1388)",
+    "lat": 51.5275278,
+    "lon": -0.1388052,
+    "source": "osm"
+  },
+  {
+    "name": "Mestizo Mexican Market",
+    "type": "supermarket",
+    "distance_m": 872,
+    "address": "(51.5276, -0.1388)",
+    "lat": 51.527578,
+    "lon": -0.1387995,
+    "source": "osm"
+  },
+  {
+    "name": "M&S Food",
+    "type": "supermarket",
+    "distance_m": 918,
+    "address": "(51.5326, -0.1267)",
+    "lat": 51.5326493,
+    "lon": -0.1267022,
+    "source": "osm"
+  },
+  {
+    "name": "Co-op Food",
+    "type": "supermarket",
+    "distance_m": 978,
+    "address": "(51.5218, -0.1138)",
+    "lat": 51.5218271,
+    "lon": -0.1137627,
+    "source": "osm"
+  },
+  {
+    "name": "Robert Street Supermarket",
+    "type": "supermarket",
+    "distance_m": 1200,
+    "address": "(51.5283, -0.1434)",
+    "lat": 51.5283433,
+    "lon": -0.1434343,
+    "source": "osm"
+  },
+  {
+    "name": "Neel's news",
+    "type": "supermarket",
+    "distance_m": 1216,
+    "address": "(51.5284, -0.1436)",
+    "lat": 51.5283956,
+    "lon": -0.1436484,
+    "source": "osm"
+  },
+  {
+    "name": "Soho Express",
+    "type": "supermarket",
+    "distance_m": 1224,
+    "address": "(51.5154, -0.1374)",
+    "lat": 51.5153686,
+    "lon": -0.1373997,
+    "source": "osm"
+  },
+  {
+    "name": "M&S Food",
+    "type": "supermarket",
+    "distance_m": 1275,
+    "address": "(51.5151, -0.1381)",
+    "lat": 51.5151363,
+    "lon": -0.1381359,
+    "source": "osm"
+  },
+  {
+    "name": "Londis",
+    "type": "supermarket",
+    "distance_m": 1305,
+    "address": "(51.5291, -0.1446)",
+    "lat": 51.5291262,
+    "lon": -0.1445504,
+    "source": "osm"
+  },
+  {
+    "name": "Waitrose",
+    "type": "supermarket",
+    "distance_m": 1325,
+    "address": "(51.5361, -0.1235)",
+    "lat": 51.5360857,
+    "lon": -0.1235071,
+    "source": "osm"
+  },
+  {
+    "name": "New Loon Moon Supermarket",
+    "type": "supermarket",
+    "distance_m": 1394,
+    "address": "(51.5121, -0.1307)",
+    "lat": 51.5120506,
+    "lon": -0.1307182,
+    "source": "osm"
+  },
+  {
+    "name": "Loon Fung Supermarket",
+    "type": "supermarket",
+    "distance_m": 1406,
+    "address": "(51.5119, -0.1303)",
+    "lat": 51.5118969,
+    "lon": -0.130337,
+    "source": "osm"
+  },
+  {
+    "name": "SeeWoo",
+    "type": "supermarket",
+    "distance_m": 1434,
+    "address": "(51.5117, -0.1305)",
+    "lat": 51.5116586,
+    "lon": -0.1304802,
+    "source": "osm"
+  },
+  {
+    "name": "Young Cheng Fresh Seafood Shop",
+    "type": "supermarket",
+    "distance_m": 1443,
+    "address": "(51.5117, -0.1319)",
+    "lat": 51.5117382,
+    "lon": -0.1318603,
+    "source": "osm"
+  }
+]
