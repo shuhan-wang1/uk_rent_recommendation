@@ -179,6 +179,35 @@ def clarify_and_extract_criteria(user_query: str) -> dict:
                     missing = [f for f in required if not result.get(f)]
                     print(f"[WARN] Fine-tuned model missing required fields: {missing}, falling back to Ollama")
             elif result.get('status') == 'clarification_needed':
+                # ✅ CRITICAL FIX: Check if all required fields are actually present
+                required = ['destination', 'max_budget', 'max_travel_time']
+                has_all_required = all(result.get(field) for field in required)
+                
+                if has_all_required:
+                    # ✅ Model said "clarification_needed" but we have everything!
+                    # Change status to success and proceed with search
+                    print("[INFO] ✅ Fine-tuned model returned clarification_needed, but all required fields are present!")
+                    print(f"[INFO]   → Destination: {result.get('destination')}")
+                    print(f"[INFO]   → Budget: £{result.get('max_budget')}")
+                    print(f"[INFO]   → Travel time: {result.get('max_travel_time')} min")
+                    print(f"[INFO]   → Soft preferences: {result.get('soft_preferences')}")
+                    
+                    result['status'] = 'success'
+                    
+                    # Fill in default values for missing optional fields
+                    if not result.get('suggested_search_locations'):
+                        result['suggested_search_locations'] = []
+                    if not result.get('area_vibe'):
+                        result['area_vibe'] = None
+                    if not result.get('amenities_of_interest'):
+                        result['amenities_of_interest'] = []
+                    
+                    # Remove the clarification question since we don't need it
+                    result.pop('data', None)
+                    
+                    print("[INFO] ✓ Converted to success status, proceeding with search")
+                    return result
+                
                 # Fill in default values for optional fields
                 if not result.get('suggested_search_locations'):
                     result['suggested_search_locations'] = []
@@ -309,150 +338,144 @@ JSON OUTPUT:"""
 
 def refine_criteria_with_answer(original_criteria: dict, user_answer: str) -> dict:
     """
-    Refine criteria with additional user input.
-    ✅ FIXED: 现在正确处理澄清回复
-    
-    关键改变:
-    1. 如果原始条件有所有必需字段，直接合并答案到 soft_preferences
-    2. 返回 status='success' 而不是继续澄清
-    3. 处理否定回复（用户说 'nope'）
+    ✅ FIXED: Properly merge clarification answers without losing context
     """
-    required_fields = ['destination', 'max_budget', 'max_travel_time']
-    has_all_required = all(original_criteria.get(field) for field in required_fields)
+    import re
     
     print(f"\n{'='*60}")
-    print(f"[Refine] 细化搜索条件")
-    print(f"[Refine] 用户回复: '{user_answer}'")
-    print(f"[Refine] 原始条件有所有必需字段: {has_all_required}")
+    print(f"[Refine] Merging clarification answer")
+    print(f"[Refine] User answer: '{user_answer}'")
     print(f"{'='*60}")
     
-    if has_all_required:
-        # ✅ 已有所有必需字段 - 直接合并用户回复到 soft_preferences
-        print("[Refine] ✓ 合并回复到现有条件（不需要重新解析）")
-        
-        # 检查是否是否定回复
-        answer_lower = user_answer.lower().strip()
-        is_negative = any(phrase in answer_lower for phrase in [
-            'no, i do not', 'no i do not', "no, don't", "no don't", 
-            'nope', 'not really', 'nothing else', 'nothing more',
-            'no thanks', 'none of that', 'no worries', 'nothing'
-        ])
-        
-        if is_negative:
-            print("[Refine] ✓ 用户拒绝了进一步的偏好 - 清除不必要的偏好")
-            # ✅ FIXED: 当用户说"nope"时，清除所有可选的软偏好
-            # 只保留原始查询中明确提到的硬要求
-            original_criteria['soft_preferences'] = ""
-            # 确保返回 success 状态
-            if original_criteria.get('status') != 'success':
-                original_criteria['status'] = 'success'
-            print("[Refine] ✓ 软偏好已清除，将使用默认搜索策略")
-            return original_criteria
-        
-        # 从回复中提取新的偏好
-        answer_lower = user_answer.lower()
-        new_preferences = []
-        
-        if any(word in answer_lower for word in ['quiet', 'peaceful', 'noise', 'silent', 'tranquil']):
-            new_preferences.append('quiet area')
-        if any(word in answer_lower for word in ['safe', 'security', 'crime', 'secure']):
-            new_preferences.append('safety and crime rates')
-        if any(word in answer_lower for word in ['park', 'green', 'garden', 'nature', 'outdoor']):
-            new_preferences.append('access to parks and green spaces')
-        if any(word in answer_lower for word in ['modern', 'new', 'renovated', 'contemporary']):
-            new_preferences.append('modern property')
-        if any(word in answer_lower for word in ['gym', 'fitness', 'sport', 'exercise']):
-            new_preferences.append('fitness facilities nearby')
-        if any(word in answer_lower for word in ['restaurant', 'cafe', 'dining', 'food', 'bar']):
-            new_preferences.append('good dining options')
-        if any(word in answer_lower for word in ['shop', 'store', 'supermarket', 'grocery']):
-            new_preferences.append('shopping and supermarkets nearby')
-        if any(word in answer_lower for word in ['school', 'education', 'university']):
-            new_preferences.append('good schools and education')
-        if any(word in answer_lower for word in ['transport', 'transit', 'bus', 'tube', 'train']):
-            new_preferences.append('good public transport')
-        
-        # ✅ FIXED: 仅当用户主动提到新偏好时才添加，否则清除
-        if new_preferences:
-            # 仅保留用户明确提到的新偏好，移除初始查询中自动提取的内容
-            original_criteria['soft_preferences'] = ', '.join(new_preferences)
-            print(f"[Refine] ✓ 基于用户回复的偏好: {', '.join(new_preferences)}")
-        else:
-            # 用户没有提到新偏好，并且已经否定了澄清问题中的建议
-            original_criteria['soft_preferences'] = ""
-            print(f"[Refine] ℹ 用户回复中没有提到具体偏好，清除软偏好")
-        
-        # ✅ 确保返回 success 状态
-        original_criteria['status'] = 'success'
-        
-        print(f"[Refine] ✓ 最终条件: {json.dumps(original_criteria, indent=2)}")
-        return original_criteria
+    # Make a copy to avoid mutation issues
+    result = original_criteria.copy()
     
-    else:
-        # ❌ 缺少必需字段 - 需要重新解析结合两个输入
-        print("[Refine] ✗ 缺少必需字段 - 重新解析组合输入")
+    # ✅ CRITICAL FIX: Check _original_query first for missing destination
+    original_query = result.get('_original_query', '')
+    if original_query and not result.get('destination'):
+        print(f"[Refine] 📝 Checking original query for destination: '{original_query}'")
         
-        # ✅ 首先检查是否是否定回复（即使字段不完整）
-        answer_lower = user_answer.lower().strip()
-        is_negative = any(phrase in answer_lower for phrase in [
-            'no, i do not', 'no i do not', "no, don't", "no don't", 
-            'nope', 'not really', 'nothing else', 'nothing more',
-            'no thanks', 'none of that', 'no worries', 'nothing',
-            'i do not care about anything else'  # 添加这个特定的否定模式
-        ])
+        # Try to extract destination from original query
+        original_lower = original_query.lower().strip()
         
-        if is_negative:
-            print("[Refine] ✓ 检测到否定回复 - 尝试从回复中提取必需字段")
-            
-            # ✅ 尝试从用户回复中提取关键信息
-            import re
-            
-            # 提取旅行时间 - 优先查找"min"或"minutes"相关的数字
-            if not original_criteria.get('max_travel_time'):
-                time_match = re.search(r'(\d+)\s*(?:min|minutes|mins)', answer_lower)
-                if time_match:
-                    max_travel = int(time_match.group(1))
-                    original_criteria['max_travel_time'] = max_travel
-                    print(f"[Refine] ✓ 从回复中提取旅行时间: {max_travel} 分钟")
-            
-            # 提取预算 - 优先查找带货币符号的金额
-            if not original_criteria.get('max_budget'):
-                # 首先查找 £ 符号
-                budget_match = re.search(r'£\s*(\d+(?:,\d{3})*)', answer_lower)
-                if budget_match:
-                    budget_str = budget_match.group(1).replace(',', '')
-                    max_budget = int(budget_str)
-                    original_criteria['max_budget'] = max_budget
-                    print(f"[Refine] ✓ 从回复中提取预算: £{max_budget}")
-            
-            # 清除软偏好
-            original_criteria['soft_preferences'] = ""
-            original_criteria['status'] = 'success'
-            print("[Refine] ✓ 软偏好已清除")
-            
-            # 检查是否仍然缺少字段
-            required_fields = ['destination', 'max_budget', 'max_travel_time']
-            still_missing = [f for f in required_fields if not original_criteria.get(f)]
-            if still_missing:
-                print(f"[Refine] ⚠️  仍缺少字段: {still_missing}")
-                print(f"[Refine] ℹ️  将使用现有值进行搜索")
-            
-            print(f"[Refine] ✓ 最终条件: {json.dumps(original_criteria, indent=2)}")
-            return original_criteria
+        # Common destination patterns
+        destination_patterns = [
+            (r'near\s+([a-zA-Z\s]+?)(?:,|\.|$|my|budget|within|\d)', 'near'),
+            (r'close\s+to\s+([a-zA-Z\s]+?)(?:,|\.|$|my|budget|within|\d)', 'close to'),
+            (r'around\s+([a-zA-Z\s]+?)(?:,|\.|$|my|budget|within|\d)', 'around'),
+            (r'at\s+([a-zA-Z\s]+?)(?:,|\.|$|my|budget|within|\d)', 'at'),
+        ]
         
-        # 重新解析组合查询
-        combined_query = f"用户首先说: '{original_criteria.get('_original_query', 'N/A')}'. 然后补充说: '{user_answer}'."
-        print(f"[Refine] 组合查询: {combined_query}")
+        for pattern, keyword in destination_patterns:
+            match = re.search(pattern, original_lower)
+            if match:
+                location = match.group(1).strip()
+                # Expand common abbreviations
+                if location == 'ucl':
+                    location = 'University College London'
+                elif location == "king's cross" or location == 'kings cross':
+                    location = "King's Cross"
+                elif location == 'lse':
+                    location = 'London School of Economics'
+                
+                result['destination'] = location.title() if location.islower() else location
+                print(f"[Refine] ✅ Extracted destination from original query: {result['destination']}")
+                break
+    
+    # Extract info from the user's clarification answer
+    answer_lower = user_answer.lower().strip()
+    
+    # 1. Extract commute time (e.g., "30 min", "within 30 minutes")
+    time_match = re.search(r'(\d+)\s*(?:min|minutes|mins)', answer_lower)
+    if time_match and not result.get('max_travel_time'):
+        result['max_travel_time'] = int(time_match.group(1))
+        print(f"[Refine] ✓ Extracted commute time: {result['max_travel_time']} min")
+    
+    # 2. Extract budget (e.g., "£1400", "1400 pounds")
+    budget_match = re.search(r'£?\s*(\d+(?:,\d{3})*)\s*(?:pounds?|per month|pcm)?', answer_lower)
+    if budget_match and not result.get('max_budget'):
+        budget_str = budget_match.group(1).replace(',', '')
+        result['max_budget'] = int(budget_str)
+        print(f"[Refine] ✓ Extracted budget: £{result['max_budget']}")
+    
+    # 3. Extract destination - only if not already present
+    if not result.get('destination'):
+        location_keywords = ['near', 'around', 'close to', 'at', 'in']
+        for keyword in location_keywords:
+            if keyword in answer_lower:
+                parts = answer_lower.split(keyword, 1)
+                if len(parts) > 1:
+                    location_text = parts[1].strip().split(',')[0].strip()
+                    # Only extract if it looks like a real location (not a number/time)
+                    if not re.match(r'^\d+\s*min', location_text) and len(location_text) > 2:
+                        result['destination'] = location_text.title()
+                        print(f"[Refine] ✓ Extracted destination: {result['destination']}")
+                        break
+    
+    # 4. Handle negative/decline responses
+    is_negative = any(phrase in answer_lower for phrase in [
+        'no, i do not', 'no i do not', "no, don't", "no don't", 
+        'nope', 'not really', 'nothing else', 'nothing more',
+        'no thanks', 'none', 'no worries', "don't care"
+    ])
+    
+    if is_negative:
+        print("[Refine] ✓ User declined further input")
+        if not result.get('max_travel_time'):
+            result['max_travel_time'] = 50  # Default
+            print(f"[Refine]   → Using default commute: 50 min")
+        if not result.get('soft_preferences'):
+            result['soft_preferences'] = ""
+    
+    # 5. Check if all required fields are present
+    required_fields = ['destination', 'max_budget', 'max_travel_time']
+    missing_fields = [f for f in required_fields if not result.get(f)]
+    
+    if missing_fields:
+        print(f"[Refine] ⚠️  Still missing: {missing_fields}")
         
-        result = clarify_and_extract_criteria(combined_query)
+        # Generate specific question
+        if 'destination' in missing_fields:
+            question = "Where would you like to live? (e.g., near UCL, Camden, King's Cross)"
+        elif 'max_budget' in missing_fields:
+            question = "What's your maximum monthly budget in pounds?"
+        elif 'max_travel_time' in missing_fields:
+            question = "What's your maximum commute time in minutes?"
+        else:
+            question = f"Please specify: {', '.join(missing_fields)}"
         
-        # 如果新解析也失败，保留原始数据
-        if result.get('status') != 'success' and original_criteria:
-            for field in required_fields:
-                if not result.get(field) and original_criteria.get(field):
-                    result[field] = original_criteria[field]
-        
+        result['status'] = 'clarification_needed'
+        result['data'] = {'question': question}
         return result
+    
+    # 6. Success - all required fields present
+    print(f"[Refine] ✅ All required fields complete!")
+    print(f"[Refine]   → Destination: {result.get('destination')}")
+    print(f"[Refine]   → Budget: £{result.get('max_budget')}")
+    print(f"[Refine]   → Max commute: {result.get('max_travel_time')} min")
+    
+    # Set defaults for optional fields
+    if not result.get('suggested_search_locations'):
+        result['suggested_search_locations'] = []
+    if not result.get('soft_preferences'):
+        result['soft_preferences'] = ""
+    if not result.get('amenities_of_interest'):
+        result['amenities_of_interest'] = []
+    if not result.get('area_vibe'):
+        result['area_vibe'] = None
+    if not result.get('property_tags'):
+        result['property_tags'] = []
+    if not result.get('city_context'):
+        result['city_context'] = "London"
+    
+    result['status'] = 'success'
+    
+    # Clean up temporary/internal fields
+    result.pop('_original_query', None)
+    if 'data' in result and result.get('status') == 'success':
+        result.pop('data', None)
+    
+    return result
 
 def _get_property_url(prop: dict) -> str:
     """Helper to get URL from property dict"""
@@ -460,6 +483,40 @@ def _get_property_url(prop: dict) -> str:
         if key in prop and prop[key]:
             return prop[key]
     return ''
+
+def _normalize_price_format(price_str: str) -> str:
+    """
+    ✅ Normalize price format to always be '£XXXX pcm'
+    Handles various input formats:
+    - '£1342 pcm' -> '£1342 pcm'
+    - '£1342pcm' -> '£1342 pcm'
+    - '£1342 pw' -> '£5814 pcm' (convert weekly to monthly)
+    - '£1342' -> '£1342 pcm'
+    - '1342' -> '£1342 pcm'
+    """
+    import re
+    
+    if not price_str or not isinstance(price_str, str):
+        return 'N/A'
+    
+    # Remove all whitespace and convert to lowercase for processing
+    price_lower = price_str.lower().strip()
+    
+    # Extract numeric value
+    numeric_match = re.search(r'(\d+(?:,\d{3})*(?:\.\d{2})?)', price_lower)
+    if not numeric_match:
+        return price_str  # Return as-is if no number found
+    
+    price_value = float(numeric_match.group(1).replace(',', ''))
+    
+    # Check if it's weekly (pw) and convert to monthly (pcm)
+    if 'pw' in price_lower or 'per week' in price_lower or 'weekly' in price_lower:
+        # Convert weekly to monthly: multiply by 52 weeks, divide by 12 months
+        price_value = (price_value * 52) / 12
+        print(f"  [Price] Converted weekly price to monthly: {price_str} -> £{int(price_value)} pcm")
+    
+    # Return normalized format: £XXXX pcm (no decimals for monthly rent)
+    return f"£{int(price_value)} pcm"
 
 def _validate_and_fix_price_in_explanations(recommendations: dict, properties_data: list[dict]) -> dict:
     """
@@ -489,48 +546,138 @@ def _validate_and_fix_price_in_explanations(recommendations: dict, properties_da
             original_prop = properties_data[rank - 1]
         
         if original_prop:
-            actual_price = original_prop.get('Price', 'N/A')
+            # ✅ FIX 2B: Normalize actual price format
+            actual_price_raw = original_prop.get('Price', 'N/A')
+            actual_price_normalized = _normalize_price_format(actual_price_raw)
             
-            # ✅ FIXED: 改进价格修复逻辑以处理所有价格格式变体
+            # Get numeric price and budget for comparison
+            price_numeric = original_prop.get('parsed_price', 0)
+            max_budget = original_prop.get('_max_budget', None)
+            
+            # ✅ IMPROVED: Fix "over budget" logic errors
             import re
-            price_pattern = r'£\d+(?:,\d{3})*(?:\.\d{2})?'
-            prices_in_explanation = re.findall(price_pattern, explanation)
             
-            # 规范化实际价格用于比较
-            actual_price_normalized = str(actual_price).replace(' pcm', '').strip()
+            # Pattern to match various price formats in explanation
+            price_pattern = r'£\s*\d+(?:,\d{3})*(?:\.\d+)?(?:\s*pcm)*(?:\s*pw)*'
+            
+            # Find all price mentions
+            prices_in_explanation = re.findall(price_pattern, explanation, re.IGNORECASE)
             
             if prices_in_explanation:
-                found_price = prices_in_explanation[0]
-                # 检查是否存在不匹配
-                if found_price != actual_price_normalized:
-                    print(f"  ⚠️ PRICE MISMATCH found in Rank {rank}:")
-                    print(f"     Stated in header: {stated_price}")
-                    print(f"     Actual property: {actual_price}")
-                    print(f"     Found in explanation: {found_price}")
-                    
-                    # ✅ 改进: 更激进的替换 - 替换所有发现的价格
-                    explanation_fixed = rec['explanation']
-                    for wrong_price in prices_in_explanation:
-                        # 尝试多种替换模式
-                        patterns = [
-                            f"At {wrong_price}",
-                            f"at {wrong_price}",
-                            f"At {wrong_price} pcm",
-                            f"at {wrong_price} pcm",
-                            wrong_price,  # 直接替换任何地方的价格
-                        ]
-                        for pattern in patterns:
-                            if pattern in explanation_fixed:
-                                replacement = actual_price if "pcm" not in pattern else f"{actual_price}"
-                                explanation_fixed = explanation_fixed.replace(pattern, replacement)
-                                print(f"     📝 Replaced '{pattern}' with '{replacement}'")
-                    
-                    rec['explanation'] = explanation_fixed
-                    print(f"     ✓ Fixed explanation to use: {actual_price}")
-                else:
-                    print(f"  ✓ Rank {rank}: Price consistent - {actual_price}")
+                print(f"  🔍 Rank {rank}: Found {len(prices_in_explanation)} price mentions")
+                
+                # Replace ALL price mentions with clean format (no pcm)
+                explanation_fixed = explanation
+                price_num_only = actual_price_normalized.replace(' pcm', '')
+                
+                for old_price in prices_in_explanation:
+                    explanation_fixed = explanation_fixed.replace(old_price, price_num_only)
+                    print(f"     📝 Replaced '{old_price}' with '{price_num_only}'")
+                
+                # ✅ FIX CRITICAL: Fix "over budget" errors
+                if max_budget and price_numeric:
+                    if price_numeric <= max_budget:
+                        # Property is WITHIN budget - AGGRESSIVELY remove all "over budget" mentions
+                        # Pattern 1: "within budget at £1342 over budget" → "within budget at £1342"
+                        explanation_fixed = re.sub(
+                            r'(within budget at [£\d,]+)\s+over budget',
+                            r'\1',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        # Pattern 2: "£1342 over budget at £1342" → "within budget at £1342"
+                        explanation_fixed = re.sub(
+                            r'£[\d,]+\s+over budget at (£[\d,]+)',
+                            r'within budget at \1',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        # Pattern 3: "over budget at £1342" → "within budget at £1342"
+                        explanation_fixed = re.sub(
+                            r'over budget at (£[\d,]+)',
+                            r'within budget at \1',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        # Pattern 4: Any remaining "over budget" or "above budget"
+                        explanation_fixed = re.sub(
+                            r'\s+over budget\b',
+                            '',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        explanation_fixed = re.sub(
+                            r'\s+above budget\b',
+                            '',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        print(f"     ✅ Fixed: Property is WITHIN budget (£{price_numeric} ≤ £{max_budget})")
+                    else:
+                        # Property is OVER budget - ensure correct overage with EXACT amount
+                        overage = int(price_numeric - max_budget)
+                        # Pattern 1: "within budget at £1468 over budget" → "£68 over budget at £1468"
+                        explanation_fixed = re.sub(
+                            r'within budget at (£[\d,]+)\s+over budget',
+                            f'£{overage} over budget at \\1',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        # Pattern 2: "£1468 over budget at £1468" → "£68 over budget at £1468"
+                        explanation_fixed = re.sub(
+                            r'£[\d,]+\s+over budget at (£[\d,]+)',
+                            f'£{overage} over budget at \\1',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        # Pattern 3: "over budget at £1468" → "£68 over budget at £1468"
+                        explanation_fixed = re.sub(
+                            r'over budget at (£[\d,]+)',
+                            f'£{overage} over budget at \\1',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        # Pattern 4: Plain "above budget" or "over budget" without price
+                        explanation_fixed = re.sub(
+                            r'\babove budget\b',
+                            f'£{overage} over budget',
+                            explanation_fixed,
+                            flags=re.IGNORECASE
+                        )
+                        print(f"     ✅ Fixed: Property is £{overage} OVER budget (£{price_numeric} > £{max_budget})")
+                
+                rec['explanation'] = explanation_fixed
             else:
-                print(f"  ✓ Rank {rank}: Price consistent - {actual_price}")
+                print(f"  ✓ Rank {rank}: No price mentions found")
+            
+            # ✅ FIX CRITICAL: Validate and fix travel time mentions
+            actual_travel_time = original_prop.get('travel_time_minutes')
+            if actual_travel_time and isinstance(actual_travel_time, (int, float)):
+                # Find incorrect travel time mentions in explanation
+                # Pattern: "15-minute", "15 minute", "15 minutes", "in 15 minutes"
+                time_pattern = r'(\d+)[-\s]minute[s]?'
+                time_mentions = re.findall(time_pattern, rec['explanation'], re.IGNORECASE)
+                
+                if time_mentions:
+                    incorrect_times = [int(t) for t in time_mentions if int(t) != actual_travel_time]
+                    if incorrect_times:
+                        print(f"     ⚠️  Found INCORRECT travel time mentions: {incorrect_times}")
+                        print(f"     ✅ Actual travel time: {actual_travel_time} minutes")
+                        
+                        # Replace all incorrect time mentions with correct time
+                        explanation_fixed = rec['explanation']
+                        for wrong_time in set(time_mentions):
+                            if int(wrong_time) != actual_travel_time:
+                                # Replace patterns like "15-minute" or "15 minute"
+                                explanation_fixed = re.sub(
+                                    rf'{wrong_time}[-\s]minute[s]?',
+                                    f'{actual_travel_time}-minute',
+                                    explanation_fixed,
+                                    flags=re.IGNORECASE
+                                )
+                        
+                        rec['explanation'] = explanation_fixed
+                        print(f"     ✅ Fixed travel time mentions to {actual_travel_time} minutes")
     
     return recommendations
 
@@ -573,17 +720,18 @@ def generate_recommendations(properties_data: list[dict], user_query: str, soft_
             # NOTE: images field intentionally omitted to prevent LLM from using placeholder text as features
         }
         
-        # ✅ 只在用户关心时才添加 crime data
-        if should_include_crime and 'crime_data_summary' in prop:
+        # ✅ 只在用户关心且有有效数据时才添加 crime data
+        if should_include_crime:
             crime_data = prop.get('crime_data_summary', {})
-            simple_prop['crimes_6m'] = crime_data.get('total_crimes_6m', 0)
-            simple_prop['crime_trend'] = crime_data.get('crime_trend', 'unknown')
-            simple_prop['top_crime_types'] = crime_data.get('top_crime_types', [])[:2]
-        else:
-            # ✅ 明确设置为 None，表示不相关
-            simple_prop['crimes_6m'] = None
-            simple_prop['crime_trend'] = None
-            simple_prop['top_crime_types'] = []
+            # Check if crime data is valid and not empty
+            if crime_data and isinstance(crime_data, dict) and 'total_crimes_6m' in crime_data:
+                simple_prop['crimes_6m'] = crime_data.get('total_crimes_6m', 0)
+                simple_prop['crime_trend'] = crime_data.get('crime_trend', 'unknown')
+                simple_prop['top_crime_types'] = crime_data.get('top_crime_types', [])[:2]
+                print(f"    ✅ Property {i+1} - Including crime data: {simple_prop['crimes_6m']} crimes")
+            else:
+                print(f"    ⚠️  Property {i+1} - No valid crime data available")
+        # ✅ 不添加这些字段，防止模型看到 null 值
         
         # ✅ 只在用户关心时才添加 amenities data
         if should_include_amenities and 'amenities_nearby' in prop:
@@ -591,11 +739,7 @@ def generate_recommendations(properties_data: list[dict], user_query: str, soft_
             simple_prop['nearby_supermarkets'] = amenities.get('supermarket_in_1500m', 0)
             simple_prop['nearby_parks'] = amenities.get('park_in_1500m', 0)
             simple_prop['nearby_gyms'] = amenities.get('gym_in_1500m', 0)
-        else:
-            # ✅ 明确设置为 None
-            simple_prop['nearby_supermarkets'] = None
-            simple_prop['nearby_parks'] = None
-            simple_prop['nearby_gyms'] = None
+        # ✅ 不添加这些字段，防止模型看到 null 值
         
         simple_props.append(simple_prop)
 
@@ -673,16 +817,29 @@ Here are the top properties that match their criteria:
 YOUR TASK:
 Recommend the TOP 3-5 properties. For each one, write a natural, engaging explanation that:
 - Starts with why this property stands out
-- Discusses the commute USING ONLY the "travel_time_minutes" field - this is the ACTUAL verified commute time
-  ✅ Use: "travel_time_minutes": 36 → Say "36-minute commute"
-  ❌ Do NOT make up different travel times like "2 minutes" or "45 minutes" 
-  ❌ Do NOT mention destinations or specific locations that would imply different times
-- ⚠️ ONLY discuss safety/crime if the "crimes_6m" field is NOT null/null in the data
+- 🚨 CRITICAL: Discusses the commute using EXACTLY the "travel_time_minutes" number from the data
+  ✅ CORRECT: "travel_time_minutes": 27 → Say "27-minute commute" or "in just 27 minutes"
+  ❌ WRONG: "travel_time_minutes": 27 → Do NOT say "15-minute commute" or any other number
+  ⚠️ If you mention commute time, it MUST match the travel_time_minutes field EXACTLY
+- 🚨 CRIME DATA RULES (STRICT):
+  • IF "crimes_6m" field EXISTS → MUST mention the EXACT number in your explanation
+    ✅ CORRECT: "crimes_6m": 145 → "The area recorded 145 crimes over 6 months"
+    ✅ CORRECT: "crimes_6m": 7 → "The area is relatively safe with only 7 crimes reported in 6 months"
+    ❌ WRONG: "crimes_6m": 145 → "higher number of crimes" (too vague)
+    ❌ WRONG: "crimes_6m": 7 → "has a stable crime trend" (missing the number)
+  • IF "crimes_6m" field MISSING or null → DO NOT mention crime/safety AT ALL
+    ❌ Do NOT say "prioritizing safety" or "safe area" without data
+- 🚨 IF property price_numeric > budget: MUST say "£X over budget" with exact overage amount
+  ✅ Example: price_numeric=1468, budget=1400 → "£68 over budget" or "slightly above budget at £1468 (£68 over)"
+  ❌ Do NOT say "above budget" without the exact amount
+- ⚠️ ONLY discuss safety/crime if "crimes_6m" field exists AND give the EXACT number
+  ✅ Example: "crimes_6m": 145 → "145 crimes reported over 6 months"
+  ❌ Do NOT say "higher number of crimes" without the actual number
+  ❌ Do NOT mention crime/safety if crimes_6m field is missing
 - Mentions value for money (is it a good deal for the area?)
-- ⚠️ ONLY mention amenities if the "nearby_supermarkets" field is NOT null
+- ⚠️ ONLY mention amenities if "nearby_supermarkets" field exists
 - Notes any standout features (from description ONLY)
-- Ends with who this property is perfect for
-- ⚠️ IF property is above budget: explicitly mention the overage and why it might be worth it
+- Ends with who this property is perfect for OR a specific benefit
 
 🔴 CRITICAL RULES - NO FABRICATION ALLOWED:
 1. Use ONLY the ACTUAL data provided - NO FABRICATION ALLOWED
@@ -694,9 +851,12 @@ Recommend the TOP 3-5 properties. For each one, write a natural, engaging explan
 
 2. Do NOT make up prices - use actual prices from property data
 
-3. If a field is null, missing, or empty string, DO NOT mention it
+3. If a field is null, missing, or empty string, DO NOT mention it AT ALL
+   ✅ If "crimes_6m": null → DO NOT mention "safety" or "crime" in ANY way
+   ✅ If "nearby_supermarkets": null → DO NOT mention "amenities" in ANY way
    ✅ If the description is just "2 bedroom flat", mention the bedrooms - that's factual
    ❌ Do NOT add "it's perfect for students" or "modern amenities" if not in description
+   ❌ Do NOT end sentences with "This would suit someone prioritizing X" if X data is null
 
 4. Property description is the ONLY source for physical features
    - If description says "2 bedroom flat" → mention "2 bedrooms"
@@ -706,11 +866,36 @@ Recommend the TOP 3-5 properties. For each one, write a natural, engaging explan
 
 5. Each explanation should be 3-5 sentences, but ONLY if you have real data to mention
 
+6. 🚨 FORBIDDEN - DO NOT END WITH GENERIC PHRASES:
+   ❌ "This would suit someone prioritizing safety" (when crimes_6m is null)
+   ❌ "This would suit someone prioritizing amenities" (when nearby_supermarkets is null)
+   ❌ "Perfect for students" (unless explicitly in description)
+   ❌ "Ideal for [any group]" (unless you have data to support it)
+   ✅ Instead, end with specific facts: "The 15-minute commute and £1,200 price make this a practical choice."
+
 Example patterns (with actual data only):
-- Simple property: "This [description] in [AREA] has a [COMMUTE]-minute commute to UCL. At [PRICE], you're getting competitive value. This would suit someone prioritizing [user_priority]."
-- With amenities data: "Great news - there are [COUNT] gyms nearby within walking distance! Plus the [COMMUTE]-minute commute is quick."
-- With crime data: "The area has seen [CRIME COUNT] reported crimes over the past 6 months with [TREND]."
-- Without features: Focus on commute and price: "Quick [COMMUTE]-minute commute at good value price of [PRICE]."
+- Simple property IN budget: "Located in [AREA], this offers a [EXACT_TRAVEL_TIME]-minute commute. At £[EXACT_PRICE], it's within budget and good value."
+- Property OVER budget: "This [AREA] property has a [EXACT_TRAVEL_TIME]-minute commute but is £[OVERAGE] over budget at £[PRICE]. The shorter commute/better location might justify the extra cost."
+- 🚨 With crime data (ONLY if crimes_6m EXISTS in the JSON data):
+  ✅ CORRECT: "crimes_6m": 7 → "The area is relatively safe with only 7 crimes reported over 6 months."
+  ✅ CORRECT: "crimes_6m": 145 → "The area recorded 145 crimes over 6 months, mainly anti-social behavior."
+  ✅ CORRECT: "crimes_6m": 28 → "Safety-conscious renters should note the 28 crimes reported in the past 6 months."
+  ❌ WRONG: "The area has a stable crime trend" (missing the actual number)
+- 🚨 WITHOUT crime data (crimes_6m field NOT in JSON): 
+  ❌ Do NOT mention crime/safety/security AT ALL
+  ❌ Do NOT say "prioritizing safety" or "safe neighborhood"
+- With amenities (ONLY if nearby_supermarkets exists): "[COUNT] supermarkets within 1.5km make daily shopping convenient."
+- WITHOUT amenities: Do NOT mention amenities at all
+
+🚨 ABSOLUTE REQUIREMENTS:
+1. Travel time MUST be the exact number from travel_time_minutes field
+2. If over budget, MUST state the exact overage amount in pounds
+3. 🚨 IF crimes_6m field EXISTS in the property JSON → MUST mention the EXACT number
+   ✅ Example: If you see "crimes_6m": 7 → Say "7 crimes reported over 6 months"
+   ❌ Do NOT say "stable crime trend" or "prioritizing safety" without the number
+4. 🚨 IF crimes_6m field MISSING from the property JSON → DO NOT mention crime/safety AT ALL
+5. DO NOT say "prioritizing safety" or "prioritizing amenities" if those fields don't exist
+6. DO NOT recommend the same property twice - each recommendation must be a DIFFERENT address
 
 ⚠️ ALWAYS use travel_time_minutes from the data - NEVER fabricate different commute times!
 
@@ -749,6 +934,31 @@ Return ONLY valid JSON, no other text."""
     if parsed and 'recommendations' in parsed:
         print("\n[DEBUG] Fixing travel times and images...")
         
+        # ✅ FIX 1: Re-rank recommendations to ensure sequential ranking (1, 2, 3, not 1, 3, 5)
+        for i, rec in enumerate(parsed['recommendations'], start=1):
+            rec['rank'] = i
+        
+        # ✅ FIX 3: Remove duplicate properties (same address)
+        seen_addresses = set()
+        unique_recommendations = []
+        
+        for rec in parsed['recommendations']:
+            # Normalize address for comparison (lowercase, remove spaces)
+            addr_normalized = rec.get('address', '').lower().strip()[:50]
+            
+            if addr_normalized not in seen_addresses:
+                seen_addresses.add(addr_normalized)
+                unique_recommendations.append(rec)
+            else:
+                print(f"  ⚠️  Skipping duplicate: {rec.get('address', '')[:40]}")
+        
+        # Re-rank after deduplication
+        for i, rec in enumerate(unique_recommendations, start=1):
+            rec['rank'] = i
+        
+        parsed['recommendations'] = unique_recommendations
+        print(f"  ✓ After deduplication: {len(unique_recommendations)} unique properties")
+        
         # Match recommendations back to original properties
         for rec in parsed['recommendations']:
             rank = rec.get('rank', 0)
@@ -772,10 +982,12 @@ Return ONLY valid JSON, no other text."""
                 rec['url'] = original_prop.get('URL', rec.get('url', ''))
                 rec['address'] = original_prop.get('Address', rec.get('address', ''))
                 
-                actual_price = original_prop.get('Price', 'N/A')
-                rec['price'] = actual_price
+                # ✅ FIX 2: Normalize price format to prevent "pcm pcm" and handle pw->pcm conversion
+                actual_price_raw = original_prop.get('Price', 'N/A')
+                actual_price_normalized = _normalize_price_format(actual_price_raw)
+                rec['price'] = actual_price_normalized
                 
-                print(f"  ✓ Rank {rank}: {rec['address'][:40]} - {rec['travel_time']} - Price: {actual_price}")
+                print(f"  ✓ Rank {rank}: {rec['address'][:40]} - {rec['travel_time']} - Price: {actual_price_normalized}")
         
         parsed = _validate_and_fix_price_in_explanations(parsed, properties_data)
         
@@ -791,8 +1003,20 @@ def create_fallback_recommendations(properties_data: list[dict], soft_preference
     """
     print("   🔧 Creating intelligent rule-based recommendations...")
     
+    # ✅ FIX 3B: Deduplicate properties before sorting
+    seen_addresses = set()
+    unique_properties = []
+    
+    for prop in properties_data[:15]:
+        addr_normalized = prop.get('Address', '').lower().strip()[:50]
+        if addr_normalized not in seen_addresses:
+            seen_addresses.add(addr_normalized)
+            unique_properties.append(prop)
+    
+    print(f"   → Deduplicated: {len(unique_properties)} unique properties from {len(properties_data[:15])}")
+    
     sorted_props = sorted(
-        properties_data[:15],
+        unique_properties,
         key=lambda x: (
             x.get('travel_time_minutes', 999),
             x.get('parsed_price', 9999)
@@ -907,10 +1131,13 @@ def create_fallback_recommendations(properties_data: list[dict], soft_preference
         
         explanation = " ".join(explanation_parts)
         
+        # ✅ FIX 2C: Normalize price in fallback recommendations too
+        normalized_price = _normalize_price_format(price)
+        
         recommendations.append({
             'rank': i + 1,
             'address': address,
-            'price': price,
+            'price': normalized_price,
             'travel_time': f"{travel_time} minutes" if isinstance(travel_time, (int, float)) else str(travel_time),
             'explanation': explanation,
             'url': _get_property_url(prop),

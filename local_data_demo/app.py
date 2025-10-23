@@ -99,17 +99,7 @@ def generate_recommendations_with_rag(properties: list[dict], user_query: str, p
 @app.route('/api/search', methods=['POST'])
 async def api_search():
     """
-    API endpoint enhanced with the RAG workflow.
-    ✅ FIXED: 现在支持澄清流程 (clarification flow)
-    
-    流程:
-    1. 新查询 -> 调用 clarify_and_extract_criteria()
-       - 如果返回 clarification_needed -> 保存到 pending_criteria，返回澄清问题
-       - 如果返回 success -> 进行搜索
-    
-    2. 澄清回复 -> 调用 refine_criteria_with_answer()
-       - 合并用户回复，返回完整条件
-       - 进行搜索
+    ✅ FIXED: Properly preserve original query context
     """
     global last_search_results
     
@@ -124,41 +114,48 @@ async def api_search():
     print(f"{'='*60}")
 
     try:
-        # ✅ 步骤 0: 检查是否是对澄清问题的回复
+        # ✅ Step 0: Check if this is a clarification response
         if has_pending_clarification() and is_clarification_response(user_query):
-            print("[API] ✓ 这是对澄清问题的回复")
+            print("[API] ✓ This is a clarification response")
             pending = get_pending_criteria()
-            print(f"[API] 原始条件: {json.dumps(pending, indent=2)}")
+            print(f"[API] Original criteria: {json.dumps(pending, indent=2)}")
             
-            # 使用 refine_criteria_with_answer() 来合并用户回复
+            # ✅ CRITICAL FIX: Pass BOTH the pending criteria AND the new answer
+            # Don't let the model re-parse everything - just merge the new info
             criteria_response = refine_criteria_with_answer(pending, user_query)
-            print(f"[API] 合并后条件: {json.dumps(criteria_response, indent=2)}")
             
-            # 如果合并后仍然需要澄清，返回新的澄清问题
+            print(f"[API] Merged criteria: {json.dumps(criteria_response, indent=2)}")
+            
+            # If still needs clarification, save and return
             if criteria_response.get('status') != 'success':
                 set_pending_criteria(criteria_response)
                 return jsonify(criteria_response), 200
             
-            # 否则清除待处理状态
+            # Otherwise clear and continue to search
             clear_pending_criteria()
             criteria = criteria_response
             
         else:
-            # 新的搜索查询
-            print("[API] → 这是新的搜索查询")
+            # New search query
+            print("[API] → This is a new search query")
             criteria_response = clarify_and_extract_criteria(user_query)
-            print(f"[DEBUG] 初始条件提取: {json.dumps(criteria_response, indent=2)}")
-
-            # ✅ 如果需要澄清，保存到 pending_criteria 并返回澄清问题
+            
+            # ✅ CRITICAL: Save the original query for context
             if criteria_response.get('status') != 'success':
-                print("[API] → 需要澄清")
+                criteria_response['_original_query'] = user_query  # Save for later!
+                
+            print(f"[DEBUG] Initial criteria: {json.dumps(criteria_response, indent=2)}")
+
+            # If needs clarification, save and return
+            if criteria_response.get('status') != 'success':
+                print("[API] → Needs clarification")
                 set_pending_criteria(criteria_response)
                 return jsonify(criteria_response), 200
 
             criteria = criteria_response
 
-        # ✅ 到这里，我们有了成功的条件（status == 'success'）
-        print("[API] ✓ 成功获得搜索条件，开始搜索...")
+        # ✅ At this point we have complete criteria with status='success'
+        print("[API] ✓ Complete criteria obtained, starting search...")
 
         # 2. RAG-enhanced retrieval
         print("\n[STEP 2] 执行 RAG 增强检索...")

@@ -26,8 +26,8 @@ async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
     destination = criteria.get('destination')
     
     # ✅ 从 soft_preferences 中智能提取用户关心的内容
-    soft_prefs = criteria.get('soft_preferences', '').lower()
-    amenities_of_interest = criteria.get('amenities_of_interest', [])
+    soft_prefs = (criteria.get('soft_preferences') or '').lower()
+    amenities_of_interest = criteria.get('amenities_of_interest') or []
 
     if not address:
         return enriched_prop
@@ -43,6 +43,8 @@ async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
         tasks['crime_data_summary'] = loop.run_in_executor(None, get_crime_data_by_location, address)
     else:
         print(f"  -> [Enrichment] Skipping crime data (not in soft_preferences)")
+        # ✅ Explicitly remove crime data if it exists from previous enrichment
+        enriched_prop.pop('crime_data_summary', None)
     
     # 2. Amenities - 仅当用户提到具体设施时
     amenities_to_find = []
@@ -98,12 +100,17 @@ async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
     
     for key, value in results_map.items():
         if isinstance(value, Exception):
-            print(f"    ⚠️  Failed to get '{key}': {value}")
-            enriched_prop[key] = {"error": str(value)}
+            print(f"    ⚠️  Failed to get '{key}' for {address[:40]}: {value}")
+            # ✅ Don't add error field - just skip this data type
+            # This prevents confusing the LLM with error messages
+        elif value is None:
+            print(f"    ⚠️  No data returned for '{key}' for {address[:40]}")
+            # ✅ Don't add None values - they should be treated as missing
         else:
             # CRITICAL FIX: Keep crime data nested, don't flatten
             if key == 'crime_data_summary':
                 enriched_prop['crime_data_summary'] = value  # ✅ Keep nested!
+                print(f"    ✅ Got crime data: {value.get('total_crimes_6m', 0)} crimes in 6 months")
             elif isinstance(value, dict) and key not in ['amenities_nearby', 'environmental_data']:
                 # For other dict results, we can flatten
                 enriched_prop.update(value)
