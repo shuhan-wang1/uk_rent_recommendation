@@ -150,7 +150,7 @@ User Query: {user_message}
 
     print(f"\n[AGENT-STEP1] Asking LLM to decide which tools to use...")
     
-    response = call_ollama(context, system_prompt, timeout=30)
+    response = call_ollama(context, system_prompt, timeout=360)
     
     if not response:
         print("[AGENT-STEP1] LLM call failed")
@@ -278,7 +278,7 @@ Instructions:
 4. Provide helpful suggestions based on what data IS available
 5. Keep the response natural and conversational"""
     
-    answer = call_ollama(synthesis_prompt, timeout=30)
+    answer = call_ollama(synthesis_prompt, timeout=360)
     
     print(f"[AGENT-STEP3] Answer synthesized")
     

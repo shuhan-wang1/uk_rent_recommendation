@@ -893,10 +893,19 @@ Provide helpful information."""
 You are Alex, a friendly UK rental assistant.
 Provide helpful, friendly information."""
         
-        response_text = call_ollama(prompt, system_prompt=system_prompt, timeout=60)
+        response_text = call_ollama(prompt, system_prompt=system_prompt, timeout=360)
+        
+        # 检查响应是否为空（超时或失败）
+        if not response_text:
+            # 如果是POI查询且有数据，使用安全响应
+            if detected_poi and poi_data:
+                print(f"⚠️ [TIMEOUT] Ollama超时，使用安全响应生成{detected_poi}信息")
+                response_text = generate_safe_poi_response(poi_data, detected_poi)
+            else:
+                return jsonify({"error": "AI模型响应超时。模型可能正在处理其他请求，请稍后再试。"}), 500
         
         # 如果是POI查询，验证并修正响应
-        if detected_poi and poi_data:
+        elif detected_poi and poi_data:
             print(f"\n[VALIDATION] 验证{detected_poi}响应...")
             try:
                 response_text = validate_and_fix_poi_response(response_text, poi_data, detected_poi)

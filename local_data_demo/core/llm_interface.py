@@ -15,7 +15,7 @@ FINETUNED_ADAPTER_PATH = "./student_model_lora/"     # Your LoRA adapters direct
   # Default model if not using fine-tuned
 
 
-def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 6000) -> str:
+def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 360) -> str:
     """Call Ollama with better defaults"""
     url = f"{OLLAMA_BASE_URL}/api/generate"
     
@@ -63,28 +63,39 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 6000) -> 
 def extract_first_json(text: str) -> dict | None:
     """Extracts the first valid JSON object from a string"""
     if not text:
+        print("[JSON PARSER] Empty text received")
         return None
     
+    # 尝试1: 直接解析整个文本
     try:
         cleaned_text = text.strip()
-        return json.loads(cleaned_text)
-    except (json.JSONDecodeError, TypeError):
-        pass
+        result = json.loads(cleaned_text)
+        print(f"[JSON PARSER] ✅ Method 1: Direct parse successful")
+        return result
+    except (json.JSONDecodeError, TypeError) as e:
+        print(f"[JSON PARSER] ❌ Method 1 failed: {str(e)[:100]}")
     
+    # 尝试2: 提取```json...```代码块
     match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
     if match:
         try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+            result = json.loads(match.group(1))
+            print(f"[JSON PARSER] ✅ Method 2: Code block parse successful")
+            return result
+        except json.JSONDecodeError as e:
+            print(f"[JSON PARSER] ❌ Method 2 failed: {str(e)[:100]}")
     
+    # 尝试3: 提取`{...}`内联代码
     match = re.search(r'`\s*(\{.*?\})\s*`', text, re.DOTALL)
     if match:
         try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+            result = json.loads(match.group(1))
+            print(f"[JSON PARSER] ✅ Method 3: Inline code parse successful")
+            return result
+        except json.JSONDecodeError as e:
+            print(f"[JSON PARSER] ❌ Method 3 failed: {str(e)[:100]}")
     
+    # 尝试4: 查找第一个完整的JSON对象
     brace_count = 0
     start_idx = -1
     
@@ -103,12 +114,14 @@ def extract_first_json(text: str) -> dict | None:
                     
                     if isinstance(parsed, dict) and len(parsed) > 0:
                         if "$schema" not in parsed and "properties" not in parsed:
+                            print(f"[JSON PARSER] ✅ Method 4: Brace matching successful")
                             return parsed
-                except json.JSONDecodeError:
-                    pass
+                except json.JSONDecodeError as e:
+                    print(f"[JSON PARSER] ❌ Method 4 attempt failed: {str(e)[:100]}")
                 finally:
                     start_idx = -1
     
+    print("[JSON PARSER] ❌ All methods failed")
     return None
 
 def retry_with_simple_prompt(user_query: str) -> dict:
@@ -132,7 +145,7 @@ User request: "{user_query}"
 
 Fill in the values. Return ONLY the JSON object, nothing else."""
 
-    response_text = call_ollama(prompt, timeout=60000)
+    response_text = call_ollama(prompt, timeout=360)
     
     if response_text:
         parsed = extract_first_json(response_text)
@@ -292,7 +305,7 @@ RULES:
 
 JSON OUTPUT:"""
 
-    response_text = call_ollama(prompt, system_prompt, timeout=6000)
+    response_text = call_ollama(prompt, system_prompt, timeout=360)
     
     if not response_text:
         print("[ERROR] Ollama timeout")
@@ -923,15 +936,24 @@ Return ONLY this JSON structure:
 
 Return ONLY valid JSON, no other text."""
 
-    response_text = call_ollama(prompt, system_prompt, timeout=6000)
+    response_text = call_ollama(prompt, system_prompt, timeout=360)
 
     if not response_text:
         print("[INFO] Ollama failed, using rule-based recommendations")
         return create_fallback_recommendations(properties_data, soft_preferences)
 
+    # 🔍 添加调试：查看LLM原始响应
+    print(f"\n[DEBUG] LLM Response Length: {len(response_text)} chars")
+    print(f"[DEBUG] First 500 chars of response:")
+    print(response_text[:500])
+    print(f"[DEBUG] Last 300 chars of response:")
+    print(response_text[-300:])
+    
     parsed = extract_first_json(response_text)
 
     if parsed and 'recommendations' in parsed:
+        print("\n[DEBUG] ✅ JSON解析成功")
+        print(f"[DEBUG] Found {len(parsed['recommendations'])} recommendations")
         print("\n[DEBUG] Fixing travel times and images...")
         
         # ✅ FIX 1: Re-rank recommendations to ensure sequential ranking (1, 2, 3, not 1, 3, 5)
@@ -994,6 +1016,10 @@ Return ONLY valid JSON, no other text."""
         return parsed
     else:
         print("[WARN] Could not parse JSON, using fallback")
+        print(f"[DEBUG] Parsed result: {parsed}")
+        print(f"[DEBUG] Has 'recommendations' key: {'recommendations' in parsed if parsed else 'N/A (parsed is None)'}")
+        if parsed:
+            print(f"[DEBUG] Parsed keys: {list(parsed.keys())}")
         return create_fallback_recommendations(properties_data, soft_preferences)
 
 def create_fallback_recommendations(properties_data: list[dict], soft_preferences: str = "") -> dict:
