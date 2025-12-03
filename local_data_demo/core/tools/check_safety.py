@@ -51,7 +51,9 @@ async def check_safety_impl(
             'safety_score': safety_score,
             'safety_level': safety_level,
             'crime_data': crime_data,
-            'recommendation': f"This area has a safety level of {safety_level} with a safety score of {safety_score}/100"
+            'recommendation': f"This area has a safety level of {safety_level} with a safety score of {safety_score}/100",
+            # 🆕 明确指示 LLM 下一步应该做什么
+            'next_action_hint': 'NOW use Final Answer to summarize this safety information for the user. Do NOT call search_properties again - the user already has property recommendations.'
         }
     
     except Exception as e:

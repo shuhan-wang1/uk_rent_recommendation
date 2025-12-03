@@ -168,3 +168,66 @@ class PropertyEmbeddingStore:
         
         print(f"    -> [DEBUG] Found {len(results)} similar properties")
         return results
+    
+    def search_by_amenities(self, amenities: list[str]) -> list[dict]:
+        """
+        🆕 按设施关键词搜索所有房产
+        
+        这是一个硬匹配搜索 - 在 Detailed_Amenities 和 Enhanced_Description 中查找关键词
+        
+        Args:
+            amenities: 设施关键词列表，如 ['karaoke', 'basketball', 'pool', 'gym']
+            
+        Returns:
+            包含任何指定设施的房产列表
+        """
+        results = []
+        
+        if not amenities or not self.properties:
+            return results
+        
+        # 标准化搜索词
+        search_terms = [a.lower().strip() for a in amenities if a]
+        print(f"    -> [DEBUG] Searching for amenities: {search_terms}")
+        
+        for prop in self.properties:
+            # 获取可能包含设施信息的所有字段
+            amenities_text = prop.get('Detailed_Amenities', '').lower()
+            description = prop.get('Enhanced_Description', '').lower()
+            description2 = prop.get('Description', '').lower()
+            
+            # 组合搜索文本
+            combined_text = f"{amenities_text} {description} {description2}"
+            
+            # 检查是否包含任何搜索词
+            matched_amenities = []
+            for term in search_terms:
+                # 支持一些常见变体
+                variants = [term]
+                if term == 'pool':
+                    variants.extend(['swimming', 'swimming pool'])
+                elif term == 'karaoke':
+                    variants.extend(['ktv', 'karaoke room'])
+                elif term == 'basketball':
+                    variants.extend(['basketball court', 'sports court'])
+                elif term == 'games':
+                    variants.extend(['game room', 'games room', 'games area', 'gaming'])
+                elif term == 'gym':
+                    variants.extend(['fitness', 'fitness center', 'workout'])
+                
+                for variant in variants:
+                    if variant in combined_text:
+                        matched_amenities.append(term)
+                        break
+            
+            if matched_amenities:
+                prop_copy = prop.copy()
+                prop_copy['matched_amenities'] = matched_amenities
+                prop_copy['match_count'] = len(matched_amenities)
+                results.append(prop_copy)
+                print(f"    -> [DEBUG] ✅ Found: {prop.get('Address', '')[:40]} - Matched: {matched_amenities}")
+        
+        # 按匹配数量排序
+        results.sort(key=lambda x: x.get('match_count', 0), reverse=True)
+        print(f"    -> [DEBUG] search_by_amenities found {len(results)} properties with requested amenities")
+        return results

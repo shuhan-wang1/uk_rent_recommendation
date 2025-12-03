@@ -220,6 +220,9 @@ async def handle_with_react_agent(user_message: str, context: dict, is_continuat
             react_agent.extracted_context['excluded_features'] = matched_property.get('Excluded_Features', '')
             react_agent.extracted_context['description'] = matched_property.get('Description', '')
             react_agent.extracted_context['enhanced_description'] = matched_property.get('Enhanced_Description', '')
+            # 🆕 添加 URL
+            react_agent.extracted_context['property_url'] = matched_property.get('URL', '')
+            print(f"[ReAct] 🔗 房产 URL: {matched_property.get('URL', 'N/A')}")
         else:
             print(f"[ReAct] ⚠️ 未在数据库中找到匹配房产: {property_address}")
     
@@ -264,6 +267,9 @@ async def handle_with_react_agent(user_message: str, context: dict, is_continuat
             
             react_agent.extracted_context['comparison_properties'] = comparison_context
             print(f"[ReAct] 📊 已加载 {len(mentioned_properties)} 个房产的对比数据")
+    
+    # Agent 自己决定是否需要设施搜索 - 不再使用关键词检测
+    # 设施搜索逻辑已移至 search_properties 工具内部
     
     if has_property_context:
         # 用户在询问关于特定房产的问题，不需要添加搜索提示
@@ -323,6 +329,34 @@ Current user message: {user_message}"""
     if tool_data.get('recommendations'):
         # 存储搜索结果供 UI 展示
         last_search_results = tool_data['recommendations']
+        
+        # 🆕 保存搜索结果到 extracted_context，供后续安全/设施问题使用
+        prev_results_context = "\n"
+        for i, rec in enumerate(tool_data['recommendations'][:6], 1):
+            addr = rec.get('address', 'Unknown')
+            price = rec.get('price', 'N/A')
+            travel = rec.get('travel_time', 'N/A')
+            # 从 all_properties 获取完整信息
+            full_prop = None
+            for prop in all_properties:
+                if prop.get('Address', '').startswith(addr.split(',')[0]):
+                    full_prop = prop
+                    break
+            
+            prev_results_context += f"{i}. **{addr.split(',')[0]}**\n"
+            prev_results_context += f"   - Price: {price}\n"
+            prev_results_context += f"   - Commute: {travel}\n"
+            if full_prop:
+                prev_results_context += f"   - Amenities: {full_prop.get('Detailed_Amenities', 'N/A')}\n"
+                prev_results_context += f"   - URL: {full_prop.get('URL', 'N/A')}\n"
+            prev_results_context += "\n"
+        
+        react_agent.extracted_context['previous_search_results'] = prev_results_context
+        print(f"[ReAct] 💾 已保存 {len(tool_data['recommendations'])} 个搜索结果到上下文")
+        
+        # 🆕 检查是否有安全警告需要记住
+        if react_agent.extracted_context.get('safety_warnings'):
+            print(f"[ReAct] ⚠️ 注意：有安全警告待处理")
         
         return jsonify({
             "response_type": "search",

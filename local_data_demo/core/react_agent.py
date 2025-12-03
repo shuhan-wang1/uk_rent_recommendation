@@ -57,12 +57,47 @@ If there is "Current Property Context" below, answer questions about that proper
 - Guests → Use Guest_Policy  
 - Amenities/facilities → Use Detailed_Amenities
 - What's not included → Use Excluded_Features
+- Booking link → Use the URL field (we have direct links!)
 
 ### Rule 5: Follow-up Answers Must Include Original Context
 When user answers a clarification question (like "30 minutes" or "no preference"):
 - Remember you're continuing the ORIGINAL search
 - Don't treat their answer as a new, confusing command
 - If user says "10" after you asked about commute time → max_commute_time=10
+
+### Rule 6: ALWAYS Use Real Property Names - NEVER Say "Property A/B/C"!
+- WRONG: "Property A has a pool, Property B has a gym"
+- RIGHT: "Spring Mews has a pool, Scape Bloomsbury has a gym"
+- WRONG: "I recommend Property D"
+- RIGHT: "I recommend Vega (Vauxhall)" 
+- Always use the actual name from Address field (first part before comma)
+
+### Rule 7: Facility/Amenity Searches - Search ALL Properties!
+When user asks about specific amenities (karaoke, pool, gym, games room, basketball):
+- Do NOT assume only one property exists
+- Our database has MANY properties with different amenities
+- NEVER say "this is the only property in database" - that's FALSE
+- If amenity search results are provided in context, USE THEM
+
+### Rule 8: Safety Questions - Answer Directly, Don't Start New Search!
+When user asks about safety AFTER you've already shown properties:
+- Use check_safety tool to get safety info for specific areas
+- Then use Final Answer to compare safety of already-shown properties
+- Do NOT start a new search_properties call
+- The user already has property recommendations, they just want safety comparison
+
+### Rule 9: ALWAYS Include Property URLs When Available
+- Our database has booking URLs for each property
+- When recommending properties, INCLUDE the URL
+- NEVER say "I don't have access to links" - we have them!
+- Format: "You can book here: [URL from database]"
+
+### Rule 10: Double-Check Amenity Claims Against Database!
+BEFORE saying a property has/doesn't have something:
+- Re-read the Detailed_Amenities field carefully
+- Spring Mews HAS: Swimming Pool, Gym (it's in the data!)
+- If unsure, say "based on our records" not "I believe"
+- NEVER contradict what the database clearly states
 
 ## EXAMPLES
 
@@ -72,20 +107,20 @@ Thought: User wants apartments near Imperial College, budget £2000. They did NO
 Action: search_properties
 Action Input: {{"location": "Imperial College", "max_budget": 2000}}
 
-Example 2 - Commute question about known property:
-User: "How long to cycle from Vega to UCL?"
-Thought: Vega is in our database. The Description shows "Cycle 24 min". I should answer from the database, not call an external API.
+Example 2 - Safety Question (after properties shown):
+User: "Which of these properties is in the safest area? I'm worried about Brent Cross."
+Thought: User already has property recommendations. They want to compare safety. I should check safety for the areas, then use Final Answer to compare. I should NOT start a new property search.
+Action: check_safety
+Action Input: {{"address": "Brent Cross, London"}}
+[After getting safety data]
 Action: Final Answer
-Action Input: According to our property database, cycling from Vega (Vauxhall) to UCL takes approximately 24 minutes. This is faster than taking the bus (22 min via public transport) since it's a direct route.
+Action Input: Based on safety data, here's the comparison...
 
-Example 3 - Property comparison:
-User: "Compare Spring Mews and Scape Bloomsbury for swimming pool and guest policy"
-Thought: I need to compare two specific properties. Both are in our database. I should look up their amenities and guest policies and provide a direct comparison.
-Action: Final Answer  
-Action Input: Here's the comparison:
-**Spring Mews**: Has a Swimming Pool (listed in amenities). Guest policy allows max 3 nights per week with sign-in required.
-**Scape Bloomsbury**: No swimming pool (listed in exclusions). STRICT guest policy - no overnight guests for Twin Room residents, day guests allowed until 10 PM.
-Winner for your criteria: Spring Mews has the pool and more flexible guest policy.
+Example 3 - Providing Property Link:
+User: "Can I get the link for Tufnell House?"
+Thought: User wants the booking URL for Tufnell House. I have this in my database - the URL field contains the link.
+Action: Final Answer
+Action Input: Here's the booking link for Tufnell House: https://uhomes.example/tufnell-house
 
 ## Current Context
 {context_info}
@@ -122,9 +157,115 @@ class ReActAgent:
         self.verbose = verbose
         self.extracted_context = {}  # 用于存储从上下文中提取的信息
         
+        # 🆕 用户偏好系统 - 在对话过程中积累
+        self.user_preferences = {
+            'hard_preferences': [],  # 硬性要求（必须满足）如: "不要 Brent Cross", "必须有健身房"
+            'soft_preferences': [],  # 软性偏好（尽量满足）如: "喜欢安静", "偏好现代装修"
+            'excluded_areas': [],    # 明确排除的区域
+            'required_amenities': [],  # 必须有的设施
+            'safety_concerns': [],   # 安全相关的记录
+        }
+        
         # 初始化 LLM
         from core.llm_interface import LLMInterface
         self.llm = LLMInterface()
+    
+    def add_preference(self, pref_type: str, preference: str):
+        """添加用户偏好"""
+        if pref_type in self.user_preferences and preference:
+            if preference not in self.user_preferences[pref_type]:
+                self.user_preferences[pref_type].append(preference)
+                print(f"📝 [Preference] Added {pref_type}: {preference}")
+    
+    def get_preferences_context(self) -> str:
+        """获取用户偏好上下文，供搜索时使用"""
+        parts = []
+        
+        if self.user_preferences['hard_preferences']:
+            parts.append(f"HARD REQUIREMENTS (must satisfy): {'; '.join(self.user_preferences['hard_preferences'])}")
+        
+        if self.user_preferences['soft_preferences']:
+            parts.append(f"SOFT PREFERENCES (try to satisfy): {'; '.join(self.user_preferences['soft_preferences'])}")
+        
+        if self.user_preferences['excluded_areas']:
+            parts.append(f"⛔ EXCLUDED AREAS (do NOT recommend): {', '.join(self.user_preferences['excluded_areas'])}")
+        
+        if self.user_preferences['required_amenities']:
+            parts.append(f"REQUIRED AMENITIES: {', '.join(self.user_preferences['required_amenities'])}")
+        
+        if self.user_preferences['safety_concerns']:
+            parts.append(f"⚠️ SAFETY CONCERNS: {'; '.join(self.user_preferences['safety_concerns'])}")
+        
+        return '\n'.join(parts) if parts else ''
+    
+    def extract_preferences_from_interaction(self, user_message: str, agent_response: str, tool_results: dict = None):
+        """
+        从用户互动中自动提取偏好
+        
+        这个方法在每次互动后调用，分析用户消息和工具结果来更新偏好
+        """
+        user_lower = user_message.lower()
+        
+        # 检测安全相关担忧
+        safety_keywords = ['safe', 'safety', 'crime', 'dangerous', 'worried', 'afraid', 'scared', 'unsafe']
+        if any(kw in user_lower for kw in safety_keywords):
+            # 检查是否提到了具体区域
+            areas = ['brent cross', 'brent', 'hackney', 'tottenham', 'brixton', 'peckham', 'lewisham']
+            for area in areas:
+                if area in user_lower:
+                    concern = f"User expressed safety concerns about {area.title()}"
+                    self.add_preference('safety_concerns', concern)
+                    # 如果工具返回了低安全分数，添加到排除区域
+                    if tool_results and isinstance(tool_results, dict):
+                        safety_score = tool_results.get('safety_score', 100)
+                        if safety_score < 50:
+                            self.add_preference('excluded_areas', area.title())
+                            self.add_preference('hard_preferences', f"Avoid {area.title()} - safety score only {safety_score}/100")
+        
+        # 检测设施需求
+        amenity_patterns = {
+            'gym': ['gym', 'fitness', 'workout', 'exercise'],
+            'pool': ['pool', 'swimming'],
+            'parking': ['parking', 'car park'],
+            'laundry': ['laundry', 'washing machine'],
+            'balcony': ['balcony', 'terrace', 'outdoor space'],
+            'concierge': ['concierge', '24/7', 'reception'],
+        }
+        
+        for amenity, keywords in amenity_patterns.items():
+            if any(kw in user_lower for kw in keywords):
+                # 检查是否是强烈需求
+                if any(word in user_lower for word in ['must', 'need', 'require', 'essential', 'important']):
+                    self.add_preference('required_amenities', amenity)
+                    self.add_preference('hard_preferences', f"Must have {amenity}")
+                else:
+                    self.add_preference('soft_preferences', f"Would like {amenity}")
+        
+        # 检测排除偏好
+        exclude_patterns = ['don\'t want', 'not interested', 'avoid', 'no thanks', 'not', 'without']
+        if any(pattern in user_lower for pattern in exclude_patterns):
+            # 尝试提取被排除的内容
+            if 'brent' in user_lower:
+                self.add_preference('excluded_areas', 'Brent Cross')
+            if 'zone 3' in user_lower or 'zone 4' in user_lower:
+                self.add_preference('hard_preferences', 'Prefer Zone 1-2 only')
+        
+        # 检测生活方式偏好
+        lifestyle_patterns = {
+            'quiet': 'Prefers quiet neighborhood',
+            'vibrant': 'Likes vibrant/lively area',
+            'social': 'Values social facilities',
+            'study': 'Needs good study environment',
+            'cooking': 'Wants to cook - needs kitchen facilities',
+            'guest': 'Will have guests - needs flexible guest policy',
+            'couple': 'Living as a couple',
+            'female': 'Female student - safety is priority',
+            'late night': 'Often comes home late - needs safe walking routes',
+        }
+        
+        for keyword, preference in lifestyle_patterns.items():
+            if keyword in user_lower:
+                self.add_preference('soft_preferences', preference)
     
     def _build_tool_descriptions(self) -> str:
         """构建工具描述，供 LLM 理解每个工具的用途"""
@@ -153,6 +294,33 @@ class ReActAgent:
     def _build_context_info(self, context: Optional[Dict] = None) -> str:
         """构建上下文信息字符串，包含房产详细信息"""
         info_parts = []
+        
+        # 🆕 用户偏好（最重要，放在最前面）
+        prefs_context = self.get_preferences_context()
+        if prefs_context:
+            info_parts.append("=== USER PREFERENCES (ACCUMULATED FROM CONVERSATION) ===")
+            info_parts.append(prefs_context)
+            info_parts.append("=== END PREFERENCES ===")
+            info_parts.append("")
+            info_parts.append("CRITICAL: When recommending properties, you MUST respect these preferences!")
+            info_parts.append("- Do NOT recommend properties in excluded areas")
+            info_parts.append("- Prioritize properties that match required amenities")
+            info_parts.append("- Consider safety concerns when ranking")
+            info_parts.append("")
+        
+        # 🆕 之前搜索过的房产列表（用于安全问题等后续问题）
+        if self.extracted_context.get('previous_search_results'):
+            info_parts.append("=== PREVIOUSLY SHOWN PROPERTIES ===")
+            info_parts.append(self.extracted_context['previous_search_results'])
+            info_parts.append("=== END PREVIOUS RESULTS ===")
+            info_parts.append("")
+            info_parts.append("NOTE: User already has these property recommendations. If they ask about safety/amenities/comparison, use these properties - don't start a new search!")
+            info_parts.append("")
+        
+        # 🆕 设施搜索结果（优先显示）
+        if self.extracted_context.get('amenity_search_results'):
+            info_parts.append(self.extracted_context['amenity_search_results'])
+            info_parts.append("")
         
         # 🆕 对比查询的房产信息（优先显示）
         if self.extracted_context.get('comparison_properties'):
@@ -194,9 +362,13 @@ class ReActAgent:
             if self.extracted_context.get('description'):
                 info_parts.append(f"Description (includes commute info): {self.extracted_context['description']}")
             
+            # 🆕 添加 URL
+            if self.extracted_context.get('property_url'):
+                info_parts.append(f"Booking URL: {self.extracted_context['property_url']}")
+            
             info_parts.append(f"=== End Property Context ===")
             info_parts.append("")
-            info_parts.append("IMPORTANT: If the user is asking about this property's details (payment, amenities, guests, guarantor, commute, etc.), answer using the information above. Do NOT call external APIs!")
+            info_parts.append("IMPORTANT: If the user is asking about this property's details (payment, amenities, guests, guarantor, commute, booking link, etc.), answer using the information above. Do NOT call external APIs! We have the URL!")
         
         # 从 context 参数获取额外信息（如果 extracted_context 没有）
         elif context and context.get('property'):
@@ -206,6 +378,8 @@ class ReActAgent:
                 info_parts.append(f"  Price: {prop['price']}")
             if prop.get('geo_location'):
                 info_parts.append(f"  Location: {prop['geo_location']}")
+            if prop.get('url'):
+                info_parts.append(f"  Booking URL: {prop['url']}")
         
         if not info_parts:
             return "No specific property context. If user asks about a specific property, use Final Answer with database info if available."
@@ -381,6 +555,12 @@ class ReActAgent:
             print(f"   Max turns: {self.max_turns}")
             print(f"{'='*60}")
         
+        # 🆕 从用户消息中提取偏好（在每次互动开始时）
+        self.extract_preferences_from_interaction(user_query, '', None)
+        prefs_summary = self.get_preferences_context()
+        if prefs_summary and self.verbose:
+            print(f"📝 [Preferences] Current user preferences:\n{prefs_summary}")
+        
         # 构建初始 prompt
         tool_descriptions = self._build_tool_descriptions()
         context_info = self._build_context_info(context)
@@ -447,6 +627,9 @@ class ReActAgent:
             if action.lower() in ['final answer', 'final_answer', 'finalanswer']:
                 final_response = action_input if isinstance(action_input, str) else str(action_input)
                 
+                # 🆕 清理响应 - 移除任何意外泄露的 Thought/Action 格式
+                final_response = self._clean_response(final_response)
+                
                 # 检测是否是问题（需要用户澄清）
                 is_question = any(q in final_response.lower() for q in ['?', 'could you', 'please tell me', 'what is', 'where'])
                 
@@ -471,6 +654,29 @@ class ReActAgent:
             
             # 保存工具返回的原始数据（特别是 search_properties 的结果）
             if raw_data:
+                # 🆕 保存安全检查结果，供后续推荐参考 + 更新用户偏好
+                if action == 'check_safety' and isinstance(raw_data, dict):
+                    safety_score = raw_data.get('safety_score', 50)
+                    safety_level = raw_data.get('safety_level', 'Unknown')
+                    address = raw_data.get('address', '')
+                    
+                    if safety_score < 50 or safety_level == 'Concerning':
+                        # 保存安全警告
+                        if 'safety_warnings' not in self.extracted_context:
+                            self.extracted_context['safety_warnings'] = []
+                        self.extracted_context['safety_warnings'].append({
+                            'address': address,
+                            'score': safety_score,
+                            'level': safety_level
+                        })
+                        print(f"⚠️ [ReAct] 已记录安全警告: {address} (score: {safety_score})")
+                        
+                        # 🆕 自动添加到用户偏好的排除列表
+                        area_name = address.split(',')[0].strip() if ',' in address else address
+                        self.add_preference('excluded_areas', area_name)
+                        self.add_preference('hard_preferences', f"Avoid {area_name} - safety score only {safety_score}/100")
+                        self.add_preference('safety_concerns', f"{area_name}: {safety_level} (score {safety_score}/100)")
+                
                 if action == 'search_properties' and isinstance(raw_data, dict):
                     # 处理搜索结果
                     if raw_data.get('status') == 'need_clarification':
@@ -539,9 +745,31 @@ class ReActAgent:
                     elif raw_data.get('status') == 'found' and raw_data.get('recommendations'):
                         # ✅ 找到房源 - 直接返回结果，不再继续循环
                         recommendations = raw_data['recommendations']
-                        summary = raw_data.get('summary', f"Found {len(recommendations)} properties matching your criteria.")
                         
-                        tool_data['recommendations'] = recommendations
+                        # 🆕 应用用户偏好过滤 - 移除排除区域的房源
+                        filtered_recommendations = self._apply_preference_filter(recommendations)
+                        
+                        if not filtered_recommendations:
+                            # 所有房源都被过滤掉了
+                            excluded = ', '.join(self.user_preferences['excluded_areas'])
+                            return {
+                                'success': True,
+                                'response': f"I found some properties, but they're all in areas you've asked me to avoid ({excluded}). Would you like me to search with different criteria?",
+                                'response_type': 'answer',
+                                'turns': iteration,
+                                'extracted_context': self.extracted_context,
+                                'tool_data': {}
+                            }
+                        
+                        summary = raw_data.get('summary', f"Found {len(filtered_recommendations)} properties matching your criteria.")
+                        
+                        # 如果有过滤，添加说明
+                        if len(filtered_recommendations) < len(recommendations):
+                            excluded_count = len(recommendations) - len(filtered_recommendations)
+                            excluded_areas = ', '.join(self.user_preferences['excluded_areas'])
+                            summary += f" (Note: {excluded_count} properties in {excluded_areas} were excluded based on your safety preferences.)"
+                        
+                        tool_data['recommendations'] = filtered_recommendations
                         tool_data['search_criteria'] = raw_data.get('search_criteria', {})
                         tool_data['summary'] = summary
                         
@@ -577,6 +805,98 @@ class ReActAgent:
             'tool_data': tool_data
         }
     
+    def _clean_response(self, response: str) -> str:
+        """
+        清理响应文本，移除任何意外泄露给用户的内部格式
+        
+        移除:
+        - Thought: ... 行
+        - Action: ... 行  
+        - Action Input: 前缀
+        - 其他调试信息
+        """
+        if not response:
+            return response
+        
+        lines = response.split('\n')
+        cleaned_lines = []
+        skip_next = False
+        
+        for line in lines:
+            line_lower = line.lower().strip()
+            
+            # 跳过这些模式
+            if line_lower.startswith('thought:'):
+                continue
+            if line_lower.startswith('action:'):
+                continue
+            if line_lower.startswith('action input:'):
+                # 可能后面跟着有用内容，但 Action Input: 本身要移除
+                content_after = line.split(':', 1)
+                if len(content_after) > 1 and content_after[1].strip():
+                    cleaned_lines.append(content_after[1].strip())
+                continue
+            if line_lower.startswith('observation:'):
+                continue
+            
+            cleaned_lines.append(line)
+        
+        result = '\n'.join(cleaned_lines).strip()
+        
+        # 确保不返回空字符串
+        if not result:
+            return response
+        
+        return result
+    
+    def _apply_preference_filter(self, recommendations: list) -> list:
+        """
+        根据用户偏好过滤搜索结果
+        
+        - 移除在排除区域的房产
+        - 可以根据 required_amenities 调整排序
+        """
+        if not recommendations:
+            return recommendations
+        
+        excluded_areas = [area.lower() for area in self.user_preferences.get('excluded_areas', [])]
+        
+        if not excluded_areas:
+            return recommendations
+        
+        filtered = []
+        for prop in recommendations:
+            address = prop.get('address', '').lower()
+            area = prop.get('area', '').lower()
+            
+            # 检查是否在排除区域
+            is_excluded = False
+            for excluded in excluded_areas:
+                if excluded in address or excluded in area:
+                    is_excluded = True
+                    if self.verbose:
+                        print(f"🚫 [Filter] Excluding {prop.get('address')} - in excluded area: {excluded}")
+                    break
+            
+            if not is_excluded:
+                filtered.append(prop)
+        
+        return filtered
+    
     def reset(self):
-        """重置 Agent 状态"""
+        """重置 Agent 状态（保留用户偏好）"""
         self.extracted_context = {}
+        # 注意：不清除 user_preferences，因为偏好需要在整个会话期间保持
+    
+    def reset_all(self):
+        """完全重置 Agent（包括用户偏好）- 用于新会话"""
+        self.extracted_context = {}
+        self.user_preferences = {
+            'hard_preferences': [],
+            'soft_preferences': [],
+            'excluded_areas': [],
+            'required_amenities': [],
+            'safety_concerns': [],
+        }
+        if self.verbose:
+            print("🔄 [ReAct] Agent fully reset (including preferences)")
