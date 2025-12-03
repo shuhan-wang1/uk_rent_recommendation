@@ -17,18 +17,28 @@ def get_search_snippets(query: str, max_results: int = 3) -> str:
     print(f"  -> [API Call] Web search for: '{query}'")
     snippets = []
     try:
-        with DDGS() as ddgs:
-            results = ddgs.text(query, max_results=max_results)
-            if results:
-                for result in results:
-                    snippets.append(result.get('body', ''))
+        # 使用新的 DDGS() 类而不是上下文管理器
+        ddgs = DDGS()
+        results = ddgs.text(query, max_results=max_results)
+        if results:
+            for result in results:
+                snippet = result.get('body', '')
+                if snippet:  # 只添加非空的摘要
+                    snippets.append(snippet)
+        
+        if not snippets:
+            print(f"  ⚠️ DuckDuckGo returned no results for: {query}")
+            return "No search results found for this query."
         
         full_snippet = " ".join(snippets)
         set_to_cache(cache_key, full_snippet)
+        print(f"  ✅ Found {len(snippets)} results")
         return full_snippet
     except Exception as e:
-        print(f"DuckDuckGo search failed: {e}")
-        return "Could not retrieve search information."
+        print(f"❌ DuckDuckGo search failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return "Could not retrieve search information due to an error."
 
 def search_crime_data(area: str) -> str:
     """使用更精确的查询搜索特定英国地区的犯罪数据。"""

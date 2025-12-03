@@ -97,6 +97,9 @@ class Tool:
         """
         start_time = time.time()
         
+        # 填充默认值
+        kwargs = self._apply_defaults(kwargs)
+        
         for attempt in range(self.max_retries):
             try:
                 print(f"  [EXECUTE] [{self.name}] 执行中... (尝试 {attempt + 1}/{self.max_retries})")
@@ -156,6 +159,17 @@ class Tool:
         for param in required:
             if param not in kwargs:
                 raise ValueError(f"缺少必需参数: {param}")
+    
+    def _apply_defaults(self, kwargs: Dict) -> Dict:
+        """为缺失的参数填充默认值"""
+        result = kwargs.copy()
+        properties = self.parameters.get('properties', {})
+        
+        for param_name, param_info in properties.items():
+            if param_name not in result and 'default' in param_info:
+                result[param_name] = param_info['default']
+        
+        return result
     
     def to_llm_format(self) -> str:
         """
@@ -548,7 +562,9 @@ def create_tool_registry() -> ToolRegistry:
         search_properties_tool,
         calculate_commute_tool,
         check_safety_tool,
-        get_weather_tool
+        get_weather_tool,
+        web_search_tool,
+        search_nearby_pois_tool
     )
     
     registry = ToolRegistry()
@@ -558,7 +574,210 @@ def create_tool_registry() -> ToolRegistry:
     registry.register(calculate_commute_tool)
     registry.register(check_safety_tool)
     registry.register(get_weather_tool)
+    registry.register(web_search_tool)
+    registry.register(search_nearby_pois_tool)
     
     print(f"\n✅ 工具系统初始化完成！共注册 {len(registry.tools)} 个工具")
     
     return registry
+    
+    return registry
+
+
+# ============================================================================
+# 增强版 Function Calling - 支持 LLM 自主多工具选择
+# ============================================================================
+
+class SmartFunctionCalling:
+    """
+    智能 Function Calling - 让 LLM 自主决定需要哪些工具
+    
+    与原版 FunctionCalling 的区别:
+    1. 支持一次选择多个工具
+    2. LLM 自主决定工具调用顺序
+    3. 支持条件性工具调用（如：用户关心安全时才调用安全工具）
+    """
+    
+    def __init__(self, tool_registry: ToolRegistry):
+        self.tool_registry = tool_registry
+    
+    def get_tools_for_llm(self) -> str:
+        """生成简洁的工具描述供 LLM 参考"""
+        tools_desc = []
+        for name, tool in self.tool_registry.tools.items():
+            # 提取必需参数
+            required = tool.parameters.get('required', [])
+            params_str = ", ".join([
+                f"{p}: {tool.parameters['properties'][p].get('type', 'any')}"
+                for p in required
+            ])
+            
+            tools_desc.append(f"• {name}({params_str}): {tool.description[:150]}...")
+        
+        return "\n".join(tools_desc)
+    
+    def analyze_and_plan(
+        self,
+        user_query: str,
+        llm_func: Callable,
+        context: Optional[Dict] = None
+    ) -> Dict:
+        """
+        让 LLM 分析用户请求并规划工具使用
+        
+        返回格式:
+        {
+            "intent": "search" | "inquiry" | "chat",
+            "tools_plan": [
+                {"tool": "search_properties", "params": {...}, "reason": "..."},
+                {"tool": "check_safety", "params": {...}, "reason": "...", "conditional": "if user cares about safety"}
+            ],
+            "direct_response": "如果不需要工具，直接回复",
+            "needs_clarification": False,
+            "clarification_question": ""
+        }
+        """
+        tools_desc = self.get_tools_for_llm()
+        
+        prompt = f"""你是一个智能助手，需要分析用户请求并规划工具使用。
+
+用户请求: "{user_query}"
+
+可用工具:
+{tools_desc}
+
+分析这个请求，返回以下 JSON（只返回 JSON）:
+
+{{
+    "intent": "search" 或 "inquiry" 或 "chat",
+    "analysis": "简短分析用户需求",
+    "needs_tools": true/false,
+    "tools_plan": [
+        {{
+            "tool": "工具名",
+            "params": {{"参数名": "参数值"}},
+            "reason": "为什么需要这个工具",
+            "priority": 1
+        }}
+    ],
+    "direct_response": "如果不需要工具，这里填写回复",
+    "needs_clarification": false,
+    "clarification_question": ""
+}}
+
+规划规则:
+1. search (搜索房源):
+   - 必须使用 search_properties 工具
+   - 如果用户提到 "safe", "safety", "crime" → 添加 check_safety
+   - 如果用户提到 "weather" → 添加 get_weather
+   
+2. inquiry (询问信息):
+   - 询问通勤 → calculate_commute
+   - 询问安全 → check_safety
+   - 询问天气 → get_weather
+
+3. chat (一般对话):
+   - 不需要工具，直接回复
+
+参数提取规则:
+- 从用户消息中提取位置、预算、时间等
+- 如果缺少必需参数，设 needs_clarification = true
+
+只返回 JSON。
+"""
+        
+        response = llm_func(prompt)
+        
+        if response:
+            parsed = extract_json_from_text(response)
+            if parsed:
+                return parsed
+        
+        # 后备：关键词检测
+        return self._fallback_analysis(user_query)
+    
+    def _fallback_analysis(self, user_query: str) -> Dict:
+        """关键词后备分析"""
+        query_lower = user_query.lower()
+        
+        # 检测搜索意图
+        search_keywords = ['find', 'search', 'looking', 'flat', 'apartment', 'rent', '£', 'budget']
+        is_search = any(kw in query_lower for kw in search_keywords)
+        
+        # 检测安全关心
+        care_safety = any(kw in query_lower for kw in ['safe', 'safety', 'crime'])
+        
+        if is_search:
+            tools_plan = [
+                {"tool": "search_properties", "params": {}, "reason": "用户想搜索房源", "priority": 1}
+            ]
+            if care_safety:
+                tools_plan.append({
+                    "tool": "check_safety", 
+                    "params": {}, 
+                    "reason": "用户关心安全", 
+                    "priority": 2
+                })
+            
+            return {
+                "intent": "search",
+                "needs_tools": True,
+                "tools_plan": tools_plan,
+                "needs_clarification": True,
+                "clarification_question": "请告诉我您的预算、目标位置和最大通勤时间。"
+            }
+        
+        return {
+            "intent": "chat",
+            "needs_tools": False,
+            "direct_response": "我是 Alex，您的伦敦租房助手。请告诉我您在找什么样的房子？"
+        }
+    
+    async def execute_plan(
+        self,
+        tools_plan: List[Dict],
+        extracted_params: Optional[Dict] = None
+    ) -> List[Dict]:
+        """
+        执行工具计划
+        
+        Args:
+            tools_plan: 工具计划列表
+            extracted_params: 从用户查询中提取的参数（用于填充工具参数）
+        
+        Returns:
+            执行结果列表
+        """
+        results = []
+        
+        # 按优先级排序
+        sorted_plan = sorted(tools_plan, key=lambda x: x.get('priority', 99))
+        
+        for tool_info in sorted_plan:
+            tool_name = tool_info.get('tool')
+            params = tool_info.get('params', {})
+            
+            # 用提取的参数填充
+            if extracted_params:
+                for key, value in extracted_params.items():
+                    if key not in params or not params[key]:
+                        params[key] = value
+            
+            print(f"\n🔧 执行工具: {tool_name}")
+            print(f"   参数: {params}")
+            
+            result = await self.tool_registry.execute_tool(tool_name, **params)
+            
+            results.append({
+                'tool': tool_name,
+                'params': params,
+                'result': result.to_dict(),
+                'success': result.success
+            })
+            
+            if result.success:
+                print(f"   ✅ 成功")
+            else:
+                print(f"   ❌ 失败: {result.error}")
+        
+        return results

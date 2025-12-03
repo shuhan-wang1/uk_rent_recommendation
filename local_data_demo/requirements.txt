@@ -16,3 +16,5 @@ googlemaps
 flask
 flask-cors
 faiss-cpu
+folium
+ddgs

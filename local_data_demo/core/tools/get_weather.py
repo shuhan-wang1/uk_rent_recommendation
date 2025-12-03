@@ -16,30 +16,16 @@ async def get_weather_impl(
     获取地点的天气信息
     """
     try:
-        from core.location_service import resolve_location
-        
         print(f"   🌤️  获取天气:")
         print(f"      地点: {location}")
         
-        # 如果没有坐标，尝试解析地址
-        if latitude is None or longitude is None:
-            loc = resolve_location(location)
-            if loc:
-                latitude = loc.get('latitude')
-                longitude = loc.get('longitude')
-        
-        if latitude is None or longitude is None:
-            return {
-                'success': False,
-                'error': '无法获取位置坐标'
-            }
+        # 简化实现：直接返回模拟数据
+        # 在实际应用中，这里应该调用真实的天气 API
         
         # 这里可以调用真实的 API（如 Open-Meteo 或 WeatherAPI）
         # 暂时返回示例数据
         weather_data = {
             'location': location,
-            'latitude': latitude,
-            'longitude': longitude,
             'current_temp': 15,  # 摄氏度
             'condition': 'Partly Cloudy',
             'humidity': 65,

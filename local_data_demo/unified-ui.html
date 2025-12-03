@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alex - Intelligent Property Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* 企业级红白配色系统 - 保持原样 */
+            --primary-color: #dc2626;
+            --primary-hover: #b91c1c;
+            --primary-light: #fef2f2;
+            --primary-fade: rgba(220, 38, 38, 0.08);
+            --text-main: #111827; /*稍微加深一点 */
+            --text-secondary: #6b7280;
+            --bg-body: #f3f4f6;
+            --bg-surface: #ffffff;
+            --border-color: #e5e7eb;
+            
+            /* 阴影系统 - 更柔和 */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- 顶部导航 --- */
+        .navbar {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .brand {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .brand span {
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--primary-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            color: var(--primary-color);
+        }
+
+        /* --- 主布局 --- */
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 64px);
+            max-width: 1920px;
+            margin: 0 auto;
+            width: 100%;
+            background: var(--border-color);
+            gap: 1px;
+        }
+        
+        /* --- 左侧聊天面板 --- */
+        .chat-panel {
+            flex: 0 0 420px;
+            background: var(--bg-surface);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+        }
+        
+        .chat-header h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .chat-header p { font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px; }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            background: #ffffff;
+            scroll-behavior: smooth;
+        }
+        
+        .message {
+            max-width: 100%;
+            animation: fadeIn 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message.user { align-items: flex-end; }
+        .message.alex { align-items: flex-start; }
+        
+        .message .bubble {
+            max-width: 92%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+            word-wrap: break-word;
+        }
+
+        /* Markdown 样式支持 */
+        .message .bubble strong { font-weight: 700; }
+        .message .bubble ul, .message .bubble ol { margin: 8px 0 8px 20px; padding: 0; }
+        .message .bubble li { margin-bottom: 4px; }
+        .message .bubble p { margin-bottom: 8px; }
+        .message .bubble p:last-child { margin-bottom: 0; }
+        
+        .message.user .bubble {
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+            /* 用户输入通常保留空格格式 */
+            white-space: pre-wrap; 
+        }
+        
+        .message.alex .bubble {
+            background: #f3f4f6;
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+        }
+        
+        /* Enhanced Markdown styles in chat bubbles */
+        .message.alex .bubble h2,
+        .message.alex .bubble h3,
+        .message.alex .bubble h4 {
+            margin: 12px 0 8px 0;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .message.alex .bubble h2 { font-size: 1.1em; }
+        .message.alex .bubble h3 { font-size: 1.05em; }
+        .message.alex .bubble h4 { font-size: 1em; color: var(--text-secondary); }
+        .message.alex .bubble h2:first-child,
+        .message.alex .bubble h3:first-child,
+        .message.alex .bubble h4:first-child { margin-top: 0; }
+        
+        .message.alex .bubble ul,
+        .message.alex .bubble ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        .message.alex .bubble li {
+            margin-bottom: 4px;
+            line-height: 1.5;
+        }
+        .message.alex .bubble p {
+            margin: 0 0 8px 0;
+            line-height: 1.6;
+        }
+        .message.alex .bubble p:last-child { margin-bottom: 0; }
+        
+        .message.alex .sender {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            margin-left: 4px;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        /* --- 改进的输入区域 --- */
+        .chat-input-area {
+            padding: 20px 24px;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .quick-actions::-webkit-scrollbar { display: none; }
+        
+        .quick-action {
+            padding: 6px 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .quick-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: var(--primary-light);
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end; /* 底部对齐 */
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper:focus-within {
+            background: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-fade);
+        }
+        
+        /* Auto-growing Textarea */
+        .chat-textarea {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            outline: none;
+            font-family: inherit;
+            resize: none; /* 禁止手动拉伸 */
+            max-height: 150px;
+            overflow-y: auto;
+            line-height: 1.5;
+            min-height: 24px; /* 单行高度 */
+        }
+        
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            margin-bottom: 2px; /* 微调对齐 */
+        }
+        .send-btn:hover { background: var(--primary-hover); transform: scale(1.05); }
+        .send-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* --- 焦点状态指示器 --- */
+        #propertyFocusIndicator {
+            display: none;
+            animation: slideUp 0.2s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* --- 右侧结果区 --- */
+        .results-panel {
+            flex: 1;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .results-header {
+            background: white;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            height: 73px; /* Match chat header visual height roughly */
+        }
+        
+        .results-header h2 { font-size: 1.25rem; color: var(--text-main); font-weight: 700; }
+        
+        .view-toggle {
+            display: flex;
+            background: #f3f4f6;
+            padding: 4px;
+            border-radius: 10px;
+        }
+        
+        .toggle-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .toggle-btn.active {
+            background: white;
+            color: var(--text-main); /* 黑色文字更显专业 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .results-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            scroll-behavior: smooth;
+        }
+        
+        /* 房源卡片样式保持原有的高级感，微调 */
+        .property-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 24px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+        }
+        .property-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: #d1d5db; }
+
+        @media (min-width: 1024px) {
+            .property-card { flex-direction: row; min-height: 240px; }
+            .property-image-container { flex: 0 0 320px; height: auto !important; }
+        }
+        
+        .property-image-container {
+            position: relative;
+            height: 220px;
+            background: #e5e7eb;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .property-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .property-card:hover .property-image { transform: scale(1.05); }
+
+        .rank-badge {
+            position: absolute; top: 12px; left: 12px;
+            background: rgba(255,255,255,0.95); color: var(--text-main);
+            padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .image-count-badge {
+            position: absolute; bottom: 12px; right: 12px;
+            background: rgba(0,0,0,0.6); color: white;
+            padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+            display: flex; align-items: center; gap: 4px; backdrop-filter: blur(4px);
+        }
+        
+        .property-content {
+            padding: 20px 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .property-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .property-address { font-size: 1.15rem; font-weight: 700; color: var(--text-main); line-height: 1.3; margin-right: 12px; }
+        
+        .favorite-btn {
+            background: transparent; border: 1px solid var(--border-color);
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; color: #9ca3af; flex-shrink: 0;
+        }
+        .favorite-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: var(--primary-light); }
+        
+        .property-details { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+        .detail-item { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+        .detail-item svg { color: var(--text-secondary); width: 16px; height: 16px; }
+        
+        .property-explanation {
+            font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;
+            margin-bottom: 16px; flex: 1;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; /* 限制行数 */
+        }
+        
+        .property-actions { display: flex; gap: 8px; margin-top: auto; }
+        .action-btn {
+            flex: 1; padding: 8px;
+            border: 1px solid var(--border-color); background: white;
+            border-radius: 8px; cursor: pointer;
+            font-size: 0.85rem; font-weight: 600; color: var(--text-main);
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+            text-decoration: none;
+        }
+        .action-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+        .action-btn.primary { background: var(--text-main); color: white; border-color: var(--text-main); }
+        .action-btn.primary:hover { background: black; border-color: black; }
+
+        /* Loading & Typing */
+        .typing-indicator span { width: 4px; height: 4px; background: #9ca3af; border-radius: 50%; display: inline-block; animation: bounce 1.4s infinite ease-in-out both; margin: 0 1px;}
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-secondary); }
+        .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: var(--primary-color); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Modal */
+        .modal { background: rgba(0, 0, 0, 0.95); z-index: 2000; display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center; }
+        .modal-content { width: 100%; height: 100%; position: relative; display: flex; flex-direction: column; }
+        .gallery-main-image { width: 100%; height: 100%; object-fit: contain; }
+        .gallery-nav button { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: white; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .gallery-nav button:hover { background: rgba(255,255,255,0.25); }
+        .gallery-nav button:first-child { left: 24px; }
+        .gallery-nav button:last-child { right: 24px; }
+        .modal-close-btn { position: absolute; top: 24px; right: 24px; background: rgba(255,255,255,0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; }
+        .modal-close-btn:hover { background: rgba(255,255,255,0.25); }
+        .gallery-thumbnails { position: absolute; bottom: 30px; left: 0; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 10; padding: 0 20px; overflow-x: auto; }
+        .gallery-thumbnail { width: 56px; height: 36px; object-fit: cover; border-radius: 4px; opacity: 0.5; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+        .gallery-thumbnail.active { opacity: 1; border-color: var(--primary-color); transform: scale(1.1); }
+
+        .icon { width: 1.2em; height: 1.2em; vertical-align: text-bottom; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        @media (max-width: 1024px) {
+            .main-container { flex-direction: column; height: auto; }
+            .chat-panel { flex: none; height: 60vh; width: 100%; border-bottom: 1px solid var(--border-color); }
+            .results-panel { min-height: 60vh; }
+            .navbar { padding: 0 16px; }
+            .results-header { padding: 16px; }
+            .results-content { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand">
+            <svg class="logo-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12l13-10 13 10M6 10v18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10"/>
+                <path d="M12 22h8"/> <path d="M16 14v4"/> <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/> </svg>
+            <span>Alex</span>
+        </div>
+        <div>
+            <div style="width:36px; height:36px; background:#f3f4f6; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#9ca3af">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h1>
+                    <svg class="icon" style="color:var(--primary-color); width:20px;" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                    AI Assistant
+                </h1>
+                <p>London Rental Intelligence</p>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message alex">
+                    <div class="sender">
+                        <svg viewBox="0 0 24 24" class="icon" style="width:14px; margin-right:4px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V11h-2V5.73C10.4 5.39 10 4.74 10 4a2 2 0 0 1 2-2z"/><path d="M22 17a10 10 0 0 1-10 10h-2v-6a2 2 0 0 1 2-2h10z"/></svg>
+                        Alex
+                    </div>
+                    <div class="bubble">
+                        Hello! I'm Alex. I can help you find apartments in London.
+                        <br><br>
+                        <strong>Try asking me:</strong>
+                        <ul>
+                            <li>"Find a 1-bed near King's Cross under £2000"</li>
+                            <li>"What is the vibe like in Hackney?"</li>
+                            <li>"Show me flats with a 20min commute to UCL"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="propertyFocusIndicator">
+                 </div>
+
+            <div class="chat-input-area">
+                <div class="quick-actions">
+                    <button class="quick-action" onclick="sendQuickMessage('Find flats near UCL under £1500')">
+                        🎓 Near UCL
+                    </button>
+                    <button class="quick-action" onclick="sendQuickMessage('Safe areas in London')">
+                        🛡️ Safe areas
+                    </button>
+                    <button class="quick-action" onclick="sendQuickMessage('Average rent in Camden?')">
+                        📊 Rent info
+                    </button>
+                </div>
+                
+                <div class="input-wrapper">
+                    <textarea 
+                        class="chat-textarea" 
+                        id="chatInput" 
+                        rows="1" 
+                        placeholder="Message Alex..."
+                        oninput="autoResize(this)"
+                        onkeydown="handleEnter(event)"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <svg class="icon" style="width:20px; height:20px; transform: rotate(45deg); margin-right:2px; margin-bottom:2px;" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-panel">
+            <div class="results-header">
+                <h2>Listings</h2>
+                <div class="view-toggle">
+                    <button class="toggle-btn active" onclick="switchView('results')">
+                        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Search
+                    </button>
+                    <button class="toggle-btn" onclick="switchView('favorites')">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                        Saved <span id="favCount" style="margin-left:4px; opacity:0.7; font-size:0.8em">0</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="results-content" id="resultsContent">
+                <div class="empty-state">
+                    <div style="opacity:0.2; margin-bottom:20px;">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12" r="4"/></svg>
+                    </div>
+                    <h3>Ready to search</h3>
+                    <p>Tell Alex what you are looking for.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="imageModal" class="modal">
+        <button class="modal-close-btn" onclick="closeModal()">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="modal-content">
+            <img id="galleryMainImage" class="gallery-main-image" src="" alt="Property">
+            <div class="gallery-nav">
+                <button onclick="changeImage(-1)"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                <button onclick="changeImage(1)"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+            </div>
+            <div class="gallery-thumbnails" id="galleryThumbnails"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 定义图标库 - 使用 Unicode emoji 代替 SVG 以获得更好的兼容性
+        const Icons = {
+            error: `❌`,
+            question: `❓`,
+            info: `ℹ️`,
+            camera: `📷`,
+            money: `💰`,
+            clock: `⏱️`,
+            building: `🏠`,
+            mapPin: `📍`,
+            chat: `💬`,
+            pointingRight: `👉`,
+            search: `🔍`,
+            success: `✅`,
+            warning: `⚠️`,
+            star: `⭐`
+        };
+
+        // State variables
+        let currentResults = [];
+        let favorites = new Set();
+        let currentPropertyContext = null;
+        let currentGalleryImages = [];
+        let currentImageIndex = 0;
+        let isProcessing = false;
+        let lastResponseType = null;
+
+        // Auto-resize textarea logic
+        function autoResize(textarea) {
+            textarea.style.height = 'auto'; // Reset height
+            textarea.style.height = textarea.scrollHeight + 'px'; // Set to scroll height
+            
+            // Limit max height via CSS is safer, but just in case logic is needed
+            if (textarea.value === '') {
+                textarea.style.height = 'auto';
+            }
+        }
+
+        // Handle Enter key in textarea
+        function handleEnter(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Prevent newline
+                sendMessage();
+            }
+        }
+        
+        // Enhanced Markdown Formatter with full support
+        function formatMessage(text) {
+            if (!text) return '';
+            
+            // Escape HTML first to prevent injection
+            let html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            // Process line by line for block elements
+            const lines = html.split('\n');
+            let result = [];
+            let inList = false;
+            let listType = null; // 'ul' or 'ol'
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                
+                // Headers: # ## ###
+                if (line.match(/^### (.+)$/)) {
+                    if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+                    result.push('<h4>' + line.replace(/^### /, '') + '</h4>');
+                    continue;
+                }
+                if (line.match(/^## (.+)$/)) {
+                    if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+                    result.push('<h3>' + line.replace(/^## /, '') + '</h3>');
+                    continue;
+                }
+                if (line.match(/^# (.+)$/)) {
+                    if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+                    result.push('<h2>' + line.replace(/^# /, '') + '</h2>');
+                    continue;
+                }
+                
+                // Unordered list: - item or * item
+                if (line.match(/^[-*] (.+)$/)) {
+                    if (!inList || listType !== 'ul') {
+                        if (inList) result.push('</ol>');
+                        result.push('<ul>');
+                        inList = true;
+                        listType = 'ul';
+                    }
+                    result.push('<li>' + line.replace(/^[-*] /, '') + '</li>');
+                    continue;
+                }
+                
+                // Ordered list: 1. item, 2. item
+                if (line.match(/^\d+\. (.+)$/)) {
+                    if (!inList || listType !== 'ol') {
+                        if (inList) result.push('</ul>');
+                        result.push('<ol>');
+                        inList = true;
+                        listType = 'ol';
+                    }
+                    result.push('<li>' + line.replace(/^\d+\. /, '') + '</li>');
+                    continue;
+                }
+                
+                // Close list if we're in one and hit a non-list line
+                if (inList && line.trim() !== '') {
+                    result.push(listType === 'ul' ? '</ul>' : '</ol>');
+                    inList = false;
+                }
+                
+                // Empty line
+                if (line.trim() === '') {
+                    if (inList) {
+                        result.push(listType === 'ul' ? '</ul>' : '</ol>');
+                        inList = false;
+                    }
+                    result.push('<br>');
+                    continue;
+                }
+                
+                // Regular paragraph
+                result.push('<p>' + line + '</p>');
+            }
+            
+            // Close any open list
+            if (inList) {
+                result.push(listType === 'ul' ? '</ul>' : '</ol>');
+            }
+            
+            html = result.join('');
+            
+            // Inline formatting
+            // Bold: **text** or __text__
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+            
+            // Italic: *text* or _text_ (but not inside words)
+            html = html.replace(/(?<!\w)\*([^*]+)\*(?!\w)/g, '<em>$1</em>');
+            html = html.replace(/(?<!\w)_([^_]+)_(?!\w)/g, '<em>$1</em>');
+            
+            // Inline code: `code`
+            html = html.replace(/`([^`]+)`/g, '<code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:0.9em;">$1</code>');
+            
+            // Links: [text](url)
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--primary-color);">$1</a>');
+            
+            // Horizontal rule: ---
+            html = html.replace(/<p>---<\/p>/g, '<hr style="border:none;border-top:1px solid var(--border-color);margin:12px 0;">');
+            
+            // Clean up empty paragraphs
+            html = html.replace(/<p><\/p>/g, '');
+            html = html.replace(/<p><br><\/p>/g, '<br>');
+            
+            return html;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+            
+            isProcessing = true;
+            document.getElementById('sendBtn').disabled = true;
+            
+            // User Message
+            addMessage(message, 'user');
+            
+            // Reset Input
+            input.value = '';
+            input.style.height = 'auto'; // Reset height
+            
+            showTypingIndicator();
+            
+            try {
+                const isContinuation = lastResponseType === 'clarification';
+                
+                const response = await fetch('/api/alex', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        context: currentPropertyContext ? { property: currentPropertyContext } : {},
+                        is_continuation: isContinuation
+                    })
+                });
+                
+                const data = await response.json();
+                removeTypingIndicator();
+                
+                if (data.error) {
+                    addMessage(`${Icons.error} ${data.error}`, 'alex');
+                    lastResponseType = 'error';
+                } else if (data.response_type === 'clarification') {
+                    addMessage(`${Icons.question} ${data.message}`, 'alex');
+                    lastResponseType = 'clarification';
+                } else if (data.response_type === 'search' && data.recommendations) {
+                    addMessage(data.message || `I found some great options for you. Check the list on the right. ${Icons.pointingRight}`, 'alex');
+                    currentResults = data.recommendations;
+                    displayResults(data.recommendations);
+                    lastResponseType = 'search';
+                } else {
+                    // For chat/answer responses, render the message with full Markdown support
+                    addMessage(data.message || data.response, 'alex');
+                    if (data.recommendations && data.recommendations.length > 0) {
+                        currentResults = data.recommendations;
+                        displayResults(data.recommendations);
+                        lastResponseType = 'search';
+                    } else {
+                        lastResponseType = 'answer';
+                    }
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage(`${Icons.error} Connection error. Please check if server is running.`, 'alex');
+                console.error('Error:', error);
+                lastResponseType = 'error';
+            }
+            
+            isProcessing = false;
+            document.getElementById('sendBtn').disabled = false;
+            
+            // Focus back to input for desktop
+            if (window.innerWidth > 1024) input.focus();
+        }
+        
+        function sendQuickMessage(text) {
+            const input = document.getElementById('chatInput');
+            input.value = text;
+            autoResize(input);
+            sendMessage();
+        }
+        
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            // 简单处理加粗渲染，如果后端返回了 **
+            const formattedText = formatMessage(text);
+            
+            if (sender === 'alex') {
+                messageDiv.innerHTML = `
+                    <div class="sender">
+                        <svg viewBox="0 0 24 24" class="icon" style="width:12px; margin-right:4px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V11h-2V5.73C10.4 5.39 10 4.74 10 4a2 2 0 0 1 2-2z"/><path d="M22 17a10 10 0 0 1-10 10h-2v-6a2 2 0 0 1 2-2h10z"/></svg>
+                        Alex
+                    </div>
+                    <div class="bubble">${formattedText}</div>
+                `;
+            } else {
+                // User message is usually plain text, but we use pre-wrap CSS
+                messageDiv.innerHTML = `<div class="bubble">${text}</div>`;
+            }
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const indicator = document.createElement('div');
+            indicator.id = 'typingIndicator';
+            indicator.className = 'message alex';
+            indicator.innerHTML = `
+                <div class="sender">Alex</div>
+                <div class="bubble">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(indicator);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+        
+        function displayResults(recommendations) {
+            const content = document.getElementById('resultsContent');
+            
+            if (!recommendations || recommendations.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div style="opacity:0.3; margin-bottom:16px;">${Icons.building}</div>
+                        <h3>No properties found</h3>
+                        <p>Try adjusting your search budget or location.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Check if these are "similar suggestions" (over budget but recommended)
+            const isSimilarSuggestion = recommendations[0]?.match_type === 'similar_suggestion';
+            
+            let headerHTML = '';
+            if (isSimilarSuggestion) {
+                headerHTML = `
+                    <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            ${Icons.warning} <strong style="color: #92400e;">Similar Properties (Over Budget)</strong>
+                        </div>
+                        <p style="color: #78350f; font-size: 0.9rem; margin: 0;">
+                            No exact matches found within your budget. Here are the closest options - consider increasing your budget slightly.
+                        </p>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = headerHTML + recommendations.map(rec => {
+                const images = rec.images || [];
+                const hasImages = images.length > 0;
+                const isFavorited = favorites.has(rec.url);
+                const isOverBudget = rec.match_type === 'similar_suggestion' || rec.match_type === 'soft_violation';
+                
+                const heartIcon = isFavorited 
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`
+                    : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+                
+                // Budget status badge
+                const budgetBadge = isOverBudget && rec.budget_status 
+                    ? `<span style="background: #fef3c7; color: #92400e; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${rec.budget_status}</span>`
+                    : rec.budget_status 
+                        ? `<span style="background: #d1fae5; color: #065f46; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${rec.budget_status}</span>`
+                        : '';
+                
+                return `
+                    <div class="property-card" ${isOverBudget ? 'style="border-color: #fcd34d;"' : ''}>
+                        <div class="property-image-container" onclick='${hasImages ? `openGallery(${JSON.stringify(images)}, "${escapeHtml(rec.address)}")` : ""}'>
+                            ${hasImages ? `
+                                <img src="${images[0]}" alt="${escapeHtml(rec.address)}" class="property-image" onerror="this.style.display='none'">
+                                <span class="image-count-badge">${Icons.camera} ${images.length}</span>
+                            ` : `
+                                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;flex-direction:column;gap:8px;">
+                                    ${Icons.building} <span>No Image</span>
+                                </div>
+                            `}
+                            <span class="rank-badge">#${rec.rank}</span>
+                        </div>
+                        <div class="property-content">
+                            <div>
+                                <div class="property-header">
+                                    <div class="property-address">${rec.address}</div>
+                                    <button class="favorite-btn" onclick="toggleFavorite('${escapeHtml(rec.url)}')" title="Save">
+                                        ${heartIcon}
+                                    </button>
+                                </div>
+                                <div class="property-details">
+                                    <div class="detail-item">${Icons.money} ${rec.price}</div>
+                                    <div class="detail-item">${Icons.clock} ${rec.travel_time}</div>
+                                    ${budgetBadge}
+                                </div>
+                                <div class="property-explanation">${rec.explanation || ''}</div>
+                            </div>
+                            <div class="property-actions">
+                                <a href="${rec.url}" target="_blank" class="action-btn primary">View Deal</a>
+                                <button class="action-btn" onclick='openMap("${escapeHtml(rec.address)}", "${rec.geo_location || ''}", "${rec.price}", "${rec.travel_time}")'>${Icons.mapPin} Map</button>
+                                <button class="action-btn" onclick='askAboutProperty(${JSON.stringify({address: rec.address, price: rec.price, travel_time: rec.travel_time})})'>${Icons.chat} Ask AI</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function askAboutProperty(property) {
+            currentPropertyContext = property;
+            const indicator = document.getElementById('propertyFocusIndicator');
+            indicator.style.display = 'flex';
+            indicator.style.padding = '10px 16px';
+            indicator.style.background = '#eff6ff'; // Light blue
+            indicator.style.margin = '0 24px 12px 24px';
+            indicator.style.borderRadius = '12px';
+            indicator.style.alignItems = 'center';
+            indicator.style.justifyContent = 'space-between';
+            indicator.style.color = '#1e40af';
+            indicator.style.fontSize = '0.9rem';
+            
+            indicator.innerHTML = `
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span>Focusing on: <strong>${property.address.substring(0, 30)}...</strong></span>
+                </div>
+                <button onclick="clearPropertyFocus()" style="background:none;border:none;cursor:pointer;color:#1e40af;font-size:1.2rem;">&times;</button>
+            `;
+            
+            const input = document.getElementById('chatInput');
+            input.placeholder = `Ask about this property...`;
+            input.focus();
+        }
+        
+        function clearPropertyFocus() {
+            currentPropertyContext = null;
+            document.getElementById('propertyFocusIndicator').style.display = 'none';
+            document.getElementById('chatInput').placeholder = 'Message Alex...';
+        }
+        
+        function switchView(view) {
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            if (view === 'favorites') {
+                loadFavorites();
+            } else {
+                displayResults(currentResults);
+            }
+        }
+        
+        async function toggleFavorite(url) {
+            const property = currentResults.find(r => r.url === url);
+            // Also check if we are in favorite view and removing it
+            const isRemoving = favorites.has(url);
+            
+            try {
+                if (isRemoving) {
+                    await fetch(`/api/favorites/${encodeURIComponent(url)}`, { method: 'DELETE' });
+                    favorites.delete(url);
+                } else if (property) {
+                    await fetch('/api/favorites', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            URL: property.url,
+                            Address: property.address,
+                            Price: property.price,
+                            travel_time_minutes: parseInt(property.travel_time) || 0,
+                            explanation: property.explanation,
+                            Images: property.images || []
+                        })
+                    });
+                    favorites.add(url);
+                }
+                
+                updateFavCount();
+                
+                // If we are currently viewing favorites, reload the list
+                const activeBtn = document.querySelector('.toggle-btn.active');
+                if (activeBtn && activeBtn.innerText.includes('Saved')) {
+                    loadFavorites();
+                } else {
+                    displayResults(currentResults); // Re-render to update heart icon
+                }
+                
+            } catch (error) {
+                console.error('Favorite error:', error);
+            }
+        }
+        
+        async function loadFavorites() {
+            const content = document.getElementById('resultsContent');
+            content.innerHTML = '<div style="text-align:center;padding:40px;"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch('/api/favorites');
+                const data = await response.json();
+                
+                if (data.favorites && data.favorites.length > 0) {
+                    favorites = new Set(data.favorites.map(f => f.URL));
+                    updateFavCount();
+                    
+                    const favsAsResults = data.favorites.map((fav, i) => ({
+                        rank: i + 1,
+                        address: fav.Address,
+                        price: fav.Price,
+                        travel_time: (fav.travel_time_minutes || 'N/A') + ' min',
+                        explanation: fav.explanation || '',
+                        url: fav.URL,
+                        images: fav.Images || [],
+                        geo_location: fav.geo_location || ''
+                    }));
+                    
+                    // We render them using the same card component
+                    content.innerHTML = favsAsResults.map(rec => {
+                        const images = rec.images || [];
+                        return `
+                            <div class="property-card">
+                                <div class="property-image-container" onclick='openGallery(${JSON.stringify(images)}, "${escapeHtml(rec.address)}")'>
+                                     ${images.length > 0 ? `<img src="${images[0]}" class="property-image">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af">${Icons.building}</div>`}
+                                </div>
+                                <div class="property-content">
+                                    <div class="property-header">
+                                        <div class="property-address">${rec.address}</div>
+                                        <button class="favorite-btn" onclick="toggleFavorite('${escapeHtml(rec.url)}')" style="color:#dc2626;border-color:#dc2626;background:#fef2f2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                        </button>
+                                    </div>
+                                    <div class="property-details">
+                                        <div class="detail-item">${Icons.money} ${rec.price}</div>
+                                    </div>
+                                    <div class="property-explanation">${rec.explanation}</div>
+                                    <div class="property-actions">
+                                        <a href="${rec.url}" target="_blank" class="action-btn primary">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                } else {
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No saved properties</h3>
+                            <p>Tap the heart icon on listings to save them here.</p>
+                        </div>
+                    `;
+                    favorites.clear();
+                    updateFavCount();
+                }
+            } catch (error) {
+                console.error(error);
+                content.innerHTML = '<div class="empty-state"><p>Error loading favorites</p></div>';
+            }
+        }
+        
+        function updateFavCount() {
+            document.getElementById('favCount').textContent = favorites.size;
+        }
+
+        // --- Gallery & Map Functions (Same logic as before) ---
+        function openGallery(images, address) {
+            if (!images || images.length === 0) return;
+            currentGalleryImages = images;
+            currentImageIndex = 0;
+            document.getElementById('imageModal').style.display = 'flex';
+            updateGalleryImage();
+        }
+        
+        function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
+        
+        function changeImage(direction) {
+            currentImageIndex += direction;
+            if (currentImageIndex < 0) currentImageIndex = currentGalleryImages.length - 1;
+            if (currentImageIndex >= currentGalleryImages.length) currentImageIndex = 0;
+            updateGalleryImage();
+        }
+        
+        function updateGalleryImage() {
+            document.getElementById('galleryMainImage').src = currentGalleryImages[currentImageIndex];
+            document.getElementById('galleryThumbnails').innerHTML = currentGalleryImages.map((img, i) => `
+                <img src="${img}" class="gallery-thumbnail ${i === currentImageIndex ? 'active' : ''}" onclick="currentImageIndex = ${i}; updateGalleryImage()">
+            `).join('');
+        }
+
+        async function openMap(address, geoLocation, price, travelTime) {
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = 'Loading...'; btn.disabled = true;
+            try {
+                const response = await fetch('/api/generate_map', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address, geo_location: geoLocation, price, travel_time: travelTime })
+                });
+                if (response.ok) {
+                    const mapHtml = await response.text();
+                    const win = window.open('', '_blank');
+                    win.document.write(mapHtml);
+                    win.document.close();
+                }
+            } catch (e) { alert('Map error'); }
+            finally { btn.innerHTML = originalHTML; btn.disabled = false; }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/"/g, '&quot;');
+        }
+
+        // Init
+        loadFavorites();
+    </script>
+</body>
+</html>

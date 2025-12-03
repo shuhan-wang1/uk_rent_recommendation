@@ -5,7 +5,7 @@ import re
 import requests
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-MODEL_NAME = "llama3.2:1b"  # Change to your model (qwen2.5:1.5b, llama3.2:3b, etc.)
+MODEL_NAME = "ministral-3:3b-cloud"  # 使用 Ollama 云端模型，更强的推理能力
 
 USE_FINETUNED_MODEL = True
 # ========================================
@@ -59,6 +59,48 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 360) -> s
     except Exception as e:
         print(f"❌ Ollama API error: {e}")
         return None
+
+
+def generate_react_response(prompt: str, timeout: int = 120) -> str:
+    """
+    为 ReAct Agent 生成响应
+    使用 Ollama 进行推理
+    """
+    url = f"{OLLAMA_BASE_URL}/api/generate"
+    
+    payload = {
+        "model": MODEL_NAME,
+        "prompt": prompt,
+        "stream": False,
+        "options": {
+            "temperature": 0.2,  # 稍高温度让推理更灵活
+            "top_p": 0.9,
+            "num_predict": 1000,  # ReAct 响应通常较短
+            "num_ctx": 8192,
+            "stop": ["Observation:"]  # 遇到 Observation 就停止
+        }
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=timeout)
+        response.raise_for_status()
+        result = response.json()
+        return result.get("response", "")
+    except Exception as e:
+        print(f"[ReAct] Ollama error: {e}")
+        return ""
+
+
+class LLMInterface:
+    """LLM 接口包装类，供 ReAct Agent 使用"""
+    
+    def __init__(self):
+        self.base_url = OLLAMA_BASE_URL
+        self.model = MODEL_NAME
+    
+    def generate_react_response(self, prompt: str) -> str:
+        """生成 ReAct 响应"""
+        return generate_react_response(prompt)
 
 def extract_first_json(text: str) -> dict | None:
     """Extracts the first valid JSON object from a string"""
@@ -159,6 +201,51 @@ Fill in the values. Return ONLY the JSON object, nothing else."""
         }
     }
 
+def _extract_destination_with_regex(user_query: str) -> str:
+    """
+    使用正则表达式从查询中提取目的地（作为 Fine-tuned model 的后备）
+    """
+    import re
+    
+    query_lower = user_query.lower()
+    
+    # 常见的位置关键词模式
+    patterns = [
+        r'near\s+([A-Z][A-Za-z\s]+?)(?:\s+that|\s+under|\s+within|\s*,|\s+cost|$)',
+        r'close to\s+([A-Z][A-Za-z\s]+?)(?:\s+that|\s+under|\s+within|\s*,|\s+cost|$)',
+        r'around\s+([A-Z][A-Za-z\s]+?)(?:\s+that|\s+under|\s+within|\s*,|\s+cost|$)',
+        r'in\s+([A-Z][A-Za-z\s]+?)(?:\s+that|\s+under|\s+within|\s*,|\s+cost|$)',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, user_query, re.IGNORECASE)
+        if match:
+            location = match.group(1).strip()
+            # 清理常见的干扰词
+            location = re.sub(r'\b(that|under|within|cost|apartment|flat|studio)\b', '', location, flags=re.IGNORECASE).strip()
+            if location:
+                return location
+    
+    # 检查常见的地标缩写
+    landmarks = {
+        'ucl': 'University College London',
+        'king\'s cross': 'King\'s Cross',
+        'kings cross': 'King\'s Cross',
+        'canary wharf': 'Canary Wharf',
+        'london bridge': 'London Bridge',
+        'westminster': 'Westminster',
+        'camden': 'Camden',
+        'bloomsbury': 'Bloomsbury',
+        'imperial': 'Imperial College London',
+        'lse': 'London School of Economics',
+    }
+    
+    for abbr, full_name in landmarks.items():
+        if abbr in query_lower:
+            return full_name
+    
+    return None
+
 def clarify_and_extract_criteria(user_query: str) -> dict:
     """Extract criteria from user query - now supports fine-tuned model"""
     
@@ -174,10 +261,20 @@ def clarify_and_extract_criteria(user_query: str) -> dict:
             print("[INFO] ✓ Used fine-tuned model for parsing")
             print(f"[INFO] Fine-tuned model result: status={result.get('status')}")
             
+            # 🔧 POST-PROCESSING: Extract destination using regex if model missed it
+            if not result.get('destination'):
+                extracted_destination = _extract_destination_with_regex(user_query)
+                if extracted_destination:
+                    print(f"[INFO] 🔧 Regex补充提取 destination: {extracted_destination}")
+                    result['destination'] = extracted_destination
+            
             # Validate result has required fields
             if result.get('status') == 'success':
                 required = ['destination', 'max_budget', 'max_travel_time']
-                if all(result.get(field) for field in required):
+                missing = [f for f in required if not result.get(f)]
+                
+                if not missing:
+                    # All required fields present
                     # Fill in default values for missing optional fields
                     if not result.get('suggested_search_locations'):
                         result['suggested_search_locations'] = []
@@ -189,8 +286,38 @@ def clarify_and_extract_criteria(user_query: str) -> dict:
                     print(f"[INFO] ✓ All required fields present, returning fine-tuned model result")
                     return result
                 else:
-                    missing = [f for f in required if not result.get(f)]
-                    print(f"[WARN] Fine-tuned model missing required fields: {missing}, falling back to Ollama")
+                    # ✅ NEW: Missing required fields - ask user instead of falling back to Ollama
+                    print(f"[INFO] Fine-tuned model missing required fields: {missing}")
+                    print(f"[INFO] → Asking user for missing information instead of falling back to Ollama")
+                    
+                    # Build a friendly clarification question
+                    field_names = {
+                        'destination': 'your target location or workplace',
+                        'max_budget': 'your monthly budget',
+                        'max_travel_time': 'your maximum commute time'
+                    }
+                    
+                    missing_descriptions = [field_names.get(f, f) for f in missing]
+                    
+                    # Keep the fields we already have
+                    clarification_result = {
+                        'status': 'clarification_needed',
+                        'destination': result.get('destination'),
+                        'max_budget': result.get('max_budget'),
+                        'max_travel_time': result.get('max_travel_time'),
+                        'soft_preferences': result.get('soft_preferences', []),
+                        'property_tags': result.get('property_tags', []),
+                        'amenities_of_interest': result.get('amenities_of_interest', []),
+                        'area_vibe': result.get('area_vibe'),
+                        'suggested_search_locations': result.get('suggested_search_locations', []),
+                        'city_context': result.get('city_context', 'London'),
+                        'data': {
+                            'question': f"I understood most of your requirements! Could you please also tell me {' and '.join(missing_descriptions)}?"
+                        }
+                    }
+                    
+                    print(f"[INFO] ✓ Returning clarification request for: {missing}")
+                    return clarification_result
             elif result.get('status') == 'clarification_needed':
                 # ✅ CRITICAL FIX: Check if all required fields are actually present
                 required = ['destination', 'max_budget', 'max_travel_time']
@@ -1003,6 +1130,7 @@ Return ONLY valid JSON, no other text."""
                 rec['images'] = original_prop.get('Images', [])
                 rec['url'] = original_prop.get('URL', rec.get('url', ''))
                 rec['address'] = original_prop.get('Address', rec.get('address', ''))
+                rec['geo_location'] = original_prop.get('geo_location', '')  # ✅ ADD: Include coordinates for map generation
                 
                 # ✅ FIX 2: Normalize price format to prevent "pcm pcm" and handle pw->pcm conversion
                 actual_price_raw = original_prop.get('Price', 'N/A')
@@ -1167,7 +1295,8 @@ def create_fallback_recommendations(properties_data: list[dict], soft_preference
             'travel_time': f"{travel_time} minutes" if isinstance(travel_time, (int, float)) else str(travel_time),
             'explanation': explanation,
             'url': _get_property_url(prop),
-            'images': prop.get('Images', [])
+            'images': prop.get('Images', []),
+            'geo_location': prop.get('geo_location', '')  # ✅ ADD: Include coordinates for map generation
         })
     
     print(f"   ✓ Created {len(recommendations)} natural recommendations")

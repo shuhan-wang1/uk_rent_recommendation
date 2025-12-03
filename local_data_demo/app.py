@@ -1,4 +1,4 @@
-# app.py - Enhanced with RAG as per Claude's instructions
+# app.py - Enhanced with RAG and ReAct Agent Framework
 
 import asyncio
 from flask import Flask, request, jsonify, render_template
@@ -17,6 +17,16 @@ from core.tool_system import create_tool_registry
 
 app = Flask(__name__, template_folder='.')
 CORS(app)
+
+# 统一 UI 模式标志
+USE_UNIFIED_UI = True  # 设置为 True 使用新的统一 Alex 界面
+
+# ReAct Agent 实例
+react_agent = None
+
+# 对话历史存储 - 用于保持上下文记忆
+conversation_history = []
+MAX_HISTORY_LENGTH = 10  # 保留最近10轮对话
 
 # --- Tool System Setup (从 fengyuan-agent 迁移) ---
 print("[STARTUP] Initializing Tool System...")
@@ -72,6 +82,8 @@ last_search_results = []
 @app.route('/')
 def index():
     """Serves the main HTML page."""
+    if USE_UNIFIED_UI:
+        return render_template('unified-ui.html')
     return render_template('apartment-finder-ui.html')
 
 def generate_recommendations_with_rag(properties: list[dict], user_query: str, past_conversations: list[str], area_knowledge: list[dict]) -> dict | None:
@@ -94,6 +106,262 @@ def generate_recommendations_with_rag(properties: list[dict], user_query: str, p
     # The 'user_query' is still passed for core criteria, and the new contextual_prompt
     # enriches the 'soft_preferences' part.
     return generate_recommendations(properties, user_query, contextual_prompt)
+
+
+# ============================================================================
+# 统一的 Alex API 端点 - 纯 ReAct Agent 架构
+# 
+# 核心原则：
+# 1. 没有关键词匹配 - 完全由 LLM 决定使用哪个工具
+# 2. 所有请求都通过 ReAct Agent
+# 3. search_properties 工具内部整合了 Fine-tuned Model
+# ============================================================================
+
+@app.route('/api/alex', methods=['POST'])
+async def api_alex():
+    """
+    统一的 Alex 端点 - 纯 ReAct Agent 架构
+    
+    所有用户请求都交给 ReAct Agent 处理，由 LLM 自主决定：
+    - 是否需要搜索房源（调用 search_properties 工具）
+    - 是否需要检查安全（调用 check_safety 工具）
+    - 是否需要计算通勤（调用 calculate_commute 工具）
+    - 是否需要查询天气（调用 get_weather 工具）
+    - 是否需要搜索附近设施（调用 search_nearby_pois 工具）
+    - 或者直接回答用户问题
+    """
+    global last_search_results, react_agent
+    
+    data = request.get_json()
+    if not data or not data.get('message'):
+        return jsonify({"error": "Message is required"}), 400
+    
+    user_message = data.get('message')
+    context = data.get('context', {})
+    is_continuation = data.get('is_continuation', False)
+    
+    print(f"\n{'='*60}")
+    print(f"🤖 [ALEX - ReAct Agent] 收到消息: {user_message}")
+    print(f"📋 [ALEX] is_continuation: {is_continuation}")
+    print(f"📋 [ALEX] context: {context}")
+    print(f"{'='*60}")
+    
+    try:
+        # 所有请求都通过 ReAct Agent 处理
+        return await handle_with_react_agent(user_message, context, is_continuation)
+    
+    except Exception as e:
+        print(f"❌ [ALEX] 错误: {e}")
+        traceback.print_exc()
+        return jsonify({
+            "response_type": "error",
+            "message": "抱歉，处理您的请求时出错了。请稍后再试。"
+        }), 500
+
+
+async def handle_with_react_agent(user_message: str, context: dict, is_continuation: bool):
+    """
+    使用 ReAct Agent 处理所有用户请求 - 纯 LLM 驱动
+    
+    ReAct Agent 会自主决定：
+    1. 是否需要调用 search_properties 工具搜索房源
+    2. 是否需要调用其他工具（安全检查、通勤计算等）
+    3. 或者直接回答用户问题
+    
+    没有任何关键词匹配 - 完全由 LLM 决策
+    """
+    global react_agent, tool_registry, last_search_results, conversation_history
+    
+    # 确保 tool_registry 已初始化
+    if tool_registry is None:
+        print("[ReAct] tool_registry 为空，重新初始化...")
+        tool_registry = create_tool_registry()
+    
+    # 初始化或获取 ReAct Agent
+    if react_agent is None:
+        from core.react_agent import ReActAgent
+        react_agent = ReActAgent(
+            tool_registry=tool_registry,
+            max_turns=5,
+            verbose=True
+        )
+    
+    # 如果有 property context，设置到 agent 的 extracted_context 中
+    # 并从数据库获取详细信息
+    if context and context.get('property'):
+        property_info = context['property']
+        property_address = property_info.get('address', '')
+        
+        react_agent.extracted_context['property_address'] = property_address
+        react_agent.extracted_context['property_price'] = property_info.get('price')
+        react_agent.extracted_context['property_travel_time'] = property_info.get('travel_time')
+        
+        # 🆕 从数据库中获取该房产的详细信息
+        print(f"[ReAct] 📍 已设置 property context: {property_address}")
+        print(f"[ReAct] 🔍 正在从数据库获取房产详细信息...")
+        
+        # 在 all_properties 中查找匹配的房产
+        matched_property = None
+        for prop in all_properties:
+            if prop.get('Address', '').lower().strip() == property_address.lower().strip():
+                matched_property = prop
+                break
+            # 也尝试部分匹配（地址可能被截断）
+            if property_address.lower() in prop.get('Address', '').lower() or prop.get('Address', '').lower() in property_address.lower():
+                matched_property = prop
+                break
+        
+        if matched_property:
+            print(f"[ReAct] ✅ 找到匹配房产，加载详细信息")
+            react_agent.extracted_context['room_type'] = matched_property.get('Room_Type_Category', '')
+            react_agent.extracted_context['amenities'] = matched_property.get('Detailed_Amenities', '')
+            react_agent.extracted_context['guest_policy'] = matched_property.get('Guest_Policy', '')
+            react_agent.extracted_context['payment_rules'] = matched_property.get('Payment_Rules', '')
+            react_agent.extracted_context['excluded_features'] = matched_property.get('Excluded_Features', '')
+            react_agent.extracted_context['description'] = matched_property.get('Description', '')
+            react_agent.extracted_context['enhanced_description'] = matched_property.get('Enhanced_Description', '')
+        else:
+            print(f"[ReAct] ⚠️ 未在数据库中找到匹配房产: {property_address}")
+    
+    # 构建包含历史的查询
+    query_with_history = user_message
+    
+    # 检查是否有房产上下文（用户在询问特定房产的问题）
+    has_property_context = bool(react_agent.extracted_context.get('property_address'))
+    
+    # 🆕 检测对比查询 - 如果用户在比较两个房产
+    comparison_keywords = ['compare', 'vs', 'versus', 'between', 'or', 'better', 'which one', 'deciding between']
+    is_comparison_query = any(kw in user_message.lower() for kw in comparison_keywords)
+    
+    if is_comparison_query:
+        # 尝试从用户查询中提取房产名称并加载它们的数据
+        print(f"[ReAct] 🔄 检测到对比查询，正在加载房产数据...")
+        
+        # 查找提到的房产
+        mentioned_properties = []
+        for prop in all_properties:
+            prop_name = prop.get('Address', '').split(',')[0].strip().lower()
+            # 检查房产名称的关键词是否在用户查询中
+            name_words = prop_name.split()
+            for word in name_words:
+                if len(word) > 3 and word.lower() in user_message.lower():
+                    mentioned_properties.append(prop)
+                    print(f"[ReAct] ✅ 找到提及的房产: {prop.get('Address', '')[:50]}")
+                    break
+        
+        # 将对比房产的信息添加到上下文中
+        if mentioned_properties:
+            comparison_context = "\n=== Properties to Compare ===\n"
+            for i, prop in enumerate(mentioned_properties[:3], 1):  # 最多3个
+                comparison_context += f"\n**Property {i}: {prop.get('Address', '').split(',')[0]}**\n"
+                comparison_context += f"- Price: {prop.get('Price', 'N/A')}\n"
+                comparison_context += f"- Room Type: {prop.get('Room_Type_Category', 'N/A')}\n"
+                comparison_context += f"- Amenities: {prop.get('Detailed_Amenities', 'N/A')}\n"
+                comparison_context += f"- Guest Policy: {prop.get('Guest_Policy', 'N/A')}\n"
+                comparison_context += f"- Payment Rules: {prop.get('Payment_Rules', 'N/A')}\n"
+                comparison_context += f"- NOT Included: {prop.get('Excluded_Features', 'N/A')}\n"
+                comparison_context += f"- Commute Info: {prop.get('Description', 'N/A')}\n"
+            
+            react_agent.extracted_context['comparison_properties'] = comparison_context
+            print(f"[ReAct] 📊 已加载 {len(mentioned_properties)} 个房产的对比数据")
+    
+    if has_property_context:
+        # 用户在询问关于特定房产的问题，不需要添加搜索提示
+        print(f"[ReAct] 📍 用户正在询问关于特定房产的问题，将使用房产上下文回答")
+        # 保持原始查询，不添加历史提示
+    elif conversation_history:
+        # 🆕 检查是否是对澄清问题的回复
+        last_response = conversation_history[-1].get('assistant', '') if conversation_history else ''
+        is_clarification_answer = any(q in last_response.lower() for q in [
+            'what is your', 'could you tell me', 'what\'s the maximum', 
+            'please provide', 'how many', 'which area', '?'
+        ])
+        
+        if is_clarification_answer and len(user_message.split()) <= 5:
+            # 这看起来是对澄清问题的回复（如 "30 minutes", "10", "no preference"）
+            # 需要保持完整的对话上下文
+            print(f"[ReAct] 🔄 检测到澄清回复，保持完整上下文")
+            history_text = "\n".join([
+                f"User: {h['user']}\nAlex: {h['assistant']}" 
+                for h in conversation_history[-5:]  # 更多历史以保持上下文
+            ])
+            query_with_history = f"""Previous conversation (IMPORTANT - user is answering a clarification question):
+{history_text}
+
+User's answer to the clarification question: {user_message}
+
+INSTRUCTIONS: The user just answered your clarification question. Use their answer to complete the ORIGINAL request. Do NOT ask more questions about the same thing. Do NOT treat their answer as a confusing new command."""
+        else:
+            # 普通的对话延续
+            history_text = "\n".join([
+                f"User: {h['user']}\nAlex: {h['assistant']}" 
+                for h in conversation_history[-3:]
+            ])
+            query_with_history = f"""Previous conversation:
+{history_text}
+
+Current user message: {user_message}"""
+    
+    # 运行 ReAct 循环
+    result = await react_agent.run(query_with_history, context, is_continuation=is_continuation)
+    
+    print(f"\n[ReAct] 完成! Turns: {result.get('turns')}, Success: {result.get('success')}")
+    print(f"[ReAct] Response Type: {result.get('response_type')}")
+    
+    # 保存对话历史
+    response_text = result.get('response', '')
+    conversation_history.append({
+        'user': user_message,
+        'assistant': response_text[:500]  # 限制长度
+    })
+    # 保持历史长度限制
+    if len(conversation_history) > MAX_HISTORY_LENGTH:
+        conversation_history = conversation_history[-MAX_HISTORY_LENGTH:]
+    
+    # 检查是否有房源搜索结果（从工具调用中获取）
+    tool_data = result.get('tool_data', {})
+    if tool_data.get('recommendations'):
+        # 存储搜索结果供 UI 展示
+        last_search_results = tool_data['recommendations']
+        
+        return jsonify({
+            "response_type": "search",
+            "message": result.get('response'),
+            "recommendations": tool_data['recommendations']
+        })
+    
+    # 根据结果类型返回响应
+    if result.get('response_type') == 'question':
+        return jsonify({
+            "response_type": "clarification",
+            "message": result.get('response'),
+            "agent_state": "waiting_for_input",
+            "extracted_context": result.get('extracted_context', {})
+        })
+    
+    elif result.get('response_type') == 'answer':
+        return jsonify({
+            "response_type": "chat",
+            "message": result.get('response'),
+            "turns_used": result.get('turns')
+        })
+    
+    else:
+        return jsonify({
+            "response_type": "chat",
+            "message": result.get('response', "I'm here to help! What would you like to know?")
+        })
+
+
+@app.route('/api/clear_history', methods=['POST'])
+def clear_history():
+    """清除对话历史，开始新对话"""
+    global conversation_history, react_agent
+    conversation_history = []
+    if react_agent:
+        react_agent.reset()
+    print("[ALEX] 对话历史已清除")
+    return jsonify({"success": True, "message": "Conversation history cleared"})
 
 
 @app.route('/api/search', methods=['POST'])
@@ -966,6 +1234,138 @@ def get_search_history():
         return jsonify({"history": history})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/generate_map', methods=['POST'])
+def generate_property_map():
+    """
+    Generate an interactive amenity map for a property
+    
+    Expected JSON body:
+    {
+        "address": "property address",
+        "geo_location": "lat, lon" or {"lat": X, "lng": Y},
+        "price": "£X pcm",
+        "travel_time": "X min" or X (minutes)
+    }
+    
+    Returns:
+    HTML content of the interactive map or error
+    """
+    data = request.get_json()
+    if not data or not data.get('address'):
+        return jsonify({"error": "Property address is required"}), 400
+    
+    try:
+        from core.amenity_map_generator import PropertyAmenityMapGenerator
+        from core.maps_service import get_nearby_places_osm
+        
+        print(f"\n{'='*60}")
+        print(f"[MAP GEN] Generating amenity map for: {data['address']}")
+        print(f"{'='*60}\n")
+        
+        # Initialize map generator
+        generator = PropertyAmenityMapGenerator(radius_km=1.5)
+        
+        # Prepare property data
+        property_data = {
+            'Address': data['address'],
+            'address': data['address'],
+            'Price': data.get('price', 'N/A'),
+            'price': data.get('price', 'N/A'),
+            'travel_time_minutes': data.get('travel_time', 'N/A'),
+            'travel_time': data.get('travel_time', 'N/A'),
+            'geo_location': data.get('geo_location'),
+            'coordinates': data.get('coordinates') or data.get('geo_location')
+        }
+        
+        # Query amenities from OpenStreetMap
+        print(f"  [MAP GEN] Querying nearby amenities...")
+        amenities_data = {}
+        
+        # Parse coordinates once
+        coords = generator.parse_geo_location(data.get('geo_location'))
+        if not coords:
+            return jsonify({"error": "Invalid coordinates"}), 400
+        
+        lat, lon = coords
+        
+        # Use the new query method that supports cuisine filtering
+        for amenity_key in generator.amenity_config.keys():
+            try:
+                config = generator.amenity_config[amenity_key]
+                cuisine_filter = config.get('cuisine_filter', None)
+                
+                # Use the specialized query method that handles cuisine filtering
+                places = generator.query_osm_amenities_with_filter(
+                    lat, lon,
+                    amenity_key,
+                    cuisine_filter
+                )
+                amenities_data[amenity_key] = places
+                print(f"    ✓ Found {len(places)} {config['name']}")
+            except Exception as e:
+                print(f"    ✗ Error querying {amenity_key}: {e}")
+                import traceback as tb
+                tb.print_exc()
+                amenities_data[amenity_key] = []
+        
+        # Generate map HTML
+        print(f"\n  [MAP GEN] Generating interactive map...")
+        map_html = generator.generate_map_html(property_data, amenities_data)
+        
+        if map_html:
+            print(f"  ✓ [MAP GEN] Map generated successfully\n")
+            return map_html, 200, {'Content-Type': 'text/html; charset=utf-8'}
+        else:
+            return jsonify({"error": "Failed to generate map"}), 500
+            
+    except Exception as e:
+        print(f"❌ Error generating map: {e}")
+        traceback.print_exc()
+        return jsonify({"error": f"Map generation failed: {str(e)}"}), 500
+
+
+@app.route('/api/cached_pois', methods=['GET'])
+def get_cached_pois():
+    """
+    获取缓存的 POI 数据
+    
+    Query params:
+    - address: 要查询的地址
+    
+    Returns:
+    缓存的 POI 数据或错误
+    """
+    address = request.args.get('address')
+    if not address:
+        return jsonify({"error": "Address is required"}), 400
+    
+    try:
+        import os
+        cache_file = "data/osm_poi_cache.json"
+        
+        if not os.path.exists(cache_file):
+            return jsonify({"error": "No cache file found", "cached": False}), 404
+        
+        with open(cache_file, 'r', encoding='utf-8') as f:
+            cache = json.load(f)
+        
+        cache_key = address.lower().strip()
+        
+        if cache_key in cache:
+            return jsonify({
+                "cached": True,
+                "data": cache[cache_key]
+            })
+        else:
+            return jsonify({
+                "cached": False,
+                "message": "Address not in cache"
+            }), 404
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
     
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
