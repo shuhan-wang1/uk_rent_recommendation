@@ -48,7 +48,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, "PingFang SC", "Microsoft YaHei", BlinkMacSystemFont, sans-serif;
+            /* FIX: 优化了字体栈顺序。
+               将 "Apple Color Emoji", "Segoe UI Emoji" 等表情符号字体放在中文字体之前。
+               这样浏览器遇到 Emoji 字符时，会优先使用系统的彩色 Emoji 字体，而不是中文字体里的黑白字符。
+            */
+            font-family: 'Plus Jakarta Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', -apple-system, "PingFang SC", "Microsoft YaHei", BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             height: 100vh;
@@ -249,6 +253,34 @@
         .message.alex .bubble strong { color: #000; font-weight: 600; }
         .message.alex .bubble a { color: var(--primary-color); text-decoration: none; border-bottom: 1px solid transparent; }
         .message.alex .bubble a:hover { border-bottom-color: var(--primary-color); }
+        
+        /* 表格样式 */
+        .message.alex .bubble table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.9rem;
+        }
+        .message.alex .bubble table thead {
+            background: #f3f4f6;
+        }
+        .message.alex .bubble table th {
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #e5e7eb;
+            background: #f3f4f6;
+        }
+        .message.alex .bubble table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .message.alex .bubble table tbody tr:nth-child(odd) {
+            background: #fafbfc;
+        }
+        .message.alex .bubble table tbody tr:nth-child(even) {
+            background: #ffffff;
+        }
 
         /* --- 输入区域 (Input Area) --- */
         .chat-input-area {
@@ -746,7 +778,11 @@
                 // System
                 focusing_on: "Focusing on:",
                 loading_map: "Loading...",
-                error_connection: "Connection error. Please check server."
+                error_connection: "Connection error. Please check server.",
+                
+                // --- [FIX] 新增商业化状态词 ---
+                status_budget_ok: "Within Budget",
+                status_budget_over: "Over Budget"
             },
             zh: {
                 brand: "Alex",
@@ -788,7 +824,11 @@
                 // System
                 focusing_on: "当前关注：",
                 loading_map: "加载中...",
-                error_connection: "连接错误，请检查服务器。"
+                error_connection: "连接错误，请检查服务器。",
+
+                // --- [FIX] 新增商业化状态词 ---
+                status_budget_ok: "预算范围内",
+                status_budget_over: "超出预算"
             }
         };
 
@@ -935,40 +975,254 @@
             }
         }
         
-        // Formatter handles Markdown -> HTML
+        // --- [FIX] ReAct 过滤函数：清洗模型思维链 ---
+        // 专门用于移除模型输出中的 Thought, Action, Observation 等中间步骤，只保留最终回复
+        function cleanRawResponse(text) {
+            if (!text) return "";
+            
+            // 🆕 策略 0: 全面检查 JSON 格式 - 处理所有可能的情况
+            // 包括 {"answer": "..."}, {"response": "..."} 等
+            if (text.trim().startsWith('{')) {
+                try {
+                    const jsonData = JSON.parse(text.trim());
+                    // 尝试提取所有可能的响应字段
+                    const possibleKeys = ['achanswer', 'response', 'response_text', 'message', 'text', 'content', 'result'];
+                    for (const key of possibleKeys) {
+                        if (jsonData[key] && typeof jsonData[key] === 'string') {
+                            text = jsonData[key];
+                            break;
+                        }
+                    }
+                    // 如果没找到已知键，但只有一个字符串值，用它
+                    if (text.trim().startsWith('{')) {
+                        const values = Object.values(jsonData);
+                        const stringValue = values.find(v => typeof v === 'string' && v.length > 20);
+                        if (stringValue) {
+                            text = stringValue;
+                        }
+                    }
+                } catch (e) {
+                    // 不是有效 JSON，检查是否是截断的 JSON
+                    // 如 '{\n  "answer": "内容...' 这种情况
+                    const partialMatch = text.match(/"(?:answer|response|message|text)"\s*:\s*"([^"]+)/i);
+                    if (partialMatch && partialMatch[1]) {
+                        text = partialMatch[1];
+                    }
+                }
+            }
+            
+            // 🆕 策略 0.5: 清理 markdown 格式
+            text = text.replace(/^\s*\*\*Final Answer:\*\*\s*/i, '');
+            text = text.replace(/^\s*\*\*Final Answer:\s*/i, '');
+            text = text.replace(/^\s*Final Answer:\s*/i, '');
+            
+            // 如果文本以 ** 开头但不是标题，移除它
+            if (text.startsWith('**') && !text.startsWith('**#')) {
+                if (text === '**' || text === '** ') {
+                    text = '';
+                }
+            }
+            
+            // 策略 1: 如果模型输出了 "Final Answer:"
+            const finalAnswerRegex = /Final Answer:\s*([\s\S]+)/i;
+            const match = text.match(finalAnswerRegex);
+            if (match && match[1]) {
+                return match[1].trim();
+            }
+
+            // 策略 2: 如果没有 Final Answer 标记，则尝试去除 Thought/Action 块
+            // 移除以 Thought:, Action:, Observation: 开头的行或块
+            let cleanText = text;
+            
+            // 移除 ReAct 常见的块状标记
+            // 使用正则非贪婪匹配移除这些块
+            cleanText = cleanText.replace(/Thought:[\s\S]*?(?=(Final Answer:|Action:|Observation:|$))/gi, "");
+            cleanText = cleanText.replace(/Action:[\s\S]*?(?=(Final Answer:|Observation:|$))/gi, "");
+            cleanText = cleanText.replace(/Observation:[\s\S]*?(?=(Final Answer:|Thought:|$))/gi, "");
+            
+            // 兜底：移除残余的关键字标记
+            cleanText = cleanText.replace(/(Thought|Action|Action Input|Observation):/gi, "");
+
+            return cleanText.trim();
+        }
+        
+        // Formatter handles Markdown -> HTML (Enhanced with Emoji support)
         function formatMessage(text) {
             if (!text) return '';
-            let html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
             
-            // Simple markdown parsing
+            // 🆕 先保护 SVG - 在转义前提取 SVG，处理后再还原
+            const svgRegex = /<svg[^>]*>[\s\S]*?<\/svg>/g;
+            const svgs = text.match(svgRegex) || [];
+            let html = text;
+            
+            // 替换 SVG 为占位符
+            let svgPlaceholders = {};
+            svgs.forEach((svg, index) => {
+                const placeholder = `__SVG_PLACEHOLDER_${index}__`;
+                svgPlaceholders[placeholder] = svg;
+                html = html.replace(svg, placeholder);
+            });
+            
+            // 只转义 HTML 特殊字符，但保留 emoji 和占位符
+            html = html.replace(/&/g, "&amp;");
+            html = html.replace(/</g, "&lt;");
+            html = html.replace(/>/g, "&gt;");
+            
+            // Markdown 解析 - 分割线 (必须在标题之前处理)
+            html = html.replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">');
+            html = html.replace(/^\*\*\*+$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">');
+            html = html.replace(/^___+$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">');
+            
+            // Markdown 解析 - 标题 (支持 1-6 级)
+            html = html.replace(/^###### (.+)$/gm, '<h6 style="font-size:0.85rem;font-weight:600;margin:8px 0 4px 0;color:#374151;">$1</h6>');
+            html = html.replace(/^##### (.+)$/gm, '<h5 style="font-size:0.9rem;font-weight:600;margin:8px 0 4px 0;color:#374151;">$1</h5>');
+            html = html.replace(/^#### (.+)$/gm, '<h4 style="font-size:0.95rem;font-weight:600;margin:10px 0 6px 0;color:#1f2937;">$1</h4>');
             html = html.replace(/^### (.+)$/gm, '<h4>$1</h4>');
             html = html.replace(/^## (.+)$/gm, '<h3>$1</h3>');
             html = html.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+            
+            // 粗体和斜体
             html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            
+            // 行内代码
             html = html.replace(/`([^`]+)`/g, '<code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:0.9em;">$1</code>');
             
-            // Lists
-            // Replace bullets with <li>, wrap later roughly or let browser handle partials if simple
-            // For robustness in this simple regex parser:
-            const lines = html.split('\n');
-            let output = [];
-            let inList = false;
+            // 链接 [text](url)
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--primary-color);text-decoration:underline;">$1</a>');
             
-            lines.forEach(line => {
-                if (line.match(/^[-*] /)) {
-                    if (!inList) { output.push('<ul>'); inList = true; }
-                    output.push(`<li>${line.substring(2)}</li>`);
-                } else if (line.match(/^\d+\. /)) {
-                     if (!inList) { output.push('<ol>'); inList = true; }
-                     output.push(`<li>${line.replace(/^\d+\. /, '')}</li>`);
-                } else {
-                    if (inList) { output.push(line.match(/^\d+\./) ? '</ol>' : '</ul>'); inList = false; }
-                    if (line.trim()) output.push(`<p>${line}</p>`);
+            // 处理表格 - Markdown 表格格式
+            // 识别 | 分隔的表格
+            const lines = html.split('\n');
+            const tables = [];
+            let i = 0;
+            
+            while (i < lines.length) {
+                const line = lines[i];
+                
+                // 检查是否是表格头部 (以 | 开头，包含数据)
+                if (line.trim().startsWith('|') && line.trim().endsWith('|') && i + 1 < lines.length) {
+                    const nextLine = lines[i + 1];
+                    
+                    // 检查下一行是否是分隔符 (|---|--| 格式)
+                    if (nextLine.trim().startsWith('|') && /^[\|\s\-:]+$/.test(nextLine.trim())) {
+                        // 这是表格!
+                        const headerLine = line;
+                        const headers = headerLine.split('|').map(h => h.trim()).filter(h => h);
+                        
+                        // 收集表格行
+                        const rows = [];
+                        let j = i + 2;
+                        while (j < lines.length && lines[j].trim().startsWith('|') && /^[\|\s\-:]/.test(lines[j].trim())) {
+                            const cells = lines[j].split('|').map(cell => cell.trim()).filter(cell => cell);
+                            if (cells.length > 0) {
+                                rows.push(cells);
+                            }
+                            j++;
+                        }
+                        
+                        // 生成 HTML 表格
+                        let tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12px 0;border:1px solid #ddd;">';
+                        tableHtml += '<thead><tr style="background:#f3f4f6;border-bottom:2px solid #e5e7eb;">';
+                        headers.forEach(header => {
+                            tableHtml += `<th style="padding:10px;text-align:left;font-weight:600;border-right:1px solid #ddd;">${header}</th>`;
+                        });
+                        tableHtml += '</tr></thead>';
+                        
+                        tableHtml += '<tbody>';
+                        rows.forEach((row, idx) => {
+                            const bgColor = idx % 2 === 0 ? 'white' : '#fafbfc';
+                            tableHtml += `<tr style="background:${bgColor};border-bottom:1px solid #ddd;">`;
+                            row.forEach(cell => {
+                                tableHtml += `<td style="padding:10px;border-right:1px solid #ddd;">${cell}</td>`;
+                            });
+                            tableHtml += '</tr>';
+                        });
+                        tableHtml += '</tbody>';
+                        tableHtml += '</table>';
+                        
+                        tables.push({ startIdx: i, endIdx: j - 1, html: tableHtml });
+                        i = j;
+                        continue;
+                    }
+                }
+                i++;
+            }
+            
+            // 将表格从后向前替换（避免索引偏移）
+            for (let idx = tables.length - 1; idx >= 0; idx--) {
+                const table = tables[idx];
+                // 替换对应的行
+                lines.splice(table.startIdx, table.endIdx - table.startIdx + 1, `__TABLE_PLACEHOLDER_${idx}__`);
+            }
+            
+            html = lines.join('\n');
+            
+            // 处理列表 - 改进版本
+            const linesList = html.split('\n');
+            let output = [];
+            let inUl = false;
+            let inOl = false;
+            let olStarted = false;  // 追踪有序列表是否已经开始
+            
+            linesList.forEach((line, lineIdx) => {
+                const trimmedLine = line.trim();
+                
+                // 无序列表: - 或 *
+                if (trimmedLine.match(/^[-*]\s+/) && !trimmedLine.startsWith('|')) {
+                    if (inOl) { output.push('</ol>'); inOl = false; olStarted = false; }
+                    if (!inUl) { output.push('<ul>'); inUl = true; }
+                    output.push(`<li>${trimmedLine.replace(/^[-*]\s+/, '')}</li>`);
+                }
+                // 有序列表: 1. 2. 等（支持重复的 1.）
+                else if (trimmedLine.match(/^\d+[\.\)]\s+/) && !trimmedLine.startsWith('|')) {
+                    if (inUl) { output.push('</ul>'); inUl = false; }
+                    
+                    // 检查是否需要开始新的有序列表
+                    // 如果上一行不是列表项，则开始新列表
+                    const prevLine = lineIdx > 0 ? linesList[lineIdx - 1].trim() : '';
+                    const isPrevListItem = prevLine.match(/^[-*\d+][\.\)\s]/) || inOl;
+                    
+                    if (!inOl || !isPrevListItem) {
+                        if (inOl) { output.push('</ol>'); }
+                        output.push('<ol>');
+                        inOl = true;
+                        olStarted = true;
+                    }
+                    
+                    // 提取列表项内容（移除序号）
+                    const itemContent = trimmedLine.replace(/^\d+[\.\)]\s+/, '');
+                    output.push(`<li>${itemContent}</li>`);
+                }
+                // 普通段落
+                else {
+                    if (inUl) { output.push('</ul>'); inUl = false; }
+                    if (inOl) { output.push('</ol>'); inOl = false; olStarted = false; }
+                    if (trimmedLine) {
+                        output.push(`<p>${line}</p>`);
+                    }
                 }
             });
-            if (inList) output.push('</ul>');
             
-            return output.join('');
+            // 关闭未关闭的列表
+            if (inUl) output.push('</ul>');
+            if (inOl) output.push('</ol>');
+            
+            html = output.join('');
+            
+            // 还原表格占位符
+            tables.forEach((table, idx) => {
+                const placeholder = `__TABLE_PLACEHOLDER_${idx}__`;
+                html = html.replace(`<p>${placeholder}</p>`, table.html);
+                html = html.replace(placeholder, table.html);
+            });
+            
+            // 🆕 还原 SVG - 保证 SVG 完整性
+            Object.entries(svgPlaceholders).forEach(([placeholder, svg]) => {
+                html = html.replace(placeholder, svg);
+            });
+            
+            return html;
         }
 
         async function sendMessage() {
@@ -1009,15 +1263,23 @@
                     addMessage(`${getIcon('error', 'icon-sm')} ${data.error}`, 'alex');
                     lastResponseType = 'error';
                 } else if (data.response_type === 'clarification') {
-                    addMessage(`${getIcon('question', 'icon-sm')} ${data.message}`, 'alex');
+                    // --- [FIX] 清洗消息 ---
+                    const cleanMsg = cleanRawResponse(data.message);
+                    addMessage(`${getIcon('question', 'icon-sm')} ${cleanMsg}`, 'alex');
                     lastResponseType = 'clarification';
                 } else if (data.response_type === 'search' && data.recommendations) {
-                    addMessage(data.message || t('empty_state_desc'), 'alex'); 
+                    // --- [FIX] 清洗消息 ---
+                    const cleanMsg = cleanRawResponse(data.message || t('empty_state_desc'));
+                    addMessage(cleanMsg, 'alex'); 
                     currentResults = data.recommendations;
                     displayResults(data.recommendations);
                     lastResponseType = 'search';
                 } else {
-                    addMessage(data.message || data.response || "I couldn't get a response from the server.", 'alex');
+                    // --- [FIX] 清洗消息 ---
+                    const rawText = data.message || data.response || "I couldn't get a response from the server.";
+                    const cleanText = cleanRawResponse(rawText);
+                    
+                    addMessage(cleanText, 'alex');
                     if (data.recommendations && data.recommendations.length > 0) {
                         currentResults = data.recommendations;
                         displayResults(data.recommendations);
@@ -1050,7 +1312,19 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
             
-            const formattedText = sender === 'alex' ? formatMessage(text) : text;
+            // 🆕 处理后端返回的 SVG icons - 修复转义问题
+            let processedText = text;
+            
+            // 修复被转义的 SVG 标签
+            // 从 &lt;svg 还原为 <svg，从 &gt; 还原为 >
+            if (processedText.includes('&lt;svg')) {
+                processedText = processedText.replace(/&lt;svg/g, '<svg');
+                processedText = processedText.replace(/&gt;/g, '>');
+                processedText = processedText.replace(/&quot;/g, '"');
+                processedText = processedText.replace(/&#x27;/g, "'");
+            }
+            
+            const formattedText = sender === 'alex' ? formatMessage(processedText) : processedText;
             
             if (sender === 'alex') {
                 messageDiv.innerHTML = `
@@ -1134,17 +1408,43 @@
             const images = rec.images || [];
             const hasImages = images.length > 0;
             const isFavorited = favorites.has(rec.url);
+            
+            // 判断是否是相似推荐或软性违规
             const isOverBudget = rec.match_type === 'similar_suggestion' || rec.match_type === 'soft_violation';
             
             const heartClass = isFavorited ? 'favorite-btn active' : 'favorite-btn';
             
-            // Budget badge
+            // --- [FIX] 预算标签优化逻辑 ---
             let badge = '';
             if (rec.budget_status) {
-                const colorStyle = isOverBudget 
-                    ? 'background:#fffbeb;color:#b45309;' 
-                    : 'background:#ecfdf5;color:#047857;';
-                badge = `<span style="font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600;${colorStyle}">${rec.budget_status}</span>`;
+                // 1. 去除所有 Emoji 和特殊符号 (只保留文字和空格)
+                // 这样无论后端传什么 ✅, ❌, ⚠️，我们都先清理掉
+                let cleanStatus = rec.budget_status.replace(/✅|❌|⚠️/g, '').trim();
+                
+                // 2. 语义映射：根据 cleanStatus 中的关键词判断显示什么（解决中英文问题）
+                // 如果后端传来的是 "Within Budget" 或 "在预算内"
+                let displayText = cleanStatus;
+                let isGreen = true;
+
+                // 简单的关键词匹配来决定显示哪种专业术语
+                if (cleanStatus.toLowerCase().includes('within') || cleanStatus.includes('内') || cleanStatus.includes('OK')) {
+                    displayText = t('status_budget_ok'); // "Within Budget" or "预算范围内"
+                    isGreen = true;
+                } else if (cleanStatus.toLowerCase().includes('over') || cleanStatus.includes('超出') || cleanStatus.includes('High')) {
+                    displayText = t('status_budget_over'); // "Over Budget" or "超出预算"
+                    isGreen = false;
+                } else {
+                    // 兜底：如果有些奇怪的状态，直接显示清洗后的文字
+                    displayText = cleanStatus;
+                    isGreen = !isOverBudget;
+                }
+
+                // 3. 样式定义
+                const style = isGreen 
+                    ? 'background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;' // 绿色系
+                    : 'background:#fffbeb;color:#b45309;border:1px solid #fcd34d;'; // 黄色系 (警告)
+
+                badge = `<span style="font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600;display:inline-block;${style}">${displayText}</span>`;
             }
 
             return `

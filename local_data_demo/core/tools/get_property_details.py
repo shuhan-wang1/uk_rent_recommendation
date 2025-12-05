@@ -1,0 +1,313 @@
+"""
+Tool: Get Property Details
+获取数据库中特定房产的详细信息
+
+当用户询问特定房产的详情（如房型、设施、价格等）时，
+应该直接查询本地数据库，而不是进行网络搜索。
+
+使用场景：
+1. 用户点击前端 "Ask AI" 按钮询问某个房产
+2. 用户提到特定房产名称/地址并询问详情
+3. 用户对之前推荐的房产提出具体问题
+"""
+
+import pandas as pd
+from pathlib import Path
+from typing import Optional, Dict, List
+from core.tool_system import Tool, ToolResult
+import re
+
+# 数据文件路径
+DATA_PATH = Path(__file__).parent.parent.parent / "data" / "fake_property_listings.csv"
+
+
+def load_property_database() -> pd.DataFrame:
+    """加载房产数据库"""
+    try:
+        df = pd.read_csv(DATA_PATH)
+        return df
+    except Exception as e:
+        print(f"❌ 加载房产数据失败: {e}")
+        return pd.DataFrame()
+
+
+def normalize_text(text: str) -> str:
+    """标准化文本用于匹配"""
+    if not text:
+        return ""
+    # 转小写，移除多余空格和特殊字符
+    text = text.lower().strip()
+    text = re.sub(r'[,\.\-\'\"]+', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text
+
+
+def find_property_by_name_or_address(
+    query: str,
+    df: pd.DataFrame
+) -> List[Dict]:
+    """
+    根据名称或地址查找房产
+    
+    Args:
+        query: 用户查询的房产名称或地址（部分匹配）
+        df: 房产数据库 DataFrame
+        
+    Returns:
+        匹配的房产列表
+    """
+    if df.empty:
+        return []
+    
+    query_normalized = normalize_text(query)
+    matches = []
+    
+    for _, row in df.iterrows():
+        address = row.get('Address', '')
+        address_normalized = normalize_text(address)
+        
+        # 检查查询是否包含在地址中，或地址是否包含查询的关键词
+        # 提取查询中的关键词（如 "Scape Bloomsbury", "Woburn Place"）
+        query_words = query_normalized.split()
+        
+        # 计算匹配分数
+        match_score = 0
+        for word in query_words:
+            if len(word) > 2 and word in address_normalized:  # 忽略太短的词
+                match_score += 1
+        
+        # 如果至少有2个关键词匹配，或者整个查询包含在地址中
+        if match_score >= 2 or query_normalized in address_normalized:
+            matches.append({
+                'score': match_score,
+                'data': row.to_dict()
+            })
+    
+    # 按匹配分数排序
+    matches.sort(key=lambda x: x['score'], reverse=True)
+    
+    return [m['data'] for m in matches]
+
+
+def format_property_details(property_data: Dict) -> str:
+    """
+    格式化房产详细信息
+    
+    Args:
+        property_data: 房产数据字典
+        
+    Returns:
+        格式化的房产详情字符串
+    """
+    address = property_data.get('Address', 'Unknown')
+    price = property_data.get('Price', 'Unknown')
+    room_type = property_data.get('Room_Type_Category', 'Unknown')
+    description = property_data.get('Description', '')
+    amenities = property_data.get('Detailed_Amenities', '')
+    guest_policy = property_data.get('Guest_Policy', '')
+    payment_rules = property_data.get('Payment_Rules', '')
+    excluded_features = property_data.get('Excluded_Features', '')
+    url = property_data.get('URL', '')
+    available_from = property_data.get('Available From', 'Now')
+    
+    # 构建详细信息
+    details = f"""
+📍 **{address}**
+
+💰 **价格**: {price}
+🏠 **房型**: {room_type}
+📅 **可入住日期**: {available_from}
+
+📝 **描述**: 
+{description}
+
+✨ **设施与配置**:
+{amenities}
+
+👥 **访客政策**:
+{guest_policy}
+
+💳 **付款规则**:
+{payment_rules}
+
+⛔ **不包含的设施**:
+{excluded_features}
+
+🔗 **链接**: {url}
+"""
+    return details.strip()
+
+
+async def get_property_details_impl(
+    property_name: str = "",
+    property_address: str = "",
+    question: Optional[str] = None,
+    **kwargs
+) -> dict:
+    """
+    获取特定房产的详细信息
+    
+    当用户询问数据库中某个房产的具体信息时使用此工具。
+    支持通过房产名称或地址进行模糊匹配。
+    
+    Args:
+        property_name: 房产名称（如 "Scape Bloomsbury"）
+        property_address: 房产地址或部分地址（如 "Woburn Place"）
+        question: 用户关于这个房产的具体问题（可选）
+        
+    Returns:
+        包含房产详细信息的字典
+    """
+    print(f"\n{'='*60}")
+    print(f"🏠 [PROPERTY DETAILS] 查询房产详情")
+    print(f"   property_name: {property_name}")
+    print(f"   property_address: {property_address}")
+    print(f"   question: {question}")
+    print(f"{'='*60}")
+    
+    # 加载数据库
+    df = load_property_database()
+    if df.empty:
+        return {
+            "success": False,
+            "error": "无法加载房产数据库",
+            "message": "抱歉，无法访问房产数据库。请稍后重试。"
+        }
+    
+    # 构建查询字符串
+    search_query = ""
+    if property_name:
+        search_query = property_name
+    if property_address:
+        search_query = f"{search_query} {property_address}".strip()
+    
+    if not search_query:
+        return {
+            "success": False,
+            "error": "需要提供房产名称或地址",
+            "message": "请提供您想查询的房产名称或地址。"
+        }
+    
+    # 查找匹配的房产
+    matches = find_property_by_name_or_address(search_query, df)
+    
+    if not matches:
+        # 尝试更宽松的搜索
+        # 提取查询中的主要关键词再试一次
+        keywords = search_query.split()
+        for keyword in keywords:
+            if len(keyword) > 3:  # 只用长度大于3的词
+                matches = find_property_by_name_or_address(keyword, df)
+                if matches:
+                    break
+    
+    if not matches:
+        return {
+            "success": False,
+            "found": False,
+            "search_query": search_query,
+            "message": f"在数据库中未找到与 '{search_query}' 匹配的房产。",
+            "suggestion": "请检查房产名称或地址是否正确，或尝试使用更短的关键词搜索。"
+        }
+    
+    # 找到匹配的房产
+    primary_match = matches[0]  # 最佳匹配
+    
+    # 格式化详细信息
+    formatted_details = format_property_details(primary_match)
+    
+    # 提取关键信息用于回答特定问题
+    room_type = primary_match.get('Room_Type_Category', '')
+    
+    # 判断房型相关信息
+    is_studio = 'studio' in room_type.lower()
+    is_shared = 'shared' in room_type.lower() or 'twin' in room_type.lower()
+    is_ensuite = 'en-suite' in room_type.lower() or 'ensuite' in room_type.lower()
+    has_private_kitchen = 'own kitchen' in room_type.lower() or 'private kitchen' in room_type.lower()
+    
+    result = {
+        "success": True,
+        "found": True,
+        "search_query": search_query,
+        "property": {
+            "address": primary_match.get('Address', ''),
+            "price": primary_match.get('Price', ''),
+            "room_type": room_type,
+            "description": primary_match.get('Description', ''),
+            "amenities": primary_match.get('Detailed_Amenities', ''),
+            "guest_policy": primary_match.get('Guest_Policy', ''),
+            "payment_rules": primary_match.get('Payment_Rules', ''),
+            "excluded_features": primary_match.get('Excluded_Features', ''),
+            "url": primary_match.get('URL', ''),
+            "available_from": primary_match.get('Available From', ''),
+            "geo_location": primary_match.get('geo_location', ''),
+        },
+        "room_type_analysis": {
+            "is_studio": is_studio,
+            "is_shared_room": is_shared,
+            "is_ensuite": is_ensuite,
+            "has_private_kitchen": has_private_kitchen,
+            "room_type_category": room_type
+        },
+        "formatted_details": formatted_details,
+        "total_matches": len(matches),
+        "message": f"找到房产: {primary_match.get('Address', '')}",
+    }
+    
+    # 如果有其他匹配的房产，也列出来
+    if len(matches) > 1:
+        result["other_matches"] = [
+            {
+                "address": m.get('Address', ''),
+                "price": m.get('Price', ''),
+                "room_type": m.get('Room_Type_Category', '')
+            }
+            for m in matches[1:5]  # 最多显示其他4个
+        ]
+    
+    print(f"\n✅ [PROPERTY DETAILS] 找到 {len(matches)} 个匹配房产")
+    print(f"   最佳匹配: {primary_match.get('Address', '')}")
+    print(f"   房型: {room_type}")
+    print(f"   是否Studio: {is_studio}")
+    
+    return result
+
+
+# 创建工具实例
+get_property_details_tool = Tool(
+    name="get_property_details",
+    description="""获取数据库中特定房产的详细信息。
+
+当用户询问某个特定房产的详情时使用此工具，包括：
+- 询问某个房产是什么房型（studio/ensuite/shared等）
+- 询问某个房产的价格、设施、政策等
+- 用户点击 "Ask AI" 按钮询问特定房产
+- 用户对之前推荐过的房产提出具体问题
+
+此工具直接查询本地数据库，比网络搜索更准确。
+
+示例查询：
+- "Scape Bloomsbury 是 studio 吗？"
+- "告诉我 Woburn Place 那个房子的详细信息"
+- "iQ Bloomsbury 的访客政策是什么？"
+""",
+    parameters={
+        "type": "object",
+        "properties": {
+            "property_name": {
+                "type": "string",
+                "description": "房产名称，如 'Scape Bloomsbury', 'iQ Bloomsbury', 'Tufnell House' 等"
+            },
+            "property_address": {
+                "type": "string",
+                "description": "房产地址或部分地址，如 '19-29 Woburn Place' 或 'London WC1H'"
+            },
+            "question": {
+                "type": "string",
+                "description": "用户关于这个房产的具体问题（可选），如 '是不是studio？' 或 '访客政策是什么？'"
+            }
+        },
+        "required": []  # 至少需要 property_name 或 property_address 之一
+    },
+    func=get_property_details_impl
+)

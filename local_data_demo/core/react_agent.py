@@ -18,118 +18,87 @@ from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
-# ReAct Prompt - 让 LLM 完全自主决策，特别强调 search_properties 工具
-REACT_PROMPT_TEMPLATE = """You are Alex, an intelligent UK rental property assistant.
+# POI 类型信息（用于格式化输出）
+POI_TYPES = {
+    "restaurant": {"icon": "🍽️", "name": "Restaurant"},
+    "chinese_restaurant": {"icon": "🥢", "name": "Chinese Restaurant"},
+    "supermarket": {"icon": "🛒", "name": "Supermarket"},
+    "convenience": {"icon": "🏪", "name": "Convenience Store"},
+    "cafe": {"icon": "☕", "name": "Cafe"},
+    "pharmacy": {"icon": "💊", "name": "Pharmacy"},
+    "gym": {"icon": "🏋️", "name": "Gym"},
+    "park": {"icon": "🌳", "name": "Park"},
+    "bus_stop": {"icon": "🚌", "name": "Bus Stop"},
+    "tube_station": {"icon": "🚇", "name": "Tube Station"},
+    "bank": {"icon": "🏦", "name": "Bank"},
+    "atm": {"icon": "💳", "name": "ATM"}
+}
+
+# ReAct Prompt - 简洁版，让 LLM 自主决策
+REACT_PROMPT_TEMPLATE = """You are Alex, a friendly rental assistant helping international students find housing in UK.
+
+## Your Persona
+You are talking to an INTERNATIONAL STUDENT (likely from China). Think from their perspective:
+- They are NEW to UK, unfamiliar with local rental market
+- They need STUDENT-FRIENDLY options (student halls, HMOs, spare rooms, not Rightmove luxury flats)
+- Budget is usually limited (£600-£1500/month)
+- They need practical info: how to rent as a student, which areas have students, safety concerns
+
+## Response Format (STRICT - no markdown ** around keywords)
+Thought: [reasoning]
+Action: [tool name]
+Action Input: [JSON parameters]
+
+## IMPORTANT: For Complex Questions, Use multi_search
+When user asks about MULTIPLE topics (e.g., rent + living costs + transport), use multi_search:
+
+Action: multi_search
+Action Input: {{"searches": [
+  {{"tool": "web_search", "params": {{"query": "London student rent 2024"}}}},
+  {{"tool": "web_search", "params": {{"query": "London food cost students"}}}},
+  {{"tool": "web_search", "params": {{"query": "London transport cost students"}}}}
+]}}
+
+This will execute ALL searches and return combined results.
 
 ## Available Tools
-{tool_descriptions}
 
-## STRICT Response Format
-You MUST follow this EXACT format. Any deviation will cause errors:
+### get_property_details (PRIORITY for property-specific questions)
+- Use when user asks about a SPECIFIC property from our database
+- Use when user clicks "Ask AI" button for a property
+- Use when user questions a property's room type, price, amenities, etc.
+- Example: {{"property_name": "Scape Bloomsbury", "property_address": "Woburn Place"}}
+- IMPORTANT: Use THIS tool instead of web_search when asking about properties we recommended
 
-Thought: [Your reasoning - what does the user need?]
-Action: [EXACTLY one of: search_properties | calculate_commute | check_safety | get_weather | web_search | search_nearby_pois | Final Answer]
-Action Input: [If Action is a tool: JSON object like {{"param": "value"}}. If Action is "Final Answer": your response text]
+### multi_search (for complex multi-topic questions)
+- Executes multiple tool calls in parallel
+- Use when question has 2+ sub-topics
+- Returns combined Observation from all tools
 
-## ⚠️ CRITICAL RULES - READ CAREFULLY
+### web_search (USE ENGLISH QUERIES ONLY)
+- Query MUST be in English, short: 3-8 words
+- Example: "London student room rent 2024"
+- DO NOT use for properties in our database - use get_property_details instead
 
-### Rule 1: NEVER invent or assume parameters the user didn't provide!
-- If user says "Find flat near UCL under £1500" → You have: location=UCL, max_budget=1500
-- You do NOT have: max_commute_time (user didn't mention it!)
-- WRONG: {{"location": "UCL", "max_budget": 1500, "max_commute_time": 45}} ← DON'T add 45!
-- RIGHT: {{"location": "UCL", "max_budget": 1500}} ← Only use what user provided
+### get_weather
+- Example: {{"location": "London"}}
+- For comparing cities, use multi_search with multiple get_weather calls
 
-### Rule 2: Property Database Has Commute Info - Use It!
-Our database already contains commute times for each property (Bus, Walk, Cycle, Drive times).
-- For commute questions about KNOWN properties → Use Final Answer with data from context
-- Example: "How long to cycle from Vega to UCL?" → Answer: "Based on our data, cycling from Vega takes about 24 minutes"
-- ONLY call calculate_commute if the property is NOT in our database
+### search_properties, calculate_commute, check_safety, search_nearby_pois
 
-### Rule 3: Comparing Properties - Use Database Data
-When user compares properties (e.g., "Spring Mews vs Scape Bloomsbury"), answer using the property database:
-- Use amenities, guest policies, prices from the database
-- Do NOT say "unverified" if the data exists in our database
-- If you need to compare, I will provide BOTH properties' data in context
+## Rules
+1. Reply in user's language (Chinese if they speak Chinese)
+2. MUST call tool first - no direct answers
+3. Use ONLY Observation data - NO fabrication
+4. For multi-topic questions, ALWAYS use multi_search
 
-### Rule 4: Questions About Current Property → Use Final Answer
-If there is "Current Property Context" below, answer questions about that property directly:
-- Guarantor/payment → Use Payment_Rules
-- Guests → Use Guest_Policy  
-- Amenities/facilities → Use Detailed_Amenities
-- What's not included → Use Excluded_Features
-- Booking link → Use the URL field (we have direct links!)
-
-### Rule 5: Follow-up Answers Must Include Original Context
-When user answers a clarification question (like "30 minutes" or "no preference"):
-- Remember you're continuing the ORIGINAL search
-- Don't treat their answer as a new, confusing command
-- If user says "10" after you asked about commute time → max_commute_time=10
-
-### Rule 6: ALWAYS Use Real Property Names - NEVER Say "Property A/B/C"!
-- WRONG: "Property A has a pool, Property B has a gym"
-- RIGHT: "Spring Mews has a pool, Scape Bloomsbury has a gym"
-- WRONG: "I recommend Property D"
-- RIGHT: "I recommend Vega (Vauxhall)" 
-- Always use the actual name from Address field (first part before comma)
-
-### Rule 7: Facility/Amenity Searches - Search ALL Properties!
-When user asks about specific amenities (karaoke, pool, gym, games room, basketball):
-- Do NOT assume only one property exists
-- Our database has MANY properties with different amenities
-- NEVER say "this is the only property in database" - that's FALSE
-- If amenity search results are provided in context, USE THEM
-
-### Rule 8: Safety Questions - Answer Directly, Don't Start New Search!
-When user asks about safety AFTER you've already shown properties:
-- Use check_safety tool to get safety info for specific areas
-- Then use Final Answer to compare safety of already-shown properties
-- Do NOT start a new search_properties call
-- The user already has property recommendations, they just want safety comparison
-
-### Rule 9: ALWAYS Include Property URLs When Available
-- Our database has booking URLs for each property
-- When recommending properties, INCLUDE the URL
-- NEVER say "I don't have access to links" - we have them!
-- Format: "You can book here: [URL from database]"
-
-### Rule 10: Double-Check Amenity Claims Against Database!
-BEFORE saying a property has/doesn't have something:
-- Re-read the Detailed_Amenities field carefully
-- Spring Mews HAS: Swimming Pool, Gym (it's in the data!)
-- If unsure, say "based on our records" not "I believe"
-- NEVER contradict what the database clearly states
-
-## EXAMPLES
-
-Example 1 - Property Search (only use provided params):
-User: "Find me an apartment near Imperial College that costs under £2000"
-Thought: User wants apartments near Imperial College, budget £2000. They did NOT mention commute time, so I will NOT assume one.
-Action: search_properties
-Action Input: {{"location": "Imperial College", "max_budget": 2000}}
-
-Example 2 - Safety Question (after properties shown):
-User: "Which of these properties is in the safest area? I'm worried about Brent Cross."
-Thought: User already has property recommendations. They want to compare safety. I should check safety for the areas, then use Final Answer to compare. I should NOT start a new property search.
-Action: check_safety
-Action Input: {{"address": "Brent Cross, London"}}
-[After getting safety data]
-Action: Final Answer
-Action Input: Based on safety data, here's the comparison...
-
-Example 3 - Providing Property Link:
-User: "Can I get the link for Tufnell House?"
-Thought: User wants the booking URL for Tufnell House. I have this in my database - the URL field contains the link.
-Action: Final Answer
-Action Input: Here's the booking link for Tufnell House: https://uhomes.example/tufnell-house
-
-## Current Context
+## Context
 {context_info}
 
-## User Query
+## Query
 {user_query}
 
-Now respond in the EXACT format (Thought/Action/Action Input):
-"""
+Thought:"""
 
 
 class ReActAgent:
@@ -166,9 +135,70 @@ class ReActAgent:
             'safety_concerns': [],   # 安全相关的记录
         }
         
+        # 🆕 搜索条件累积 - 保存 Fine-tuned model 提取的信息，跨对话保持
+        self.accumulated_search_criteria = {
+            'destination': None,
+            'max_budget': None,
+            'max_travel_time': None,
+            'property_features': [],     # 如: ['studio', 'private', 'en-suite']
+            'soft_preferences': [],      # 如: ['quiet area', 'modern building']
+            'amenities_of_interest': [], # 如: ['gym', 'pool']
+        }
+        
         # 初始化 LLM
         from core.llm_interface import LLMInterface
         self.llm = LLMInterface()
+    
+    def update_search_criteria(self, new_criteria: dict):
+        """
+        累积更新搜索条件 - 合并新提取的条件与已有条件
+        
+        这确保了之前提取的信息（如 'studio', 'private'）不会丢失
+        """
+        if not new_criteria:
+            return
+        
+        # 更新单值字段（如果新值存在则覆盖）
+        for field in ['destination', 'max_budget', 'max_travel_time']:
+            if new_criteria.get(field):
+                self.accumulated_search_criteria[field] = new_criteria[field]
+                print(f"📝 [SearchCriteria] Updated {field}: {new_criteria[field]}")
+        
+        # 累积列表字段（合并不重复）
+        # 🔧 修复：正确处理字符串类型的 soft_preferences
+        for field in ['property_features', 'soft_preferences', 'amenities_of_interest']:
+            new_items = new_criteria.get(field, [])
+            
+            # 如果是字符串，转换为列表
+            if isinstance(new_items, str) and new_items:
+                new_items = [new_items]  # 作为整体添加，不要拆分字符
+            elif not isinstance(new_items, list):
+                new_items = []
+            
+            for item in new_items:
+                # 跳过单个字符（可能是之前错误拆分的结果）
+                if item and isinstance(item, str) and len(item) > 1 and item not in self.accumulated_search_criteria[field]:
+                    self.accumulated_search_criteria[field].append(item)
+                    print(f"📝 [SearchCriteria] Added to {field}: {item}")
+        
+        # 🆕 处理 property_tags (Fine-tuned model 返回的)
+        property_tags = new_criteria.get('property_tags', [])
+        if isinstance(property_tags, list):
+            for tag in property_tags:
+                if tag and tag not in self.accumulated_search_criteria['property_features']:
+                    self.accumulated_search_criteria['property_features'].append(tag)
+                    print(f"📝 [SearchCriteria] Added property tag: {tag}")
+    
+    def get_accumulated_criteria(self) -> dict:
+        """获取当前累积的所有搜索条件"""
+        return {
+            'destination': self.accumulated_search_criteria['destination'],
+            'max_budget': self.accumulated_search_criteria['max_budget'],
+            'max_travel_time': self.accumulated_search_criteria['max_travel_time'],
+            'property_features': self.accumulated_search_criteria['property_features'].copy(),
+            'soft_preferences': self.accumulated_search_criteria['soft_preferences'].copy(),
+            'amenities_of_interest': self.accumulated_search_criteria['amenities_of_interest'].copy(),
+        }
     
     def add_preference(self, pref_type: str, preference: str):
         """添加用户偏好"""
@@ -401,9 +431,55 @@ class ReActAgent:
         if not output:
             return result
         
+        # 🆕 清理 markdown 格式（如 **Thought:** 变成 Thought:）
+        # 处理 **Final Answer:** 和 **Action:** 等格式
+        output = re.sub(r'\*\*([A-Za-z ]+):\*\*', r'\1:', output)
+        output = re.sub(r'\*\*([A-Za-z ]+):', r'\1:', output)  # **Final Answer: 没有结束的 **
+        
+        # 🆕 特别处理：如果输出以 **Final Answer: 或 Final Answer: 开头，直接提取
+        final_answer_match = re.match(r'^\s*(?:\*\*)?Final Answer:?(?:\*\*)?\s*(.+)', output, re.DOTALL | re.IGNORECASE)
+        if final_answer_match:
+            result['action'] = 'final_answer'
+            result['action_input'] = final_answer_match.group(1).strip()
+            print(f"  🔧 [PARSE] 直接提取 Final Answer")
+            return result
+        
         # 已知的工具列表（用于智能匹配）
         known_tools = ['search_properties', 'calculate_commute', 'check_safety', 
-                       'get_weather', 'web_search', 'search_nearby_pois', 'final answer']
+                       'get_weather', 'web_search', 'search_nearby_pois', 'multi_search', 'final answer']
+        
+        # 🆕 检查输出是否缺少格式，第一行直接就是工具名
+        first_line = output.strip().split('\n')[0].strip().lower()
+        if first_line in known_tools or first_line.replace('_', ' ') in known_tools:
+            # LLM 直接输出了工具名，没有 Thought/Action 格式
+            # 尝试修复：假设第一行是 Action，后面是 Action Input
+            tool_name = first_line.replace(' ', '_') if first_line == 'final answer' else first_line
+            remaining = '\n'.join(output.strip().split('\n')[1:]).strip()
+            
+            # 检查是否有 Action Input: 前缀
+            if remaining.lower().startswith('action input:'):
+                remaining = remaining[len('action input:'):].strip()
+            
+            result['action'] = tool_name
+            # 尝试解析 JSON
+            if remaining.startswith('{'):
+                try:
+                    brace_count = 0
+                    for i, char in enumerate(remaining):
+                        if char == '{':
+                            brace_count += 1
+                        elif char == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                result['action_input'] = json.loads(remaining[:i+1])
+                                break
+                except json.JSONDecodeError:
+                    result['action_input'] = remaining
+            else:
+                result['action_input'] = remaining
+            
+            print(f"  🔧 [PARSE] 从无格式输出中提取工具: {tool_name}")
+            return result
         
         # 提取 Thought
         thought_match = re.search(r'Thought:\s*(.+?)(?=Action:|$)', output, re.DOTALL | re.IGNORECASE)
@@ -416,6 +492,35 @@ class ReActAgent:
             action_raw = action_match.group(1).strip()
             # 取第一行
             action_line = action_raw.split('\n')[0].strip()
+            
+            # 🆕 特殊处理：如果 Action 是 JSON 格式（模型输出错误格式）
+            # 例如：Action: {"query": "..."} 应该被识别为 web_search
+            if action_line.startswith('{'):
+                try:
+                    action_json = json.loads(action_line)
+                    # 根据 JSON 的 key 推断工具类型
+                    if 'query' in action_json:
+                        result['action'] = 'web_search'
+                        result['action_input'] = action_json
+                        print(f"  🔧 [PARSE] 从 JSON Action 推断工具: web_search")
+                        return result
+                    elif 'location' in action_json:
+                        result['action'] = 'get_weather'
+                        result['action_input'] = action_json
+                        print(f"  🔧 [PARSE] 从 JSON Action 推断工具: get_weather")
+                        return result
+                    elif 'origin' in action_json or 'destination' in action_json:
+                        result['action'] = 'calculate_commute'
+                        result['action_input'] = action_json
+                        print(f"  🔧 [PARSE] 从 JSON Action 推断工具: calculate_commute")
+                        return result
+                    elif 'address' in action_json or 'area' in action_json:
+                        result['action'] = 'check_safety'
+                        result['action_input'] = action_json
+                        print(f"  🔧 [PARSE] 从 JSON Action 推断工具: check_safety")
+                        return result
+                except json.JSONDecodeError:
+                    pass  # 不是有效 JSON，继续正常解析
             
             # 智能提取工具名：检查是否直接是工具名
             action_lower = action_line.lower()
@@ -436,7 +541,7 @@ class ReActAgent:
             
             # 方法3：检查是否包含工具名模式
             if not matched_tool:
-                tool_pattern = re.search(r'(search_properties|calculate_commute|check_safety|get_weather|web_search|search_nearby_pois|final\s*answer)', action_lower)
+                tool_pattern = re.search(r'(search_properties|calculate_commute|check_safety|get_weather|web_search|search_nearby_pois|multi_search|final\s*answer)', action_lower)
                 if tool_pattern:
                     matched_tool = tool_pattern.group(1).replace(' ', '_')
             
@@ -467,6 +572,21 @@ class ReActAgent:
                             result['action_input'] = json.loads(json_str)
                             break
                 
+                # 🆕 检查是否是嵌套格式 {'tool_name': {...params...}}
+                if result['action_input'] and isinstance(result['action_input'], dict):
+                    parsed_input = result['action_input']
+                    known_tools = ['search_properties', 'calculate_commute', 'check_safety', 
+                                   'get_weather', 'web_search', 'search_nearby_pois', 'multi_search']
+                    
+                    # 如果只有一个键且是工具名，提取内部参数
+                    if len(parsed_input) == 1:
+                        key = list(parsed_input.keys())[0]
+                        if key in known_tools:
+                            # 这是嵌套格式，提取工具名和参数
+                            result['action'] = key
+                            result['action_input'] = parsed_input[key]
+                            print(f"  🔧 [PARSE] 从嵌套格式提取工具: {key}")
+                
                 # 如果没有找到 JSON，保留原始字符串
                 if result['action_input'] is None:
                     result['action_input'] = input_str
@@ -476,6 +596,83 @@ class ReActAgent:
                 result['action_input'] = input_str
         
         return result
+    
+    async def _execute_multi_search(self, searches: list) -> tuple:
+        """
+        执行多个工具调用并合并结果
+        
+        Args:
+            searches: 搜索列表，格式为 [{"tool": "web_search", "params": {"query": "..."}}, ...]
+        
+        Returns:
+            tuple: (combined_observation, combined_raw_data)
+        """
+        if self.verbose:
+            print(f"\n🔀 [MultiSearch] 开始执行 {len(searches)} 个并行搜索...")
+        
+        all_observations = []
+        all_raw_data = {}
+        
+        for i, search in enumerate(searches):
+            tool_name = search.get('tool', 'web_search')
+            params = search.get('params', {})
+            
+            if self.verbose:
+                print(f"\n  {'='*50}")
+                print(f"  📍 [Sub-Query {i+1}/{len(searches)}]")
+                print(f"     Tool: {tool_name}")
+                print(f"     Params: {json.dumps(params, ensure_ascii=False)}")
+            
+            # 执行单个工具
+            observation, raw_data = await self._execute_tool(tool_name, params)
+            
+            # 🆕 确保 observation 是字符串
+            if not isinstance(observation, str):
+                observation = str(observation)
+            
+            # 🆕 对于 web_search，提取 results 字段（更简洁的显示）
+            if tool_name == 'web_search' and raw_data and isinstance(raw_data, dict):
+                if 'results' in raw_data:
+                    observation = raw_data['results']
+            
+            # 🆕 详细打印 sub-observation
+            if self.verbose:
+                print(f"  📄 [Sub-Observation {i+1}]:")
+                print(f"  {'-'*48}")
+                # 打印完整的 observation，不截断
+                for line in observation.split('\n'):
+                    print(f"     {line}")
+                print(f"  {'-'*48}")
+            
+            # 格式化这个子搜索的结果
+            sub_result = f"### Sub-search {i+1}: {tool_name}\n"
+            sub_result += f"Parameters: {json.dumps(params, ensure_ascii=False)}\n"
+            sub_result += f"Result:\n{observation}\n"
+            
+            all_observations.append(sub_result)
+            
+            if raw_data:
+                all_raw_data[f"{tool_name}_{i+1}"] = raw_data
+        
+        # 合并所有观察结果
+        combined_observation = "\n" + "="*50 + "\n"
+        combined_observation += "## Combined Results from Multi-Search\n"
+        combined_observation += "="*50 + "\n\n"
+        combined_observation += "\n---\n".join(all_observations)
+        combined_observation += "\n" + "="*50 + "\n"
+        combined_observation += f"Total: {len(searches)} searches completed.\n"
+        combined_observation += "Use ALL the above data to provide a comprehensive answer.\n"
+        
+        if self.verbose:
+            print(f"\n{'='*60}")
+            print(f"✅ [MultiSearch] 完成! 共 {len(searches)} 个搜索")
+            print(f"{'='*60}")
+            print(f"📋 [Combined Observation - 完整内容]:")
+            print(f"{'-'*60}")
+            print(combined_observation)
+            print(f"{'-'*60}")
+        
+        return (combined_observation, all_raw_data)
     
     async def _execute_tool(self, tool_name: str, params: Dict[str, Any]) -> tuple:
         """
@@ -496,27 +693,69 @@ class ReActAgent:
                 print(f"  🔧 [ReAct] 执行工具: {tool_name}")
                 print(f"     参数: {json.dumps(params, ensure_ascii=False)}")
             
+            # 🆕 对于 search_properties，注入累积的搜索条件
+            if tool_name == 'search_properties':
+                accumulated = self.get_accumulated_criteria()
+                
+                # 注入累积的条件（如果工具参数中没有提供）
+                if not params.get('location') and accumulated.get('destination'):
+                    params['location'] = accumulated['destination']
+                    print(f"  📥 [ReAct] 注入累积 destination: {accumulated['destination']}")
+                
+                if not params.get('max_budget') and accumulated.get('max_budget'):
+                    params['max_budget'] = accumulated['max_budget']
+                    print(f"  📥 [ReAct] 注入累积 max_budget: {accumulated['max_budget']}")
+                
+                if not params.get('max_commute_time') and accumulated.get('max_travel_time'):
+                    params['max_commute_time'] = accumulated['max_travel_time']
+                    print(f"  📥 [ReAct] 注入累积 max_travel_time: {accumulated['max_travel_time']}")
+                
+                # 🆕 注入累积的 property_features 和 soft_preferences
+                if accumulated.get('property_features'):
+                    params['property_features'] = accumulated['property_features']
+                    print(f"  📥 [ReAct] 注入累积 property_features: {accumulated['property_features']}")
+                
+                if accumulated.get('soft_preferences'):
+                    params['accumulated_preferences'] = accumulated['soft_preferences']
+                    print(f"  📥 [ReAct] 注入累积 soft_preferences: {accumulated['soft_preferences']}")
+            
             # 执行工具（异步）
             result = await self.tool_registry.execute_tool(tool_name, **params)
             
             # 保存原始数据
             raw_data = result.data if result.success else None
             
+            # 🆕 如果是 search_properties，从返回结果中提取并累积搜索条件
+            if tool_name == 'search_properties' and raw_data:
+                extracted = raw_data.get('extracted_so_far') or raw_data.get('search_criteria') or {}
+                if extracted:
+                    self.update_search_criteria(extracted)
+                    print(f"  📝 [ReAct] 已累积搜索条件: {extracted}")
+            
             # 格式化结果供 LLM 阅读
             if result.success:
                 if self.verbose:
                     print(f"  ✅ [ReAct] 工具执行成功")
                 
+                # 🆕 完整输出所有数据，不截断！
+                # 原因：截断会导致无法溯源，无法区分是模型幻觉还是数据源问题
                 if isinstance(result.data, dict):
                     observation = json.dumps(result.data, ensure_ascii=False, indent=2)
                 elif isinstance(result.data, list):
-                    # 限制列表长度，避免输出过长
-                    if len(result.data) > 10:
-                        observation = json.dumps(result.data[:10], ensure_ascii=False, indent=2) + f"\n... and {len(result.data) - 10} more items"
-                    else:
-                        observation = json.dumps(result.data, ensure_ascii=False, indent=2)
+                    # 🚫 移除截断逻辑 - 必须完整保留所有数据供溯源
+                    observation = json.dumps(result.data, ensure_ascii=False, indent=2)
+                    if self.verbose:
+                        print(f"  📋 [ReAct] 完整返回 {len(result.data)} 条结果（不截断）")
                 else:
                     observation = str(result.data)
+                
+                # 🆕 调试输出：打印完整的 observation 到日志
+                if self.verbose:
+                    print(f"\n{'='*60}")
+                    print(f"📝 [Tool Result - 完整内容，用于溯源调试]")
+                    print(f"{'='*60}")
+                    print(observation)
+                    print(f"{'='*60}\n")
                 
                 return (observation, raw_data)
             else:
@@ -530,9 +769,74 @@ class ReActAgent:
             traceback.print_exc()
             return (f"Error executing {tool_name}: {str(e)}", None)
     
+    def _majority_vote_tool_selection(self, prompt: str, num_votes: int = 5) -> Dict[str, Any]:
+        """
+        多数投票机制选择工具
+        
+        让 LLM 进行多次独立的工具选择，然后选择得票最多的工具。
+        这可以减少单次推理的偶然错误。
+        
+        Args:
+            prompt: 当前的 prompt
+            num_votes: 投票次数（默认5次）
+        
+        Returns:
+            投票结果最多的解析结果
+        """
+        from collections import Counter
+        
+        votes = []  # 存储每次投票的 (action, parsed_result)
+        all_parsed = []  # 存储所有解析结果，用于后续选择
+        
+        if self.verbose:
+            print(f"\n🗳️ [Voting] 开始 {num_votes} 次投票选择工具...")
+        
+        for i in range(num_votes):
+            # 调用 LLM（每次独立调用）
+            llm_response = self.llm.generate_react_response(prompt)
+            
+            if not llm_response:
+                continue
+            
+            # 解析输出
+            parsed = self._parse_llm_output(llm_response)
+            
+            if parsed['action']:
+                action = parsed['action'].lower().strip()
+                votes.append(action)
+                all_parsed.append((action, parsed, llm_response))
+                
+                if self.verbose:
+                    print(f"   Vote {i+1}: {action}")
+        
+        if not votes:
+            if self.verbose:
+                print(f"   ⚠️ 没有有效投票")
+            return None, None
+        
+        # 统计投票
+        vote_counter = Counter(votes)
+        winner, winner_count = vote_counter.most_common(1)[0]
+        
+        if self.verbose:
+            print(f"   📊 投票结果: {dict(vote_counter)}")
+            print(f"   🏆 胜出: {winner} ({winner_count}/{len(votes)} 票)")
+        
+        # 返回胜出工具对应的第一个完整解析结果
+        for action, parsed, llm_response in all_parsed:
+            if action == winner:
+                return parsed, llm_response
+        
+        return None, None
+    
     async def run(self, user_query: str, context: Optional[Dict] = None, is_continuation: bool = False) -> Dict[str, Any]:
         """
-        运行 ReAct 循环
+        运行 ReAct Agent - 简化版：工具优先，一轮搞定
+        
+        新流程：
+        1. 分析问题，用投票机制决定使用什么工具
+        2. 执行工具，获取真实数据
+        3. 把数据喂给 LLM，让它生成基于数据的回答
         
         Args:
             user_query: 用户的问题
@@ -540,269 +844,721 @@ class ReActAgent:
             is_continuation: 是否是继续对话
         
         Returns:
-            结果字典，包含:
-            - success: bool
-            - response: str
-            - response_type: 'answer' | 'question' | 'error'
-            - turns: int
-            - extracted_context: dict
-            - tool_data: dict (包含工具返回的原始数据，如房源列表)
+            结果字典
         """
         if self.verbose:
             print(f"\n{'='*60}")
-            print(f"🤖 [ReAct Agent] 开始处理...")
+            print(f"🤖 [ReAct Agent] 开始处理（工具优先模式）...")
             print(f"   Query: {user_query}")
-            print(f"   Max turns: {self.max_turns}")
             print(f"{'='*60}")
         
-        # 🆕 从用户消息中提取偏好（在每次互动开始时）
+        # 从用户消息中提取偏好
         self.extract_preferences_from_interaction(user_query, '', None)
-        prefs_summary = self.get_preferences_context()
-        if prefs_summary and self.verbose:
-            print(f"📝 [Preferences] Current user preferences:\n{prefs_summary}")
         
-        # 构建初始 prompt
+        # 构建上下文（稍后根据工具类型决定是否包含房产信息）
         tool_descriptions = self._build_tool_descriptions()
-        context_info = self._build_context_info(context)
+        tool_data = {}
         
-        prompt = REACT_PROMPT_TEMPLATE.format(
-            tool_descriptions=tool_descriptions,
-            context_info=context_info,
-            user_query=user_query
-        )
+        # ============ 步骤1: 决定使用什么工具 ============
+        if self.verbose:
+            print(f"\n📋 [Step 1] 分析问题，决定使用什么工具...")
         
-        # ReAct 循环
-        full_trace = prompt
-        iteration = 0
-        tool_data = {}  # 存储工具返回的原始数据
+        # 检测问题类型
+        tool_decision = self._decide_tool(user_query)
         
-        while iteration < self.max_turns:
-            iteration += 1
-            
-            if self.verbose:
-                print(f"\n--- ReAct Turn {iteration}/{self.max_turns} ---")
-            
-            # 调用 LLM
-            llm_response = self.llm.generate_react_response(full_trace)
-            
-            if self.verbose:
-                print(f"LLM Response:\n{llm_response[:500]}..." if len(llm_response) > 500 else f"LLM Response:\n{llm_response}")
-            
-            if not llm_response:
-                return {
-                    'success': False,
-                    'response': "I'm sorry, I couldn't process your request. Please try again.",
-                    'response_type': 'error',
-                    'turns': iteration,
-                    'extracted_context': self.extracted_context,
-                    'tool_data': tool_data
-                }
-            
-            # 解析 LLM 输出
-            parsed = self._parse_llm_output(llm_response)
-            
-            if self.verbose:
-                print(f"Parsed - Thought: {parsed['thought'][:100]}..." if parsed['thought'] and len(parsed['thought']) > 100 else f"Parsed - Thought: {parsed['thought']}")
-                print(f"Parsed - Action: {parsed['action']}")
-                print(f"Parsed - Action Input: {parsed['action_input']}")
-            
-            # 检查是否有 Action
-            if not parsed['action']:
-                # 如果没有明确的 Action，尝试从整体响应中提取答案
-                if self.verbose:
-                    print("⚠️ No action found, using raw response")
-                return {
-                    'success': True,
-                    'response': llm_response,
-                    'response_type': 'answer',
-                    'turns': iteration,
-                    'extracted_context': self.extracted_context,
-                    'tool_data': tool_data
-                }
-            
-            action = parsed['action'].strip()
-            action_input = parsed['action_input']
-            
-            # 检查是否是最终答案
-            if action.lower() in ['final answer', 'final_answer', 'finalanswer']:
-                final_response = action_input if isinstance(action_input, str) else str(action_input)
+        if self.verbose:
+            print(f"   决定: {tool_decision['tool']} - {tool_decision['reason']}")
+        
+        # 🆕 根据工具类型决定是否包含房产上下文
+        # 对于一般信息查询（web_search, multi_search），不应该包含之前的房产搜索结果
+        if tool_decision['tool'] in ['web_search', 'multi_search']:
+            # 一般信息查询 - 清空与房产相关的上下文，避免混淆
+            context_info = "This is a GENERAL INFORMATION query about UK/London living costs, rent prices, transport, etc. Do NOT reference any specific property listings from previous searches."
+        else:
+            # 房产相关查询 - 使用完整上下文
+            context_info = self._build_context_info(context)
+        
+        # ============ 步骤2: 执行工具，获取真实数据 ============
+        if self.verbose:
+            print(f"\n🔧 [Step 2] 执行工具，获取真实数据...")
+        
+        observation = None
+        raw_data = None
+        
+        if tool_decision['tool'] == 'multi_search':
+            # 执行多个搜索
+            observation, raw_data = await self._execute_multi_search(tool_decision['params']['searches'])
+            if raw_data:
+                tool_data['multi_search_results'] = raw_data
                 
-                # 🆕 清理响应 - 移除任何意外泄露的 Thought/Action 格式
+        elif tool_decision['tool'] == 'direct_answer':
+            # 不需要工具，直接让 LLM 回答（简单问候等）
+            pass
+            
+        elif tool_decision['tool'] == 'search_properties':
+            # 执行房产搜索
+            observation, raw_data = await self._execute_tool('search_properties', tool_decision['params'])
+            
+            # 处理 search_properties 的特殊返回情况
+            if raw_data:
+                if raw_data.get('status') == 'need_clarification':
+                    return {
+                        'success': True,
+                        'response': raw_data.get('question', 'Could you please provide more details?'),
+                        'response_type': 'question',
+                        'turns': 1,
+                        'extracted_context': raw_data.get('extracted_so_far', {}),
+                        'tool_data': {}
+                    }
+                elif raw_data.get('status') == 'found' and raw_data.get('recommendations'):
+                    recommendations = raw_data['recommendations']
+                    filtered = self._apply_preference_filter(recommendations)
+                    summary = raw_data.get('summary', f"Found {len(filtered)} properties.")
+                    tool_data['recommendations'] = filtered
+                    tool_data['search_criteria'] = raw_data.get('search_criteria', {})
+                    return {
+                        'success': True,
+                        'response': f"Great news! {summary}\n\nCheck out the listings on the right panel. 👉",
+                        'response_type': 'answer',
+                        'turns': 1,
+                        'extracted_context': self.extracted_context,
+                        'tool_data': tool_data
+                    }
+                    
+            # 🆕 检查 search_properties 是否失败，如果失败则降级到 web_search
+            if raw_data and raw_data.get('success') == False:
+                error_msg = raw_data.get('error', 'Unknown error')
+                if self.verbose:
+                    print(f"\n⚠️ [Fallback] search_properties 失败: {error_msg}")
+                    print(f"   🔄 自动降级到 web_search...")
+                
+                # 构建降级搜索查询
+                params = tool_decision.get('params', {})
+                location = params.get('location', 'London')
+                max_budget = params.get('max_budget', '')
+                
+                fallback_query = f"student accommodation rent {location} UK 2025"
+                if max_budget:
+                    fallback_query += f" under £{max_budget}"
+                
+                # 执行 web_search 作为降级
+                fallback_observation, fallback_raw_data = await self._execute_tool(
+                    'web_search', 
+                    {'query': fallback_query}
+                )
+                
+                if fallback_observation and 'No search results' not in fallback_observation:
+                    observation = f"[Note: Property database search failed. Using web search results instead.]\n\n{fallback_observation}"
+                    raw_data = fallback_raw_data
+                    if self.verbose:
+                        print(f"   ✅ web_search 降级成功")
+                else:
+                    if self.verbose:
+                        print(f"   ❌ web_search 降级也失败了")
+                        
+        else:
+            # 执行其他单个工具
+            observation, raw_data = await self._execute_tool(tool_decision['tool'], tool_decision['params'])
+            
+            # 处理特定工具的直接返回
+            if tool_decision['tool'] == 'check_safety' and raw_data and raw_data.get('safety_score') is not None:
+                return self._format_safety_response(raw_data)
+            
+            if tool_decision['tool'] == 'search_nearby_pois' and raw_data and raw_data.get('pois'):
+                return self._format_poi_response(raw_data)
+        
+        if self.verbose and observation:
+            print(f"\n📊 [Step 2 Result] 工具执行完成，获取到的数据:")
+            print(f"{'-'*60}")
+            # 打印完整的 observation
+            print(observation)
+            print(f"{'-'*60}")
+        
+        # ============ 步骤3: 让 LLM 基于真实数据生成回答 ============
+        if self.verbose:
+            print(f"\n💬 [Step 3] 基于真实数据生成回答...")
+        
+        if observation:
+            # 构建包含真实数据的 prompt - 强调只使用真实数据，避免幻觉
+            data_prompt = f"""You are a helpful assistant for UK student housing.
+
+{context_info}
+
+User Question: {user_query}
+
+I have already gathered the following REAL DATA for you:
+
+{observation}
+
+=== 🚨 STRICT GROUNDING RULES - ZERO TOLERANCE FOR FABRICATION 🚨 ===
+
+🔴 CRITICAL RULE: 你只能使用搜索结果中**字面出现**的信息！
+
+如果搜索结果中没有提到 "Ealing"，你就不能提 Ealing。
+如果搜索结果中没有提到 "£600"，你就不能写 £600。
+如果搜索结果中没有提到 "agency fees are illegal"，你就不能说中介费违法。
+
+⚠️ 你的内部训练数据可能是过时的、错误的！只信任当前搜索结果！
+
+=== ❌ FORBIDDEN BEHAVIORS (每个都是严重错误) ===
+
+1. 【编造地名】
+   搜索结果只提到 "London average" → 你不能提 "Bloomsbury", "Ealing", "King's Cross"
+   ❌ "Areas like Ealing offer good value" ← Ealing 没出现在搜索结果中！
+   ✅ "搜索结果未显示具体区域推荐"
+
+2. 【编造价格】
+   搜索结果只说 "rent varies" → 你不能写具体数字
+   ❌ "Rooms typically cost £600-800/month" ← 这个数字没有来源！
+   ✅ "搜索结果未显示具体价格，请访问 rightmove.co.uk"
+
+3. 【编造法律/政策】
+   除非搜索结果**明确说**，否则你不能声称：
+   ❌ "Agency fees are illegal in England" ← 必须有搜索结果支持！
+   ❌ "Students are exempt from Council Tax" ← 必须有搜索结果支持！
+   ✅ "关于中介费政策，建议查阅 gov.uk 官方信息"
+
+4. 【地域混淆】
+   "UK average £562" ≠ 伦敦（伦敦是全国3-4倍！）
+   ❌ 把 UK 平均数据当作伦敦数据
+   ✅ 明确说明 "这是全国平均，伦敦会更高"
+
+5. 【年份错误】
+   2024年数据 ≠ 2025年现状
+   2026年政策 ≠ 2025年现行政策
+   ✅ 标注数据年份，提醒用户核实
+
+=== ✅ CORRECT BEHAVIOR ===
+
+对于每个你要写的信息，先问自己：
+"这个信息在上面的搜索结果的哪一行？"
+
+如果找不到 → 不要写！
+如果能找到 → 引用来源！
+
+正确格式：
+✅ "根据搜索结果，Rightmove 数据显示伦敦平均租金 £2,736/月"
+✅ "搜索结果未包含 [XX] 的信息，建议访问 [官方网站]"
+✅ "⚠️ 关于中介费政策：搜索结果未涉及，请查阅 gov.uk"
+
+=== 🔍 SELF-CHECK BEFORE EACH CLAIM ===
+
+在写每一个声明之前，回答这个问题：
+
+"我即将写的这个信息（地名/价格/政策）是否在搜索结果中逐字出现？"
+
+- YES → 写出来，并引用来源
+- NO → 不写，或说"搜索结果未涉及"
+
+=== 🚫 EXAMPLES OF FABRICATION (DO NOT DO THIS) ===
+
+假设搜索结果只说："London rent is expensive, average £2,736/month according to Rightmove"
+
+❌ WRONG: "Areas like Ealing, Wembley offer rooms around £600-800"
+   → "Ealing" 没出现！"Wembley" 没出现！"£600-800" 没出现！
+
+✅ CORRECT: "根据 Rightmove，伦敦平均租金 £2,736/月。搜索结果未显示具体区域的价格，建议在 Rightmove 按区域搜索。"
+
+=== ✅ REQUIRED RESPONSE FORMAT ===
+
+对于有具体数字的数据（必须引用来源）：
+"根据 [来源名] [Sub-search X, Result Y]，伦敦平均租金为 £2,736/月。"
+
+对于只有链接没有具体数字的数据：
+"⚠️ 关于[XX]：搜索结果未显示具体金额。
+请访问官方网站获取最新数据：
+- 🔗 [官方链接]"
+
+对于具体地点（如 Bloomsbury, King's Cross）的价格：
+"⚠️ 搜索结果未包含[地点]的具体租金。
+建议直接在 Rightmove/Zoopla 搜索该区域获取当前报价。"
+
+=== 🎓 国际学生提醒（如果相关）===
+如果搜索结果包含以下信息，务必提醒用户：
+- Council Tax 学生免税政策
+- 担保人（Guarantor）要求
+- 租房诈骗警示
+- 押金保护计划
+
+=== 官方数据源（当搜索结果无具体数据时推荐）===
+
+- TfL 交通费: tfl.gov.uk/fares（Zone 1-2 学生月票约 £114）
+- 伦敦租金: rightmove.co.uk, zoopla.co.uk
+- 生活费指南: 各大学官网 Cost of Living 页面
+- 官方统计: ons.gov.uk
+
+=== SELF-VERIFICATION CHECKLIST ===
+回答前，对每个数字检查：
+□ 这个数字是否**直接**出现在搜索结果的 Summary 中？
+□ 如果我提到一个具体地点的价格，这个价格是否来自搜索结果？
+□ 如果只有链接没有数字，我是否正确地说"请访问官网"？
+□ 我有没有不小心用训练记忆"补充"了数字？
+□ 搜索结果中的年份是 2025 吗？如果是未来年份，我是否标注了？
+
+=== 🌐 LANGUAGE RULE (CRITICAL) ===
+- If user asks in ENGLISH → Reply in ENGLISH
+- If user asks in CHINESE → Reply in CHINESE
+- 用户用什么语言问，就用什么语言答！
+
+现在请严格按照以上规则回答：
+- MATCH THE USER'S LANGUAGE (English question = English answer)
+- 只使用搜索结果中**明确显示**的数字
+- 对于没有具体数据的项目，提供官方链接
+- 不要编造任何具体地点的价格！
+
+Your response:"""
+            
+            final_response = self.llm.generate_react_response(data_prompt)
+            
+            if final_response:
                 final_response = self._clean_response(final_response)
                 
-                # 检测是否是问题（需要用户澄清）
-                is_question = any(q in final_response.lower() for q in ['?', 'could you', 'please tell me', 'what is', 'where'])
-                
                 if self.verbose:
-                    print(f"✅ Final Answer: {final_response[:200]}...")
+                    print(f"   ✅ 生成回答成功 ({len(final_response)} 字符)")
                 
                 return {
                     'success': True,
                     'response': final_response,
-                    'response_type': 'question' if is_question and '?' in final_response else 'answer',
-                    'turns': iteration,
+                    'response_type': 'answer',
+                    'turns': 1,
                     'extracted_context': self.extracted_context,
                     'tool_data': tool_data
                 }
+        else:
+            # 没有工具数据（direct_answer 情况），直接让 LLM 回答
+            simple_prompt = f"""You are a helpful assistant for UK student housing.
+
+{context_info}
+
+User Question: {user_query}
+
+Provide a helpful response. Answer in the user's language.
+
+Your response:"""
             
-            # 执行工具
-            if isinstance(action_input, dict):
-                observation, raw_data = await self._execute_tool(action, action_input)
-            else:
-                # 如果 action_input 不是字典，尝试创建空参数（用 user_query）
-                observation, raw_data = await self._execute_tool(action, {'user_query': user_query})
+            final_response = self.llm.generate_react_response(simple_prompt)
             
-            # 保存工具返回的原始数据（特别是 search_properties 的结果）
-            if raw_data:
-                # 🆕 保存安全检查结果，供后续推荐参考 + 更新用户偏好
-                if action == 'check_safety' and isinstance(raw_data, dict):
-                    safety_score = raw_data.get('safety_score', 50)
-                    safety_level = raw_data.get('safety_level', 'Unknown')
-                    address = raw_data.get('address', '')
-                    
-                    if safety_score < 50 or safety_level == 'Concerning':
-                        # 保存安全警告
-                        if 'safety_warnings' not in self.extracted_context:
-                            self.extracted_context['safety_warnings'] = []
-                        self.extracted_context['safety_warnings'].append({
-                            'address': address,
-                            'score': safety_score,
-                            'level': safety_level
-                        })
-                        print(f"⚠️ [ReAct] 已记录安全警告: {address} (score: {safety_score})")
-                        
-                        # 🆕 自动添加到用户偏好的排除列表
-                        area_name = address.split(',')[0].strip() if ',' in address else address
-                        self.add_preference('excluded_areas', area_name)
-                        self.add_preference('hard_preferences', f"Avoid {area_name} - safety score only {safety_score}/100")
-                        self.add_preference('safety_concerns', f"{area_name}: {safety_level} (score {safety_score}/100)")
-                
-                if action == 'search_properties' and isinstance(raw_data, dict):
-                    # 处理搜索结果
-                    if raw_data.get('status') == 'need_clarification':
-                        # 需要澄清 - 返回问题给用户
-                        return {
-                            'success': True,
-                            'response': raw_data.get('question', 'Could you please provide more details?'),
-                            'response_type': 'question',
-                            'turns': iteration,
-                            'extracted_context': raw_data.get('extracted_so_far', {}),
-                            'tool_data': {}
-                        }
-                    elif raw_data.get('status') == 'no_exact_match_but_similar':
-                        # 没有完全匹配但有相似房源 - 构建友好的回复
-                        message = raw_data.get('message', '')
-                        suggestion = raw_data.get('suggestion', '')
-                        similar_props = raw_data.get('similar_properties', [])
-                        suggested_budget = raw_data.get('suggested_budget', 0)
-                        
-                        # 构建 Markdown 格式的回复
-                        response_parts = [
-                            f"## No Exact Matches Found",
-                            "",
-                            message,
-                            "",
-                            f"### 💡 Suggestion",
-                            suggestion,
-                            "",
-                            f"### Similar Properties (Slightly Over Budget)",
-                            ""
-                        ]
-                        
-                        for prop in similar_props[:3]:
-                            response_parts.append(f"**{prop['rank']}. {prop['address']}**")
-                            response_parts.append(f"   - Price: {prop['price']} ({prop['budget_status']})")
-                            response_parts.append(f"   - Commute: {prop['travel_time']}")
-                            response_parts.append("")
-                        
-                        response_parts.append(f"Would you like me to search with a higher budget of **£{suggested_budget}/month**?")
-                        
-                        full_response = "\n".join(response_parts)
-                        
-                        # 保存相似房源供前端展示
-                        tool_data['recommendations'] = similar_props
-                        tool_data['search_criteria'] = raw_data.get('search_criteria', {})
-                        tool_data['suggested_budget'] = suggested_budget
-                        
-                        return {
-                            'success': True,
-                            'response': full_response,
-                            'response_type': 'answer',
-                            'turns': iteration,
-                            'extracted_context': self.extracted_context,
-                            'tool_data': tool_data
-                        }
-                    elif raw_data.get('status') == 'no_results':
-                        # 完全没有结果
-                        return {
-                            'success': True,
-                            'response': raw_data.get('message', 'No properties found matching your criteria.'),
-                            'response_type': 'answer',
-                            'turns': iteration,
-                            'extracted_context': self.extracted_context,
-                            'tool_data': {}
-                        }
-                    elif raw_data.get('status') == 'found' and raw_data.get('recommendations'):
-                        # ✅ 找到房源 - 直接返回结果，不再继续循环
-                        recommendations = raw_data['recommendations']
-                        
-                        # 🆕 应用用户偏好过滤 - 移除排除区域的房源
-                        filtered_recommendations = self._apply_preference_filter(recommendations)
-                        
-                        if not filtered_recommendations:
-                            # 所有房源都被过滤掉了
-                            excluded = ', '.join(self.user_preferences['excluded_areas'])
-                            return {
-                                'success': True,
-                                'response': f"I found some properties, but they're all in areas you've asked me to avoid ({excluded}). Would you like me to search with different criteria?",
-                                'response_type': 'answer',
-                                'turns': iteration,
-                                'extracted_context': self.extracted_context,
-                                'tool_data': {}
-                            }
-                        
-                        summary = raw_data.get('summary', f"Found {len(filtered_recommendations)} properties matching your criteria.")
-                        
-                        # 如果有过滤，添加说明
-                        if len(filtered_recommendations) < len(recommendations):
-                            excluded_count = len(recommendations) - len(filtered_recommendations)
-                            excluded_areas = ', '.join(self.user_preferences['excluded_areas'])
-                            summary += f" (Note: {excluded_count} properties in {excluded_areas} were excluded based on your safety preferences.)"
-                        
-                        tool_data['recommendations'] = filtered_recommendations
-                        tool_data['search_criteria'] = raw_data.get('search_criteria', {})
-                        tool_data['summary'] = summary
-                        
-                        # 构建友好的回复消息
-                        response_message = f"Great news! {summary}\n\nCheck out the listings on the right panel. 👉"
-                        
-                        return {
-                            'success': True,
-                            'response': response_message,
-                            'response_type': 'answer',
-                            'turns': iteration,
-                            'extracted_context': self.extracted_context,
-                            'tool_data': tool_data
-                        }
-            
-            # 将观察结果添加到 trace
-            full_trace += f"\n{llm_response}\nObservation: {observation}\n"
-            
-            if self.verbose:
-                obs_preview = observation[:300] + "..." if len(observation) > 300 else observation
-                print(f"Observation: {obs_preview}")
+            if final_response:
+                final_response = self._clean_response(final_response)
+                return {
+                    'success': True,
+                    'response': final_response,
+                    'response_type': 'answer',
+                    'turns': 1,
+                    'extracted_context': self.extracted_context,
+                    'tool_data': tool_data
+                }
         
-        # 超过最大迭代次数
-        if self.verbose:
-            print(f"⚠️ Reached max turns ({self.max_turns})")
-        
+        # 回退
         return {
             'success': False,
-            'response': "I apologize, but I couldn't complete the task within the allowed steps. Please try rephrasing your question or being more specific.",
+            'response': "I'm sorry, I couldn't process your request. Please try again.",
             'response_type': 'error',
-            'turns': iteration,
+            'turns': 1,
             'extracted_context': self.extracted_context,
             'tool_data': tool_data
+        }
+    
+    def _decide_tool(self, user_query: str) -> dict:
+        """
+        使用 LLM 多数投票决定使用什么工具
+        
+        核心原则：
+        1. 不使用关键词匹配 - 完全由 LLM 理解语义意图
+        2. 使用多数投票（5次）减少幻觉
+        3. 不确定时默认使用 web_search（更安全）
+        
+        Returns:
+            dict: {'tool': str, 'params': dict, 'reason': str}
+        """
+        query_lower = user_query.lower()
+        
+        # 简单问候 -> 直接回答（这个规则保留，因为很明确）
+        greetings = ['hi', 'hello', '你好', '您好', 'hey', 'thanks', '谢谢']
+        if any(g == query_lower.strip() for g in greetings) or (len(user_query) < 10 and any(g in query_lower for g in greetings)):
+            return {
+                'tool': 'direct_answer',
+                'params': {},
+                'reason': "简单问候，直接回答"
+            }
+        
+        # 使用 LLM 多数投票决定工具
+        return self._majority_vote_tool_decision(user_query, num_votes=5)
+    
+    def _majority_vote_tool_decision(self, user_query: str, num_votes: int = 5) -> dict:
+        """
+        LLM 多数投票选择工具（改进版）
+        
+        使用更高的 temperature 增加投票多样性，避免全票一致。
+        同时改进 prompt 让 LLM 更准确地识别行动请求。
+        
+        Args:
+            user_query: 用户查询
+            num_votes: 投票次数（默认5次）
+            
+        Returns:
+            dict: {'tool': str, 'params': dict, 'reason': str}
+        """
+        from collections import Counter
+        
+        # 🆕 改进的 prompt：更平衡，更关注用户的实际意图
+        classification_prompt = f'''You are a tool router. Classify this query into ONE tool.
+
+USER QUERY: "{user_query}"
+
+TOOLS:
+1. search_properties - User wants you to FIND/SHOW/GET properties from the database
+   ✓ "find me...", "show me...", "get me...", "search for..."
+   ✓ "can you find...", "based on X, find properties"
+   ✓ "帮我找", "给我推荐", "搜索房源"
+   ✓ User already provided context and NOW wants action
+   
+2. web_search - User wants INFORMATION or has QUESTIONS
+   ✓ "what is...", "how much...", "which areas...", "is it possible..."
+   ✓ General information about rent, areas, costs
+   ✓ "介绍", "怎么样", "多少钱"
+
+3. check_safety - Safety/crime questions about specific location
+4. get_weather - Weather questions
+
+IMPORTANT: If user says "find", "show", "get", "search", "recommend properties" → search_properties
+If user asks a question without requesting action → web_search
+
+Output ONLY the tool name:
+Tool: '''
+
+        votes = []
+        
+        if self.verbose:
+            print(f"\n🗳️ [Voting] 开始 {num_votes} 次投票选择工具（高温度模式）...")
+        
+        for i in range(num_votes):
+            try:
+                # 🆕 使用高温度的分类函数，增加投票多样性
+                response = self.llm.generate_classification_response(classification_prompt)
+                if response:
+                    tool = response.strip().lower().split()[0]  # Take first word
+                    tool = tool.replace(':', '').replace(',', '').replace('.', '')
+                    
+                    # Normalize tool names
+                    if 'search_prop' in tool or 'properties' in tool:
+                        tool = 'search_properties'
+                    elif 'web' in tool or tool == 'search':
+                        tool = 'web_search'
+                    elif 'safety' in tool or 'check' in tool:
+                        tool = 'check_safety'
+                    elif 'weather' in tool:
+                        tool = 'get_weather'
+                    else:
+                        tool = 'web_search'  # Default fallback for unknown
+                    
+                    votes.append(tool)
+                    
+                    if self.verbose:
+                        print(f"   Vote {i+1}: {tool}")
+            except Exception as e:
+                if self.verbose:
+                    print(f"   Vote {i+1}: ERROR - {e}")
+                continue
+        
+        if not votes:
+            if self.verbose:
+                print(f"   ⚠️ 没有有效投票，使用默认 web_search")
+            return self._llm_plan_searches(user_query)  # Fallback
+        
+        # Count votes
+        counter = Counter(votes)
+        winner, count = counter.most_common(1)[0]
+        
+        if self.verbose:
+            print(f"   📊 投票结果: {dict(counter)}")
+            print(f"   🏆 胜出: {winner} ({count}/{len(votes)} 票)")
+        
+        # 🆕 如果投票结果平局或接近平局，检查用户查询中的动作词
+        if len(counter) > 1:
+            # 检查是否有明确的动作请求词
+            action_indicators = ['find', 'show', 'get', 'search', '找', '搜索', '推荐', 'recommend', 'based on']
+            query_lower = user_query.lower()
+            has_action_word = any(word in query_lower for word in action_indicators)
+            
+            if has_action_word and 'search_properties' in counter:
+                # 用户明确请求行动，且有投票支持 search_properties
+                if self.verbose:
+                    print(f"   🔍 检测到行动词，倾向使用 search_properties")
+                winner = 'search_properties'
+                count = counter.get('search_properties', 0)
+        
+        # Build appropriate params based on winner
+        if winner == 'search_properties':
+            return {
+                'tool': 'search_properties', 
+                'params': {'user_query': user_query}, 
+                'reason': f"LLM投票决定: search_properties ({count}/{len(votes)}票)"
+            }
+        elif winner == 'web_search':
+            # Use existing multi-search planning for web queries
+            return self._llm_plan_searches(user_query)
+        elif winner == 'check_safety':
+            # Extract location from query if possible
+            return {
+                'tool': 'check_safety', 
+                'params': {'address': 'London', 'area': 'London'}, 
+                'reason': f"LLM投票决定: check_safety ({count}/{len(votes)}票)"
+            }
+        elif winner == 'get_weather':
+            location = 'London'
+            query_lower = user_query.lower()
+            if 'manchester' in query_lower or '曼彻斯特' in user_query:
+                location = 'Manchester'
+            elif 'birmingham' in query_lower or '伯明翰' in user_query:
+                location = 'Birmingham'
+            return {
+                'tool': 'get_weather', 
+                'params': {'location': location}, 
+                'reason': f"LLM投票决定: get_weather ({count}/{len(votes)}票)"
+            }
+        else:
+            # Default to web search planning
+            return self._llm_plan_searches(user_query)
+    
+    def _llm_plan_searches(self, user_query: str) -> dict:
+        """
+        让 LLM 自主规划搜索策略
+        
+        LLM 会分析问题，决定需要几个搜索（1-10个），并生成精准的搜索词
+        强调使用 2025 年数据和官方来源
+        所有搜索必须使用英文
+        包含国际学生隐形成本搜索
+        
+        Returns:
+            dict: {'tool': 'multi_search', 'params': {'searches': [...]}, 'reason': str}
+        """
+        if self.verbose:
+            print(f"\n🧠 [LLM Planning] 让 LLM 自主规划搜索策略...")
+        
+        planning_prompt = f"""You are a search query planner for UK student housing assistance.
+
+USER QUESTION: {user_query}
+
+Your task: Plan the optimal search strategy to answer this question with ACCURATE, LONDON-SPECIFIC data.
+
+🚨 CRITICAL - AVOID UK-WIDE AVERAGES:
+- UK average data is MISLEADING for London (London is 50-100% more expensive!)
+- ALWAYS include "London" in search queries to get London-specific data
+- Example: "London rent" not "UK student rent"
+
+🎓 INTERNATIONAL STUDENT HIDDEN COSTS (IMPORTANT):
+When user asks about rent/costs, ALWAYS consider these hidden costs that affect international students:
+1. Council Tax Exemption - students are exempt but need to apply
+2. Guarantor Requirements - international students often need UK guarantor or pay 6-12 months upfront
+3. Rental Scams - common targeting international students
+4. Deposit Protection Schemes - legal requirements
+5. Agency Fees - some charge extra for non-UK students
+
+REQUIREMENTS:
+1. ALL search queries MUST be in ENGLISH - translate Chinese queries to English
+2. ALL searches MUST include "London" + "2025" - we need CURRENT LONDON data
+3. PRIORITIZE OFFICIAL SOURCES:
+   - Rent: "London Rightmove" or "London Zoopla" 
+   - Transport: "TfL" or "tfl.gov.uk"
+   - Living costs: "London cost of living" (NOT "UK cost of living")
+4. For cost-related questions, ADD a search for international student hidden costs
+5. AVOID: blog posts, UK-wide averages, outdated data
+
+RULES:
+1. Decide how many searches are needed (minimum 1, maximum 10)
+2. Each query MUST include "London" + "2025"
+3. Each query should target authoritative sources
+4. For transport: search for SPECIFIC zones (Zone 1-2 vs Zone 1-6)
+5. For rent/cost questions: INCLUDE hidden costs search for international students
+
+OUTPUT FORMAT - STRICT JSON only:
+{{"searches": [{{"tool": "web_search", "params": {{"query": "London specific query 2025"}}}}], "reason": "brief reason"}}
+
+EXAMPLES:
+User: "伦敦租房多少钱" -> {{"searches": [{{"tool": "web_search", "params": {{"query": "London average rent price 2025 Rightmove"}}}}, {{"tool": "web_search", "params": {{"query": "London international student rent guarantor requirements 2025"}}}}, {{"tool": "web_search", "params": {{"query": "London rental scams international students avoid 2025"}}}}], "reason": "London rent + hidden costs"}}
+User: "通勤费用" -> {{"searches": [{{"tool": "web_search", "params": {{"query": "London TfL Zone 1-2 monthly travelcard 2025 official"}}}}], "reason": "London transport"}}
+User: "生活费用" -> {{"searches": [{{"tool": "web_search", "params": {{"query": "London student cost of living 2025"}}}}, {{"tool": "web_search", "params": {{"query": "London Council Tax student exemption 2025"}}}}, {{"tool": "web_search", "params": {{"query": "London international student deposit scheme 2025"}}}}], "reason": "London living costs + hidden costs"}}
+
+Now output JSON for: "{user_query}"
+JSON:"""
+
+        try:
+            response = self.llm.generate_react_response(planning_prompt)
+            
+            if response:
+                # 清理响应中的控制字符和非法字符
+                cleaned_response = response
+                # 移除控制字符（除了换行和制表符）
+                cleaned_response = ''.join(char for char in cleaned_response if ord(char) >= 32 or char in '\n\t')
+                # 尝试提取 JSON
+                json_match = re.search(r'\{[\s\S]*\}', cleaned_response)
+                if json_match:
+                    json_str = json_match.group()
+                    # 进一步清理 JSON 字符串
+                    json_str = json_str.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+                    
+                    plan = json.loads(json_str)
+                    searches = plan.get('searches', [])
+                    reason = plan.get('reason', 'LLM planned searches')
+                    
+                    # 确保每个搜索都包含 2025 并且是英文
+                    valid_searches = []
+                    for search in searches:
+                        if search.get('tool') == 'web_search':
+                            query = search.get('params', {}).get('query', '')
+                            # 跳过包含大量中文的查询
+                            chinese_chars = sum(1 for char in query if '\u4e00' <= char <= '\u9fff')
+                            if chinese_chars > 3:
+                                continue  # 跳过中文查询
+                            if '2025' not in query and '2024' not in query:
+                                query = query + ' 2025'
+                            search['params']['query'] = query
+                            valid_searches.append(search)
+                        else:
+                            valid_searches.append(search)
+                    
+                    searches = valid_searches
+                    
+                    # 限制最多10个搜索
+                    if len(searches) > 10:
+                        searches = searches[:10]
+                    
+                    if self.verbose:
+                        print(f"   📋 LLM 规划了 {len(searches)} 个搜索:")
+                        for i, s in enumerate(searches):
+                            print(f"      {i+1}. {s.get('tool')}: {s.get('params', {}).get('query', s.get('params'))}")
+                    
+                    if searches:
+                        return {
+                            'tool': 'multi_search',
+                            'params': {'searches': searches},
+                            'reason': f"LLM规划: {reason}"
+                        }
+        except Exception as e:
+            if self.verbose:
+                print(f"   ⚠️ LLM 规划失败: {e}")
+        
+        # 回退：根据用户问题生成英文搜索查询
+        if self.verbose:
+            print(f"   ⚠️ 使用默认搜索策略 - 自动翻译为英文")
+        
+        # 分析用户问题，生成合适的英文搜索词
+        fallback_searches = self._generate_fallback_english_searches(user_query)
+        
+        return {
+            'tool': 'multi_search',
+            'params': {'searches': fallback_searches},
+            'reason': "默认英文搜索"
+        }
+    
+    def _generate_fallback_english_searches(self, user_query: str) -> list:
+        """
+        根据用户问题生成英文搜索查询（回退策略）
+        
+        检测关键词并生成对应的英文搜索
+        """
+        searches = []
+        query_lower = user_query.lower()
+        
+        # 检测租房相关
+        if any(kw in user_query for kw in ['租房', '租金', 'rent', '房价', '房租']):
+            searches.append({
+                "tool": "web_search",
+                "params": {"query": "London average rent price 2025 Zoopla Rightmove official"}
+            })
+        
+        # 检测生活费用相关
+        if any(kw in user_query for kw in ['生活', '开销', '费用', 'cost', 'living', '花费']):
+            searches.append({
+                "tool": "web_search", 
+                "params": {"query": "London student cost of living 2025 official statistics"}
+            })
+        
+        # 检测吃饭/食品相关
+        if any(kw in user_query for kw in ['吃饭', '食物', '饮食', 'food', 'grocery', '餐饮']):
+            searches.append({
+                "tool": "web_search",
+                "params": {"query": "London student weekly food budget 2025 supermarket"}
+            })
+        
+        # 检测交通/通勤相关
+        if any(kw in user_query for kw in ['通勤', '交通', 'transport', 'commute', '地铁', 'tube']):
+            searches.append({
+                "tool": "web_search",
+                "params": {"query": "London TfL monthly travelcard price Zone 1-2 2025 official"}
+            })
+        
+        # 检测安全相关
+        if any(kw in user_query for kw in ['安全', 'safe', 'safety', '犯罪', 'crime']):
+            searches.append({
+                "tool": "web_search",
+                "params": {"query": "London safe areas for students 2025 crime statistics"}
+            })
+        
+        # 如果没有匹配任何关键词，使用通用搜索
+        if not searches:
+            searches.append({
+                "tool": "web_search",
+                "params": {"query": "London student accommodation guide 2025 official"}
+            })
+        
+        if self.verbose:
+            print(f"   📋 生成了 {len(searches)} 个英文回退搜索")
+            for i, s in enumerate(searches):
+                print(f"      {i+1}. {s['params']['query']}")
+        
+        return searches
+    
+    def _format_safety_response(self, raw_data: dict) -> dict:
+        """格式化安全检查响应"""
+        address = raw_data.get('address', 'the area')
+        score = raw_data.get('safety_score', 50)
+        level = raw_data.get('safety_level', 'Moderate')
+        details = raw_data.get('details', '')
+        
+        emoji = "✅" if score >= 70 else "⚠️" if score >= 50 else "🚨"
+        
+        response = f"""## {emoji} Safety Report for {address}
+
+**Safety Score:** {score}/100
+**Risk Level:** {level}
+
+{details}
+
+*Note: This is based on general area statistics. Always visit in person before making a decision.*"""
+        
+        return {
+            'success': True,
+            'response': response,
+            'response_type': 'answer',
+            'turns': 1,
+            'extracted_context': self.extracted_context,
+            'tool_data': {'safety_data': raw_data}
+        }
+    
+    def _format_poi_response(self, raw_data: dict) -> dict:
+        """格式化 POI 搜索响应"""
+        pois = raw_data.get('pois') or raw_data.get('results', {})
+        address = raw_data.get('address', 'the location')
+        
+        response_parts = [f"## 📍 Nearby Facilities - {address}\n"]
+        
+        for poi_type, poi_list in pois.items():
+            if poi_list:
+                response_parts.append(f"\n### {poi_type.replace('_', ' ').title()}")
+                for poi in poi_list[:5]:
+                    name = poi.get('name', 'Unknown')
+                    distance = poi.get('distance', 'N/A')
+                    response_parts.append(f"- **{name}** - {distance}m")
+        
+        return {
+            'success': True,
+            'response': '\n'.join(response_parts),
+            'response_type': 'answer',
+            'turns': 1,
+            'extracted_context': self.extracted_context,
+            'tool_data': {'poi_results': raw_data}
         }
     
     def _clean_response(self, response: str) -> str:
@@ -813,10 +1569,19 @@ class ReActAgent:
         - Thought: ... 行
         - Action: ... 行  
         - Action Input: 前缀
+        - **Final Answer:** 等 markdown 格式
         - 其他调试信息
+        
+        增强:
+        - 年份校验：检测 2025 vs 2026 数据，添加时效性警告
         """
         if not response:
             return response
+        
+        # 🆕 先清理 markdown 格式的标记
+        response = re.sub(r'^\s*\*\*Final Answer:\*\*\s*', '', response, flags=re.IGNORECASE)
+        response = re.sub(r'^\s*\*\*Final Answer:\s*', '', response, flags=re.IGNORECASE)
+        response = re.sub(r'^\s*Final Answer:\s*', '', response, flags=re.IGNORECASE)
         
         lines = response.split('\n')
         cleaned_lines = []
@@ -838,6 +1603,9 @@ class ReActAgent:
                 continue
             if line_lower.startswith('observation:'):
                 continue
+            # 🆕 跳过只有 ** 的行
+            if line.strip() == '**' or line.strip() == '** ':
+                continue
             
             cleaned_lines.append(line)
         
@@ -846,6 +1614,53 @@ class ReActAgent:
         # 确保不返回空字符串
         if not result:
             return response
+        
+        # 🆕 年份校验：检测未来年份数据并添加警告
+        result = self._validate_and_annotate_year(result)
+        
+        return result
+    
+    def _validate_and_annotate_year(self, response: str) -> str:
+        """
+        校验响应中的年份引用，对未来政策/数据添加警告标注
+        
+        检测模式:
+        - 2025/26 学年、2026 年入学
+        - 2026 NHS surcharge、2026 visa fees
+        - 将未来年份数据标注为"预计政策"
+        """
+        import datetime
+        current_year = datetime.datetime.now().year  # 2025
+        
+        # 检测未来年份的政策/费用引用
+        future_year_patterns = [
+            # 明确的未来年份 (2026+)
+            (r'\b(202[6-9]|20[3-9]\d)\s*(年|学年|academic year)', r'⚠️ \1\2 (预计政策，可能变动)'),
+            (r'\b(202[6-9]|20[3-9]\d)\s*(NHS|visa|Council Tax|rent)', r'⚠️ \1 \2 (预计费用，以官方公布为准)'),
+            
+            # 2025/26 学年格式 - 如果已经是 2025 年下半年，这可能是当前数据
+            (r'\b(2025/26|2025-26)\s*(学年|academic year)', r'\1\2 (当前学年数据)'),
+            
+            # 检测 "from September 2026" 等
+            (r'from\s+(September|October|January)\s+(202[6-9]|20[3-9]\d)', r'from \1 \2 ⚠️ (预计，以届时官方公告为准)'),
+        ]
+        
+        result = response
+        for pattern, replacement in future_year_patterns:
+            result = re.sub(pattern, replacement, result, flags=re.IGNORECASE)
+        
+        # 🆕 如果响应中包含价格数据但年份是未来的，添加免责声明
+        has_future_year = bool(re.search(r'\b(202[6-9]|20[3-9]\d)\b', result))
+        has_price_data = bool(re.search(r'£\s*[\d,]+', result))
+        
+        if has_future_year and has_price_data:
+            # 检查是否已经有免责声明
+            if '⚠️' not in result[:100]:  # 开头没有警告
+                disclaimer = "\n\n⚠️ **注意**: 响应中包含未来年份的预测数据，实际价格/政策可能有所变动，请以官方最新公告为准。"
+                # 如果响应很长，在开头也加一个简短提示
+                if len(result) > 500:
+                    result = "📅 **数据时效提示**: 部分信息为预计值\n\n" + result
+                result += disclaimer
         
         return result
     
@@ -884,12 +1699,13 @@ class ReActAgent:
         return filtered
     
     def reset(self):
-        """重置 Agent 状态（保留用户偏好）"""
+        """重置 Agent 状态（保留用户偏好和累积的搜索条件）"""
         self.extracted_context = {}
-        # 注意：不清除 user_preferences，因为偏好需要在整个会话期间保持
+        # 注意：不清除 user_preferences 和 accumulated_search_criteria
+        # 因为它们需要在整个会话期间保持
     
     def reset_all(self):
-        """完全重置 Agent（包括用户偏好）- 用于新会话"""
+        """完全重置 Agent（包括用户偏好和搜索条件）- 用于新会话"""
         self.extracted_context = {}
         self.user_preferences = {
             'hard_preferences': [],
@@ -898,5 +1714,13 @@ class ReActAgent:
             'required_amenities': [],
             'safety_concerns': [],
         }
+        self.accumulated_search_criteria = {
+            'destination': None,
+            'max_budget': None,
+            'max_travel_time': None,
+            'property_features': [],
+            'soft_preferences': [],
+            'amenities_of_interest': [],
+        }
         if self.verbose:
-            print("🔄 [ReAct] Agent fully reset (including preferences)")
+            print("🔄 [ReAct] Agent fully reset (including preferences and search criteria)")

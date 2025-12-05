@@ -564,7 +564,8 @@ def create_tool_registry() -> ToolRegistry:
         check_safety_tool,
         get_weather_tool,
         web_search_tool,
-        search_nearby_pois_tool
+        search_nearby_pois_tool,
+        get_property_details_tool
     )
     
     registry = ToolRegistry()
@@ -576,6 +577,7 @@ def create_tool_registry() -> ToolRegistry:
     registry.register(get_weather_tool)
     registry.register(web_search_tool)
     registry.register(search_nearby_pois_tool)
+    registry.register(get_property_details_tool)
     
     print(f"\n✅ 工具系统初始化完成！共注册 {len(registry.tools)} 个工具")
     

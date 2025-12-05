@@ -93,7 +93,7 @@ calculate_commute_tool = Tool(
             'mode': {
                 'type': 'string',
                 'enum': ['transit', 'driving', 'walking', 'bicycling'],
-                'description': '通勤方式',
+                'description': '通勤方式: transit (地铁/公交/火车), driving (开车), walking (步行), bicycling (骑车). 注意：不要使用 tube/tubing/underground，请用 transit',
                 'default': 'transit'
             }
         },

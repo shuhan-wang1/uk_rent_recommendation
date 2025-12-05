@@ -26,7 +26,12 @@ async def enrich_property_data(property_dict: dict, criteria: dict) -> dict:
     destination = criteria.get('destination')
     
     # ✅ 从 soft_preferences 中智能提取用户关心的内容
-    soft_prefs = (criteria.get('soft_preferences') or '').lower()
+    # 🆕 处理 soft_preferences 可能是列表或字符串的情况
+    raw_soft_prefs = criteria.get('soft_preferences') or ''
+    if isinstance(raw_soft_prefs, list):
+        soft_prefs = ' '.join(str(p) for p in raw_soft_prefs).lower()
+    else:
+        soft_prefs = str(raw_soft_prefs).lower()
     amenities_of_interest = criteria.get('amenities_of_interest') or []
 
     if not address:

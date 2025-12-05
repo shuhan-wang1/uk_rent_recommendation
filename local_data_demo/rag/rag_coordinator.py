@@ -105,9 +105,18 @@ class RAGCoordinator:
             # Safety concerns boost from soft preferences
             soft_prefs = criteria.get('soft_preferences', '')
             crime_trend = prop.get('crime_data_summary', {}).get('crime_trend')
-            if soft_prefs and 'safe' in soft_prefs.lower():
-                if crime_trend == 'decreasing':
-                    score += 0.1
+            
+            # 🆕 处理 soft_prefs 可能是列表或字符串的情况
+            if soft_prefs:
+                # 如果是列表，转换为字符串
+                if isinstance(soft_prefs, list):
+                    soft_prefs_str = ' '.join(str(p) for p in soft_prefs).lower()
+                else:
+                    soft_prefs_str = str(soft_prefs).lower()
+                
+                if 'safe' in soft_prefs_str:
+                    if crime_trend == 'decreasing':
+                        score += 0.1
             
             prop['final_score'] = score
             

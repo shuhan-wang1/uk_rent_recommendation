@@ -7,7 +7,7 @@ import requests
 OLLAMA_BASE_URL = "http://localhost:11434"
 MODEL_NAME = "ministral-3:3b-cloud"  # 使用 Ollama 云端模型，更强的推理能力
 
-USE_FINETUNED_MODEL = True
+USE_FINETUNED_MODEL = False  # 禁用 fine-tuned model，统一使用主 LLM
 # ========================================
 FINETUNED_BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"  # or path to Ollama's download
 FINETUNED_ADAPTER_PATH = "./student_model_lora/"     # Your LoRA adapters directory
@@ -61,10 +61,15 @@ def call_ollama(prompt: str, system_prompt: str = None, timeout: int = 360) -> s
         return None
 
 
-def generate_react_response(prompt: str, timeout: int = 120) -> str:
+def generate_react_response(prompt: str, timeout: int = 120, temperature: float = 0.2) -> str:
     """
     为 ReAct Agent 生成响应
     使用 Ollama 进行推理
+    
+    Args:
+        prompt: 输入提示
+        timeout: 超时时间
+        temperature: 温度参数，越高越随机（用于投票时增加多样性）
     """
     url = f"{OLLAMA_BASE_URL}/api/generate"
     
@@ -73,9 +78,9 @@ def generate_react_response(prompt: str, timeout: int = 120) -> str:
         "prompt": prompt,
         "stream": False,
         "options": {
-            "temperature": 0.2,  # 稍高温度让推理更灵活
+            "temperature": temperature,  # 可调节的温度参数
             "top_p": 0.9,
-            "num_predict": 1000,  # ReAct 响应通常较短
+            "num_predict": 4000,  # 增加到 4000，确保长回答不被截断
             "num_ctx": 8192,
             "stop": ["Observation:"]  # 遇到 Observation 就停止
         }
@@ -91,6 +96,35 @@ def generate_react_response(prompt: str, timeout: int = 120) -> str:
         return ""
 
 
+def generate_classification_response(prompt: str, timeout: int = 30) -> str:
+    """
+    专门用于工具分类的函数，使用更高的 temperature 增加多样性
+    """
+    url = f"{OLLAMA_BASE_URL}/api/generate"
+    
+    payload = {
+        "model": MODEL_NAME,
+        "prompt": prompt,
+        "stream": False,
+        "options": {
+            "temperature": 0.7,  # 更高的温度，增加投票多样性
+            "top_p": 0.95,
+            "top_k": 40,  # 添加 top_k 增加采样多样性
+            "num_predict": 50,  # 只需要短回答
+            "num_ctx": 4096,
+        }
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=timeout)
+        response.raise_for_status()
+        result = response.json()
+        return result.get("response", "")
+    except Exception as e:
+        print(f"[Classification] Ollama error: {e}")
+        return ""
+
+
 class LLMInterface:
     """LLM 接口包装类，供 ReAct Agent 使用"""
     
@@ -101,6 +135,10 @@ class LLMInterface:
     def generate_react_response(self, prompt: str) -> str:
         """生成 ReAct 响应"""
         return generate_react_response(prompt)
+    
+    def generate_classification_response(self, prompt: str) -> str:
+        """生成工具分类响应（高温度，增加多样性）"""
+        return generate_classification_response(prompt)
 
 def extract_first_json(text: str) -> dict | None:
     """Extracts the first valid JSON object from a string"""
@@ -117,8 +155,8 @@ def extract_first_json(text: str) -> dict | None:
     except (json.JSONDecodeError, TypeError) as e:
         print(f"[JSON PARSER] ❌ Method 1 failed: {str(e)[:100]}")
     
-    # 尝试2: 提取```json...```代码块
-    match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+    # 尝试2: 提取```json...```代码块 (改进正则：使用贪婪匹配来获取完整 JSON)
+    match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', text, re.DOTALL)
     if match:
         try:
             result = json.loads(match.group(1))
@@ -271,7 +309,16 @@ def clarify_and_extract_criteria(user_query: str) -> dict:
             # Validate result has required fields
             if result.get('status') == 'success':
                 required = ['destination', 'max_budget', 'max_travel_time']
-                missing = [f for f in required if not result.get(f)]
+                # 🔧 修复：正确检查必需字段，0 对于 budget 和 travel_time 是无效值
+                missing = []
+                for f in required:
+                    val = result.get(f)
+                    if val is None:
+                        missing.append(f)
+                    elif f in ['max_budget', 'max_travel_time'] and val == 0:
+                        missing.append(f)  # 0 是无效值，需要用户提供
+                    elif not val:  # 空字符串等
+                        missing.append(f)
                 
                 if not missing:
                     # All required fields present
@@ -300,12 +347,17 @@ def clarify_and_extract_criteria(user_query: str) -> dict:
                     missing_descriptions = [field_names.get(f, f) for f in missing]
                     
                     # Keep the fields we already have
+                    # 🔧 修复：确保 soft_preferences 始终是字符串或列表，不会被错误遍历
+                    soft_prefs = result.get('soft_preferences', '')
+                    if isinstance(soft_prefs, list):
+                        soft_prefs = ', '.join(soft_prefs) if soft_prefs else ''
+                    
                     clarification_result = {
                         'status': 'clarification_needed',
                         'destination': result.get('destination'),
                         'max_budget': result.get('max_budget'),
                         'max_travel_time': result.get('max_travel_time'),
-                        'soft_preferences': result.get('soft_preferences', []),
+                        'soft_preferences': soft_prefs,  # 保持为字符串
                         'property_tags': result.get('property_tags', []),
                         'amenities_of_interest': result.get('amenities_of_interest', []),
                         'area_vibe': result.get('area_vibe'),
@@ -320,8 +372,14 @@ def clarify_and_extract_criteria(user_query: str) -> dict:
                     return clarification_result
             elif result.get('status') == 'clarification_needed':
                 # ✅ CRITICAL FIX: Check if all required fields are actually present
+                # 🔧 修复：正确检查必需字段，0 是无效值
                 required = ['destination', 'max_budget', 'max_travel_time']
-                has_all_required = all(result.get(field) for field in required)
+                has_all_required = True
+                for field in required:
+                    val = result.get(field)
+                    if val is None or val == '' or (field in ['max_budget', 'max_travel_time'] and val == 0):
+                        has_all_required = False
+                        break
                 
                 if has_all_required:
                     # ✅ Model said "clarification_needed" but we have everything!
@@ -412,6 +470,7 @@ YOUR TASK: Extract rental criteria and return ONLY the JSON below (NO explanatio
   "status": "success",
   "destination": "",
   "max_budget": 0,
+  "budget_period": "month",
   "max_travel_time": 0,
   "soft_preferences": "",
   "property_tags": [],
@@ -423,12 +482,16 @@ YOUR TASK: Extract rental criteria and return ONLY the JSON below (NO explanatio
 
 RULES:
 1. destination: Be specific (e.g., "University College London" not just "London")
-2. max_budget: Extract numeric value (e.g., 5000 for "£5000/month")
-3. max_travel_time: Extract minutes ONLY. "40 min" = 40, "1 hour" = 60, "90 minutes" = 90
-4. If unlimited travel time, set to 999
-5. suggested_search_locations: List nearby areas for the destination
-6. soft_preferences: Extract SPECIFIC user concerns like "concerned about crime", "want safe area", "need quiet location", "prefer modern", etc. This is IMPORTANT!
-7. CRITICAL: Return ONLY the completed JSON object, nothing else
+2. max_budget: Extract NUMERIC value ONLY (e.g., 280 for "£280/week", 1500 for "£1500/month")
+3. budget_period: CRITICAL! Identify if budget is "week" or "month":
+   - "£280 per week" / "£280/week" / "£280 pw" → budget_period: "week"
+   - "£1500 per month" / "£1500/month" / "£1500 pcm" → budget_period: "month"
+   - If not specified, assume "month"
+4. max_travel_time: Extract minutes ONLY. "40 min" = 40, "1 hour" = 60, "90 minutes" = 90
+5. If unlimited travel time, set to 999
+6. suggested_search_locations: List nearby areas for the destination
+7. soft_preferences: Extract SPECIFIC user concerns like "concerned about crime", "want safe area", "need quiet location", "prefer modern", etc. This is IMPORTANT!
+8. CRITICAL: Return ONLY the completed JSON object, nothing else
 
 JSON OUTPUT:"""
 
@@ -448,8 +511,17 @@ JSON OUTPUT:"""
             print("[WARN] Got schema instead of data, retrying with simple prompt")
             return retry_with_simple_prompt(user_query)
         
+        # 🔧 修复：正确检查必需字段，0 是无效值
         required = ['destination', 'max_budget', 'max_travel_time']
-        has_required = all(parsed_json.get(field) for field in required)
+        has_required = True
+        for field in required:
+            val = parsed_json.get(field)
+            if val is None or val == '':
+                has_required = False
+                break
+            elif field in ['max_budget', 'max_travel_time'] and val == 0:
+                has_required = False
+                break
         
         if has_required:
             if not parsed_json.get('soft_preferences'):
@@ -568,8 +640,15 @@ def refine_criteria_with_answer(original_criteria: dict, user_answer: str) -> di
             result['soft_preferences'] = ""
     
     # 5. Check if all required fields are present
+    # 🔧 修复：正确检查必需字段，0 是无效值
     required_fields = ['destination', 'max_budget', 'max_travel_time']
-    missing_fields = [f for f in required_fields if not result.get(f)]
+    missing_fields = []
+    for f in required_fields:
+        val = result.get(f)
+        if val is None or val == '':
+            missing_fields.append(f)
+        elif f in ['max_budget', 'max_travel_time'] and val == 0:
+            missing_fields.append(f)
     
     if missing_fields:
         print(f"[Refine] ⚠️  Still missing: {missing_fields}")
@@ -836,7 +915,11 @@ def generate_recommendations(properties_data: list[dict], user_query: str, soft_
     simple_props = []
     
     # ✅ FIXED: 先确定应该提到的数据类型
-    soft_prefs_lower = soft_preferences.lower() if soft_preferences else ""
+    # 🆕 处理 soft_preferences 可能是列表或字符串的情况
+    if isinstance(soft_preferences, list):
+        soft_prefs_lower = ' '.join(str(p) for p in soft_preferences).lower()
+    else:
+        soft_prefs_lower = str(soft_preferences).lower() if soft_preferences else ""
     should_include_crime = any(kw in soft_prefs_lower for kw in ['safe', 'crime', 'security', 'dangerous'])
     should_include_amenities = any(kw in soft_prefs_lower for kw in ['supermarket', 'shop', 'park', 'gym', 'restaurant', 'amenities'])
     
@@ -902,7 +985,11 @@ CRITICAL RULES:
     data_to_mention = set()  # 跟踪应该提到的数据类型
     
     if soft_preferences:
-        sp_lower = soft_preferences.lower()
+        # 🆕 处理 soft_preferences 可能是列表或字符串的情况
+        if isinstance(soft_preferences, list):
+            sp_lower = ' '.join(str(p) for p in soft_preferences).lower()
+        else:
+            sp_lower = str(soft_preferences).lower()
         if 'crime' in sp_lower or 'safe' in sp_lower or 'security' in sp_lower:
             user_concerns.append("safety and low crime")
             data_to_mention.add("crime")
@@ -1178,7 +1265,11 @@ def create_fallback_recommendations(properties_data: list[dict], soft_preference
     )
     
     # ✅ 根据 soft_preferences 决定要提到哪些方面
-    soft_prefs_lower = soft_preferences.lower() if soft_preferences else ""
+    # 🆕 处理 soft_preferences 可能是列表或字符串的情况
+    if isinstance(soft_preferences, list):
+        soft_prefs_lower = ' '.join(str(p) for p in soft_preferences).lower()
+    else:
+        soft_prefs_lower = str(soft_preferences).lower() if soft_preferences else ""
     user_cares_about_crime = any(kw in soft_prefs_lower for kw in ['crime', 'safe', 'security', 'dangerous'])
     user_cares_about_amenities = any(kw in soft_prefs_lower for kw in ['supermarket', 'shop', 'park', 'gym', 'restaurant', 'amenities'])
     

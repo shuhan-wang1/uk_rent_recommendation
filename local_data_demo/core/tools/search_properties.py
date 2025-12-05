@@ -122,33 +122,63 @@ async def search_properties_impl(
     limit: int = 10,
     care_about_safety: bool = False,
     sort_by: str = "value",
+    property_features: list = None,  # 🆕 累积的房产特征（如 studio, private）
+    accumulated_preferences: list = None,  # 🆕 累积的软性偏好
+    budget_period: str = "month",  # 🆕 预算周期：'week' 或 'month'
     **kwargs  # 接受 LLM 可能传递的任何额外参数（如 property_type）
 ) -> dict:
     """
-    完整的房源搜索工具 - 整合 Fine-tuned Model + RAG + 过滤器
+    完整的房源搜索工具 - 整合 Ollama + RAG + 过滤器
     
     这是 ReAct Agent 调用的主要工具。
     
     流程：
-    1. 如果参数不完整，使用 Fine-tuned Model 从 user_query 提取
+    1. 如果参数不完整，使用 Ollama 从 user_query 提取
     2. 如果仍有缺失参数，返回需要澄清的问题
     3. 参数完整后，执行 RAG 搜索 + 过滤 + 排序
     4. 返回格式化的结果供 Agent 回复
     
     Args:
-        user_query: 用户的原始自然语言查询（用于 Fine-tuned Model 提取参数）
+        user_query: 用户的原始自然语言查询（用于提取参数）
         location: 目标地点（可选，如果缺失会从 user_query 提取）
-        max_budget: 最大预算（可选）
+        max_budget: 最大预算（可选）- 会根据 budget_period 自动转换为月租
         max_commute_time: 最大通勤时间（可选）
+        budget_period: 预算周期 'week' 或 'month'，如果是 week 会自动转换为月租
+        property_features: 累积的房产特征（如 studio, private, en-suite）
+        accumulated_preferences: 累积的软性偏好
         其他参数...
         **kwargs: 接受任何额外参数（LLM 可能会传递 property_type 等）
     
     Returns:
         包含搜索结果或澄清问题的字典
     """
+    # 🆕 初始化累积的特征和偏好
+    # 修复：确保输入是列表，不是字符串
+    if isinstance(property_features, list):
+        all_property_features = list(property_features)
+    elif isinstance(property_features, str):
+        all_property_features = [property_features] if property_features else []
+    else:
+        all_property_features = []
+    
+    # 🔧 修复：正确处理 accumulated_preferences，避免 list(string) 变成字符列表
+    if isinstance(accumulated_preferences, list):
+        # 确保列表中的元素不是单个字符（被错误拆分的情况）
+        all_soft_preferences = []
+        for item in accumulated_preferences:
+            if isinstance(item, str) and len(item) > 1:  # 排除单个字符
+                all_soft_preferences.append(item)
+            elif isinstance(item, str) and len(item) == 1:
+                # 跳过单个字符（可能是之前错误拆分的）
+                continue
+    elif isinstance(accumulated_preferences, str) and accumulated_preferences:
+        all_soft_preferences = [accumulated_preferences]
+    else:
+        all_soft_preferences = []
+    
     # 记录任何额外传递的参数（用于调试）
     if kwargs:
-        print(f"   ℹ️ 收到额外参数（已忽略）: {kwargs}")
+        print(f"   ℹ️ 收到额外参数: {kwargs}")
     
     try:
         print(f"\n{'='*60}")
@@ -157,6 +187,8 @@ async def search_properties_impl(
         print(f"   location: {location}")
         print(f"   max_budget: {max_budget}")
         print(f"   max_commute_time: {max_commute_time}")
+        print(f"   property_features (累积): {all_property_features}")
+        print(f"   soft_preferences (累积): {all_soft_preferences}")
         print(f"{'='*60}")
         
         # ================================================================
@@ -165,12 +197,38 @@ async def search_properties_impl(
         
         # 如果核心参数缺失，尝试从 user_query 提取
         if not all([location, max_budget, max_commute_time]) and user_query:
-            print(f"\n📝 [SEARCH] 参数不完整，使用 Fine-tuned Model 提取...")
+            print(f"\n📝 [SEARCH] 参数不完整，使用 Ollama 提取搜索条件...")
+            
+            # 🆕 构建包含累积信息的查询，帮助模型理解上下文
+            enhanced_query = user_query
+            if all_property_features:
+                enhanced_query = f"Looking for {', '.join(all_property_features)} property. {user_query}"
             
             from core.llm_interface import clarify_and_extract_criteria
             
-            criteria_response = clarify_and_extract_criteria(user_query)
+            criteria_response = clarify_and_extract_criteria(enhanced_query)
             print(f"   Fine-tuned 返回: {json.dumps(criteria_response, ensure_ascii=False, indent=2)}")
+            
+            # 🆕 累积 Fine-tuned model 提取的特征
+            new_features = criteria_response.get('property_tags', []) or []
+            # 确保 new_features 是列表，不是字符串
+            if isinstance(new_features, str):
+                new_features = [new_features] if new_features else []
+            for feat in new_features:
+                if feat and feat not in all_property_features:
+                    all_property_features.append(feat)
+            
+            # 🔧 修复：soft_preferences 可能是字符串，需要正确处理
+            new_prefs = criteria_response.get('soft_preferences', '')
+            if isinstance(new_prefs, str) and new_prefs:
+                # 如果是字符串，作为整体添加
+                if new_prefs not in all_soft_preferences:
+                    all_soft_preferences.append(new_prefs)
+            elif isinstance(new_prefs, list):
+                # 如果是列表，遍历添加
+                for pref in new_prefs:
+                    if pref and pref not in all_soft_preferences:
+                        all_soft_preferences.append(pref)
             
             # 合并提取的参数（优先使用显式传入的参数）
             if not location:
@@ -180,13 +238,18 @@ async def search_properties_impl(
             if not max_commute_time:
                 max_commute_time = criteria_response.get('max_travel_time')
             
-            # 如果 Fine-tuned Model 需要澄清
+            # 🆕 获取预算周期（周/月）
+            extracted_budget_period = criteria_response.get('budget_period', 'month')
+            if extracted_budget_period:
+                budget_period = extracted_budget_period
+            
+            # 如果 Ollama 需要澄清
             if criteria_response.get('status') != 'success':
                 missing_fields = []
                 if not location:
                     missing_fields.append("destination/location (e.g., UCL, King's College, Central London)")
                 if not max_budget:
-                    missing_fields.append("budget (e.g., £1500/month, £2000 pcm)")
+                    missing_fields.append("budget (e.g., £1500/month, £280/week)")
                 if not max_commute_time:
                     missing_fields.append("max commute time (e.g., 30 minutes, 45 min)")
                 
@@ -194,6 +257,7 @@ async def search_properties_impl(
                 if not question:
                     question = f"To search for properties, I need: {', '.join(missing_fields)}. Could you please provide this information?"
                 
+                # 🆕 包含所有已累积的信息
                 return {
                     'success': False,
                     'status': 'need_clarification',
@@ -202,7 +266,9 @@ async def search_properties_impl(
                     'extracted_so_far': {
                         'destination': location,
                         'max_budget': max_budget,
-                        'max_travel_time': max_commute_time
+                        'max_travel_time': max_commute_time,
+                        'property_features': all_property_features,  # 🆕 保留特征
+                        'soft_preferences': all_soft_preferences,    # 🆕 保留偏好
                     }
                 }
         
@@ -212,19 +278,35 @@ async def search_properties_impl(
                 'success': False,
                 'status': 'need_clarification',
                 'question': "Where would you like to commute to? (e.g., UCL, King's College, London Bridge)",
-                'missing_fields': ['location']
+                'missing_fields': ['location'],
+                'extracted_so_far': {
+                    'destination': None,
+                    'max_budget': max_budget,
+                    'max_travel_time': max_commute_time,
+                    'property_features': all_property_features,
+                    'soft_preferences': all_soft_preferences,
+                }
             }
         
-        if not max_budget:
+        # 🔧 修复：正确检查 max_budget，0 是无效值
+        if max_budget is None or max_budget == 0:
             return {
                 'success': False,
                 'status': 'need_clarification', 
                 'question': f"What's your monthly budget for rent near {location}?",
-                'missing_fields': ['max_budget']
+                'missing_fields': ['max_budget'],
+                'extracted_so_far': {
+                    'destination': location,
+                    'max_budget': None,
+                    'max_travel_time': max_commute_time,
+                    'property_features': all_property_features,
+                    'soft_preferences': all_soft_preferences,
+                }
             }
         
         # 如果没有指定通勤时间，应该询问用户而不是自动假设
-        if not max_commute_time:
+        # 🔧 修复：正确检查 max_commute_time，0 是无效值但 None 也需要询问
+        if max_commute_time is None or max_commute_time == 0:
             return {
                 'success': False,
                 'status': 'need_clarification',
@@ -233,17 +315,33 @@ async def search_properties_impl(
                 'extracted_so_far': {
                     'destination': location,
                     'max_budget': max_budget,
-                    'max_travel_time': None
+                    'max_travel_time': None,
+                    'property_features': all_property_features,
+                    'soft_preferences': all_soft_preferences,
                 }
             }
         
         # ================================================================
-        # 步骤 2: 执行 RAG 增强搜索
+        # 步骤 1.5: 🆕 周租转月租转换
+        # ================================================================
+        original_budget = max_budget
+        budget_converted = False
+        
+        if budget_period and budget_period.lower() == 'week':
+            # 周租 × 4.33 ≈ 月租（一个月平均 4.33 周）
+            max_budget = int(max_budget * 4.33)
+            budget_converted = True
+            print(f"\n💱 [BUDGET] 周租转月租: £{original_budget}/week → £{max_budget}/month")
+        
+        # ================================================================
+        # 步骤 2: 执行 RAG 搜索（带房产特征过滤）
         # ================================================================
         print(f"\n🔍 [SEARCH] 执行 RAG 搜索...")
         print(f"   📍 位置: {location}")
-        print(f"   💰 预算: £{max_budget}")
+        print(f"   💰 预算: £{max_budget}/month" + (f" (原始: £{original_budget}/week)" if budget_converted else ""))
         print(f"   ⏱️ 最大通勤: {max_commute_time} 分钟")
+        print(f"   🏠 房产特征: {all_property_features}")
+        print(f"   💭 软性偏好: {all_soft_preferences}")
         
         from rag.rag_coordinator import RAGCoordinator
         from core.data_loader import load_mock_properties_from_csv, parse_price
@@ -261,17 +359,58 @@ async def search_properties_impl(
         if not hasattr(rag_coordinator.property_store, 'index') or rag_coordinator.property_store.index is None:
             rag_coordinator.property_store.build_index(all_properties)
         
+        # 🆕 构建包含房产特征的搜索查询
+        search_query = f"Find flat near {location} under £{max_budget}"
+        if all_property_features:
+            search_query = f"Find {', '.join(all_property_features)} flat near {location} under £{max_budget}"
+        
         criteria = {
             'destination': location,
             'max_budget': max_budget,
-            'max_travel_time': max_commute_time
+            'max_travel_time': max_commute_time,
+            'property_features': all_property_features,  # 🆕 传递房产特征
+            'soft_preferences': all_soft_preferences,     # 🆕 传递软性偏好
         }
         
         ranked_properties, past_context, area_info = rag_coordinator.enhanced_search(
-            user_query or f"Find flat near {location} under £{max_budget}",
+            search_query,  # 🆕 使用增强的查询
             criteria
         )
         print(f"   ✅ RAG 返回 {len(ranked_properties)} 个候选房源")
+        
+        # 🆕 根据房产特征过滤结果
+        if all_property_features:
+            print(f"\n🔍 [SEARCH] 根据房产特征过滤: {all_property_features}")
+            filtered_by_features = []
+            for prop in ranked_properties:
+                room_type = prop.get('Room_Type_Category', '').lower()
+                description = prop.get('Description', '').lower()
+                amenities = prop.get('Detailed_Amenities', '').lower()
+                
+                # 检查是否匹配任何特征
+                matches = True
+                for feature in all_property_features:
+                    feature_lower = feature.lower()
+                    if feature_lower in ['studio', 'private', 'en-suite', 'ensuite']:
+                        # 检查房型匹配
+                        if feature_lower == 'studio' and 'studio' not in room_type:
+                            matches = False
+                            break
+                        if feature_lower == 'private' and 'private' not in room_type and 'private' not in description:
+                            matches = False
+                            break
+                        if feature_lower in ['en-suite', 'ensuite'] and 'en-suite' not in room_type and 'en-suite' not in amenities:
+                            matches = False
+                            break
+                
+                if matches:
+                    filtered_by_features.append(prop)
+            
+            if filtered_by_features:
+                print(f"   ✅ 特征过滤后剩余 {len(filtered_by_features)} 个房源")
+                ranked_properties = filtered_by_features
+            else:
+                print(f"   ⚠️ 特征过滤后无结果，保留原始结果并在说明中提及")
         
         # ================================================================
         # 步骤 3: 计算通勤时间并过滤
@@ -390,6 +529,12 @@ async def search_properties_impl(
                         over_budget = price - max_budget
                         over_percentage = round((over_budget / max_budget) * 100, 1)
                         
+                        # 🆕 获取图片和地理位置
+                        images = prop.get('Images', prop.get('images', []))
+                        if isinstance(images, str):
+                            images = [images] if images else []
+                        geo_location = prop.get('Geo_Location', prop.get('geo_location', ''))
+                        
                         similar_formatted.append({
                             'rank': i,
                             'address': prop.get('Address', prop.get('address', 'Unknown')),
@@ -402,7 +547,10 @@ async def search_properties_impl(
                             'property_type': prop.get('Type', prop.get('type', 'Flat')),
                             'bedrooms': prop.get('Bedrooms', prop.get('bedrooms', 'N/A')),
                             'match_type': 'similar_suggestion',
-                            'url': prop.get('URL', prop.get('url', ''))
+                            'url': prop.get('URL', prop.get('url', '')),
+                            'images': images,  # 🆕 添加图片
+                            'geo_location': geo_location,  # 🆕 添加地理位置
+                            'explanation': prop.get('Description', '')[:150] if prop.get('Description') else '',
                         })
                     
                     return {
@@ -440,6 +588,19 @@ async def search_properties_impl(
         
         formatted_results = []
         for i, prop in enumerate(all_results[:limit], 1):
+            # 🆕 获取图片列表（如果有的话）
+            images = prop.get('Images', prop.get('images', []))
+            if isinstance(images, str):
+                images = [images] if images else []
+            
+            # 🆕 获取地理位置
+            geo_location = prop.get('Geo_Location', prop.get('geo_location', ''))
+            if not geo_location:
+                # 尝试从地址生成一个默认的
+                address = prop.get('Address', prop.get('address', ''))
+                if 'London' in address:
+                    geo_location = '51.5074,-0.1278'  # London center fallback
+            
             formatted_results.append({
                 'rank': i,
                 'address': prop.get('Address', prop.get('address', 'Unknown')),
@@ -450,7 +611,10 @@ async def search_properties_impl(
                 'property_type': prop.get('Type', prop.get('type', 'Flat')),
                 'bedrooms': prop.get('Bedrooms', prop.get('bedrooms', 'N/A')),
                 'match_type': prop.get('match_type', 'perfect'),
-                'url': prop.get('URL', prop.get('url', ''))
+                'url': prop.get('URL', prop.get('url', '')),
+                'images': images,  # 🆕 添加图片列表
+                'geo_location': geo_location,  # 🆕 添加地理位置
+                'explanation': prop.get('Description', prop.get('description', ''))[:150] if prop.get('Description', prop.get('description')) else '',  # 🆕 添加说明
             })
         
         return {
@@ -460,7 +624,9 @@ async def search_properties_impl(
             'search_criteria': {
                 'destination': location,
                 'max_budget': max_budget,
-                'max_commute_time': max_commute_time
+                'max_travel_time': max_commute_time,
+                'property_features': all_property_features,  # 🆕 包含房产特征
+                'soft_preferences': all_soft_preferences,     # 🆕 包含软性偏好
             },
             'recommendations': formatted_results,
             'summary': f"Found {len(perfect_match)} properties within budget (£{max_budget}/month) and {len(soft_violation)} slightly over budget, all within {max_commute_time} min of {location}."
@@ -481,23 +647,26 @@ async def search_properties_impl(
 search_properties_tool = Tool(
     name="search_properties",
 
-    description="""Search for rental properties in the UK. This is the MAIN tool for finding apartments, flats, rooms, or any housing.
+    description="""Search for SPECIFIC rental properties in the UK database.
 
-USE THIS TOOL WHEN the user:
-- Wants to find/search for a place to live
-- Mentions rent, accommodation, flat, apartment, room, housing
-- Asks about properties near a location
-- Mentions budget and commute requirements
+⚠️ USE THIS TOOL ONLY WHEN:
+- User explicitly wants to FIND/SEARCH for a specific property they can rent
+- User provides search criteria like budget, location, commute time
+- User says things like "帮我找房", "I want to find a flat", "search for apartments", "找房子"
+
+❌ DO NOT USE THIS TOOL FOR:
+- General questions about rent prices or averages ("租房价格多少")
+- Questions about living costs, transport costs, food costs
+- Questions about areas, neighborhoods, or safety
+- "租房价格怎么样" = asking about rent prices → use web_search
+- "介绍租房信息" = asking about renting info → use web_search
 
 WORKFLOW:
 1. Call this tool with the user's query
 2. If parameters are missing, the tool returns a clarification question
 3. Once complete, returns property recommendations
 
-IMPORTANT:
-- You can pass just user_query and let the tool extract parameters
-- Or pass explicit location, max_budget, max_commute_time if known
-- The tool uses Fine-tuned AI to understand natural language""",
+For GENERAL INFORMATION questions about rent, use web_search instead.""",
 
     func=search_properties_impl,
 

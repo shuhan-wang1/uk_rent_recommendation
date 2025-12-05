@@ -1,5 +1,5 @@
 """
-Web Search Tool - 使用 DuckDuckGo 搜索获取信息
+Web Search Tool - 使用 SearXNG 本地实例搜索获取信息
 用于回答一般性问题（区域信息、生活成本、学校等）
 """
 
@@ -8,7 +8,7 @@ from core.web_search import get_search_snippets
 
 async def web_search_func(query: str) -> ToolResult:
     """
-    使用 DuckDuckGo 搜索引擎获取信息
+    使用 SearXNG 搜索引擎获取信息
     
     Args:
         query: 搜索查询语句
@@ -59,7 +59,7 @@ web_search_tool = Tool(
         "properties": {
             "query": {
                 "type": "string",
-                "description": "The search query. Be specific and include 'UK' or 'London' when relevant. Example: 'safe areas for students in London UK'"
+                "description": "The search query. MUST BE IN ENGLISH. Be specific and include 'UK' or 'London'. Example: 'safe areas for students in London UK', 'cost of living London international students'"
             }
         },
         "required": ["query"]
