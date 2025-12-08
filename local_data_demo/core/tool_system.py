@@ -567,6 +567,7 @@ def create_tool_registry() -> ToolRegistry:
         search_nearby_pois_tool,
         get_property_details_tool
     )
+    from core.tools.check_transport_cost import check_transport_cost_tool
     
     registry = ToolRegistry()
     
@@ -578,6 +579,7 @@ def create_tool_registry() -> ToolRegistry:
     registry.register(web_search_tool)
     registry.register(search_nearby_pois_tool)
     registry.register(get_property_details_tool)
+    registry.register(check_transport_cost_tool)  # 🆕 交通费用查询工具
     
     print(f"\n✅ 工具系统初始化完成！共注册 {len(registry.tools)} 个工具")
     

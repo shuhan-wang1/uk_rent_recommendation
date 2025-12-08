@@ -19,7 +19,8 @@ class SearXNGSearch:
         self, 
         instance_url: str = "http://localhost:8080",
         timeout: int = 10,
-        default_max_results: int = 10
+        default_max_results: int = 10,
+        verbose: bool = False
     ):
         """
         初始化 SearXNG 搜索客户端
@@ -28,13 +29,46 @@ class SearXNGSearch:
             instance_url: SearXNG 实例的 URL
             timeout: 请求超时时间（秒）
             default_max_results: 默认返回的最大结果数
+            verbose: 是否输出详细日志
         """
         self.instance_url = instance_url.rstrip('/')
         self.search_endpoint = f"{self.instance_url}/search"
         self.timeout = timeout
         self.default_max_results = default_max_results
-        # 🆕 指定可用的搜索引擎（brave, duckduckgo, startpage 经常被 CAPTCHA 封锁）
-        self.engines = "google,bing,yahoo,wikipedia"
+        self.verbose = verbose
+        
+        # 🆕 数据源策略：根据查询类型使用不同的搜索引擎
+        # 对于事实性查询（租房信息、政策、学校等），只使用Google以确保结果质量
+        self.authoritative_engines = "google"  # 只使用Google，确保最高质量的官方来源
+        
+        # 对于评价、反馈类查询，可以包含论坛
+        self.forum_engines = "google,reddit"
+    
+    def _detect_query_intent(self, query: str) -> str:
+        """
+        检测查询意图，判断是事实查询还是评价/反馈查询
+        
+        Args:
+            query: 搜索查询字符串
+            
+        Returns:
+            str: 'factual' 或 'opinion'
+        """
+        query_lower = query.lower()
+        
+        # 评价/反馈类关键词
+        opinion_keywords = [
+            'review', 'reviews', 'rating', 'experience', 'feedback',
+            'opinion', 'recommend', 'worth', 'good or bad',
+            'how is', 'what do people think', 'comments',
+            'forum', 'discussion', 'reddit', 'community'
+        ]
+        
+        # 如果包含这些关键词，则允许搜索论坛
+        if any(keyword in query_lower for keyword in opinion_keywords):
+            return 'opinion'
+        
+        return 'factual'
     
     def search(
         self, 
@@ -57,17 +91,23 @@ class SearXNGSearch:
         """
         if max_results is None:
             max_results = self.default_max_results
-            
+        
+        # 🆕 根据查询意图选择搜索引擎
+        intent = self._detect_query_intent(query)
+        engines = self.forum_engines if intent == 'opinion' else self.authoritative_engines
+        
+        print(f"  -> [SearXNG] Query intent: {intent}, using engines: {engines}")
+        
         params = {
             "q": query,
             "format": "json",
             "categories": categories,
             "language": language,
-            "engines": self.engines  # 🆕 明确指定引擎，避免使用被封锁的默认引擎
+            "engines": engines  # 🆕 根据意图选择引擎
         }
         
         try:
-            print(f"  -> [SearXNG] Searching: '{query}' (engines: {self.engines})")
+            print(f"  -> [SearXNG] Searching: '{query}'")
             response = requests.get(
                 self.search_endpoint,
                 params=params,
@@ -78,10 +118,25 @@ class SearXNGSearch:
             data = response.json()
             results = data.get("results", [])
             
-            # 🆕 检查是否有不响应的引擎，记录日志
+            # 🆕 诊断日志：显示原始结果
+            print(f"  -> [SearXNG] Raw results: {len(results)} items")
+            if len(results) > 0:
+                engines_used = set(r.get('engine', 'unknown') for r in results)
+                print(f"  -> [SearXNG] Engines returned data: {', '.join(engines_used)}")
+            
+            # 检查是否有不响应的引擎（只记录简要信息）
+            # 这些备选引擎（brave/duckduckgo/startpage）失败不影响结果
+            # 因为我们只使用 Google 作为主引擎
             unresponsive = data.get("unresponsive_engines", [])
-            if unresponsive:
-                print(f"  ⚠️ [SearXNG] Unresponsive engines: {unresponsive}")
+            if unresponsive and len(results) == 0:
+                # 只在主引擎也失败时才警告
+                print(f"  ⚠️ [SearXNG] All engines unresponsive, no results")
+            
+            # 🆕 对于事实性查询，过滤结果，只保留权威来源
+            pre_filter_count = len(results)
+            if intent == 'factual':
+                results = self._filter_authoritative_sources(results)
+                print(f"  -> [Filter] {pre_filter_count} → {len(results)} (kept authoritative sources)")
             
             # 提取并格式化结果
             formatted_results = []
@@ -110,6 +165,123 @@ class SearXNGSearch:
             import traceback
             traceback.print_exc()
             return []
+    
+    def _filter_authoritative_sources(self, results: List[Dict]) -> List[Dict]:
+        """
+        智能三层过滤系统：
+        1. 绝对黑名单 (Banned): 投资、B2B、垃圾农场 -> 永远丢弃
+        2. 权威白名单 (Authoritative): 官网、学校 -> 优先保留
+        3. 灰色名单 (Grey): 博客、论坛、新闻 -> 兜底使用
+        
+        核心原则：绝不返回投资类内容给学生
+        
+        Args:
+            results: 原始搜索结果列表
+            
+        Returns:
+            List[Dict]: 过滤后的结果列表（优先白名单，兜底灰名单）
+        """
+        # 1. 🚫 黑名单：绝对不要给学生看的内容
+        banned_domains = [
+            # 五大行（商业地产投资机构）
+            'knightfrank', 'savills', 'cushmanwakefield', 'cbre', 'jll',
+            # 行业媒体（B2B内容）
+            'propertyweek', 'constructionmaguk', 'housingtoday', 'costar',
+            'propertyinvestor', 'estateagenttoday', 'landlordtoday',
+            # 社交媒体噪音
+            'linkedin.com', 'facebook.com', 'instagram.com',
+            # 垃圾内容农场
+            'quora.com', 'answers.yahoo.com'
+        ]
+        
+        # 投资相关关键词（出现在标题或摘要中的话直接拉黑）
+        investment_keywords = [
+            'transaction volume', 'cap rate', 'investor', 'asset management',
+            'yield', 'institutional investment', 'portfolio', 'capital value',
+            'investment volume', 'market transaction', 'commercial property'
+        ]
+        
+        # 2. ✅ 白名单：最信任的权威来源
+        authoritative_domains = [
+            # 英国政府和官方机构
+            '.gov.uk', 'nhs.uk', 'police.uk',
+            # 教育机构
+            '.ac.uk', '.edu', 'university',
+            # 正规租房平台（学生导向）
+            'rightmove.co.uk', 'zoopla.co.uk', 'spareroom.co.uk',
+            'uhomes.com', 'uhomes.co.uk',
+            'accommodation.london', 'studentcrowd.com', 'uniplaces.com',
+            # 主流新闻媒体
+            'bbc.co.uk', 'theguardian.com', 'thetimes.co.uk',
+            'telegraph.co.uk', 'independent.co.uk', 'standard.co.uk',
+            # 交通官方网站
+            'tfl.gov.uk', 'nationalrail.co.uk',
+            # 金融和法律权威（学生公益组织）
+            'moneyhelper.org.uk', 'citizensadvice.org.uk', 'shelter.org.uk',
+            'nus.org.uk', 'savethestudent.org', 'ukcisa.org.uk'
+        ]
+        
+        whitelist_results = []  # 存权威结果
+        greylist_results = []   # 存普通结果（备胎）
+        
+        for result in results:
+            url = result.get("url", "").lower()
+            title = result.get("title", "").lower()
+            snippet = result.get("content", "").lower()
+            
+            # --- 🛑 第一道防线：黑名单熔断 ---
+            is_banned = False
+            
+            # 检查域名黑名单
+            for ban in banned_domains:
+                if ban in url or ban in title:
+                    print(f"  🗑️ [Filter] HARD BLOCK (domain): {ban} found in {url}")
+                    is_banned = True
+                    break
+            
+            # 检查投资类关键词
+            if not is_banned:
+                for keyword in investment_keywords:
+                    if keyword in snippet or keyword in title:
+                        print(f"  🗑️ [Filter] HARD BLOCK (keyword): '{keyword}' found in content")
+                        is_banned = True
+                        break
+            
+            if is_banned:
+                continue  # 跳过当前循环，彻底丢弃该结果
+
+            # --- ✅ 第二道防线：权威白名单 ---
+            if any(domain in url for domain in authoritative_domains):
+                whitelist_results.append(result)
+                print(f"  ✅ [Filter] Found Authoritative: {url}")
+                continue
+                
+            # --- 🆗 第三道防线：灰色名单（软性过滤） ---
+            # 必须包含学生相关内容才能进入灰名单
+            if 'student' in title or 'rent' in title or 'guide' in title or 'accommodation' in title:
+                greylist_results.append(result)
+                print(f"  🆗 [Filter] Added to Greylist: {url}")
+            else:
+                print(f"  ⛔ [Filter] Rejected (not student-relevant): {url}")
+
+        # --- 🔄 最终返回逻辑 ---
+        
+        # 1. 如果有足够的权威结果，优先返回权威结果
+        if len(whitelist_results) >= 2:
+            print(f"  ✅ [Filter] Returning {len(whitelist_results)} authoritative results")
+            return whitelist_results
+            
+        # 2. 如果权威结果太少，用灰色名单补充
+        # 关键点：灰色名单里已经剔除了黑名单内容！
+        combined = whitelist_results + greylist_results
+        
+        if len(combined) > 0:
+            print(f"  ⚠️ [Filter] Low authoritative count ({len(whitelist_results)}). Mixing with {len(greylist_results)} greylist results.")
+            return combined[:5]  # 只取前5个，避免太长
+            
+        # 3. 如果连灰色名单都没有（全是被Block的），返回空
+        print("  ❌ [Filter] All results were blocked or irrelevant. No student-friendly content found.")
+        return []
     
     def format_for_llm(self, results: List[Dict[str, str]]) -> str:
         """

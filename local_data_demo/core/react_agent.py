@@ -44,6 +44,59 @@ You are talking to an INTERNATIONAL STUDENT (likely from China). Think from thei
 - Budget is usually limited (£600-£1500/month)
 - They need practical info: how to rent as a student, which areas have students, safety concerns
 
+## CRITICAL: Data Source Policy
+🔒 For FACTUAL information (rental policies, safety, transport, costs, area info), you MUST:
+- Only cite AUTHORITATIVE sources: UK government (.gov.uk), universities (.ac.uk), Rightmove, Zoopla, official transport sites (tfl.gov.uk), mainstream news (BBC, Guardian)
+- NEVER cite forums, blogs, Wikipedia, Britannica, or unverified sources for factual claims
+- NEVER fabricate specific URLs - only mention the main domain (e.g., "tfl.gov.uk" NOT "tfl.gov.uk/fares/students/...")
+- For fares/rents, only quote numbers when the source explicitly matches the scope (Zone range, adult vs student, weekly vs monthly, per property vs per room). If scope is unclear or missing, say "please check the official site for the exact fare/rent"—do NOT guess or reuse unrelated numbers.
+
+🏠 **Property Search Source Policy (CRITICAL)**:
+- **学生公寓 (Student Accommodation)**: ONLY search on Uhomes (uhomes.com) - dedicated student housing platform
+    * Keywords: "student accommodation", "学生公寓", "student halls", "purpose-built student accommodation (PBSA)"
+    * Examples: "find student flat in London", "学生公寓 near UCL"
+    * Tool params: Add "site:uhomes.com" to web_search query OR use property database if available
+    * If user names a UNIVERSITY (e.g., UCL/KCL/Imperial/LSE/UoM etc.), filter to THAT university only (do NOT mix other universities) and include the uni name in the query.
+  
+- **社会公寓 (Private Rental/Social Housing)**: Search on Zoopla + Rightmove
+    * Keywords: "flat", "apartment", "private rental", "social housing", "一般公寓"
+    * Examples: "find apartment in London", "flat to rent Canary Wharf"
+    * Tool params: Add "site:zoopla.co.uk OR site:rightmove.co.uk" to web_search query
+  
+- **Ambiguous cases**: If unclear, ASK user "Are you looking for student accommodation (学生公寓) or private rental (社会公寓)?" before searching
+- ⚠️ CRITICAL: When user asks about STUDENT accommodation, NEVER cite "average rent per property" (£2,736 for whole flats). Students rent ROOMS, not whole properties. Always clarify: "£X is for whole flats; student rooms typically £800-£1,200".
+- ⚠️ For COMPARISON questions ("far vs near", "Zone X vs Zone Y"), provide DELTA analysis (rent difference + transport difference), NOT just generic averages. If specific data unavailable, give estimated ranges based on zone logic (Zone 2 > Zone 6 rent, Zone 6 > Zone 2 transport).
+- 🚫 NEVER fabricate legal/policy information not in search results. If search results don't mention agency fees/tenant fees/deposit rules, say "Search results don't cover this; check gov.uk or citizensadvice.org.uk".
+- 🚫 NEVER invent specific prices (e.g., "£50/month Zone 1-6"). If you see "£38.70" in results, check if it's weekly/monthly/zones before using it.
+- ✅ LOGIC CHECK: Zone 1-6 fare MUST be higher than Zone 1-2 fare. If your calculation shows otherwise, YOU MADE A MISTAKE—recheck the numbers.
+- If web_search returns non-authoritative sources for factual queries, acknowledge limitation
+
+✅ Forums/reviews are ONLY allowed when user asks for:
+- Reviews, ratings, experiences, feedback, opinions
+- "What do people think about X?"
+- "Is X worth it?"
+- Community discussions
+
+Example:
+❌ BAD: "According to a Reddit post, crime rate in Hackney is high"
+✅ GOOD: "According to police.uk, Hackney has [data]"
+❌ BAD: "Forum users say deposits are usually £500"
+✅ GOOD: "According to gov.uk, landlords cannot charge more than 5 weeks rent as deposit"
+❌ BAD: "Visit https://tfl.gov.uk/fares/students-and-young-people/ for student rates"
+✅ GOOD: "Visit tfl.gov.uk to check current student travel fares"
+❌ BAD: "Zone 1-2 student ticket is £114/month" (outdated price)
+✅ GOOD: "Check tfl.gov.uk for current Zone 1-2 student fares"
+❌ BAD: "Zone 1-6 fare £240" (zone range mismatch vs adult/student scope)
+✅ GOOD: "Search results do not show Zone 1-6 fares; please check tfl.gov.uk for adult/student prices"
+❌ BAD: "Students need £2,736/month rent" (this is per-property average for whole flats)
+✅ GOOD: "Rightmove shows £2,736 is average asking rent per property (whole flats, often 2-3 beds). For a single student room, typical range is £800-£1,200; please verify with current listings."
+❌ BAD (for comparison questions): "Average London rent is £2,736. I cannot find specific zone data."
+✅ GOOD (for comparison questions): "For Zone 2 vs Zone 6 comparison: Zone 2 rooms typically £1,200-£1,500, Zone 6 rooms £800-£1,000 (差价约£300-500). Zone 6→Zone 2 transport adds ~£220/month student fare. Net difference: living far saves £80-280/month but adds 1+ hour commute daily. Trade-off depends on your time value."
+❌ BAD: "Agency fees: Not illegal in England" (search results don't mention this at all)
+✅ GOOD: "Search results don't cover agency fee legality. For tenant fee regulations, please check gov.uk or shelter.org.uk."
+❌ BAD: "Zone 1-6 monthly pass is £50, so living far saves transport costs" (invented price + logic error)
+✅ GOOD: "Search shows £38.70 for Zone 1-3 (appears to be weekly). For accurate Zone 1-6 monthly student fare, check tfl.gov.uk. Note: Longer zones always cost MORE, not less."
+
 ## Response Format (STRICT - no markdown ** around keywords)
 Thought: [reasoning]
 Action: [tool name]
@@ -54,7 +107,7 @@ When user asks about MULTIPLE topics (e.g., rent + living costs + transport), us
 
 Action: multi_search
 Action Input: {{"searches": [
-  {{"tool": "web_search", "params": {{"query": "London student rent 2024"}}}},
+  {{"tool": "web_search", "params": {{"query": "London student rent 2024 gov.uk"}}}},
   {{"tool": "web_search", "params": {{"query": "London food cost students"}}}},
   {{"tool": "web_search", "params": {{"query": "London transport cost students"}}}}
 ]}}
@@ -63,34 +116,50 @@ This will execute ALL searches and return combined results.
 
 ## Available Tools
 
-### get_property_details (PRIORITY for property-specific questions)
-- Use when user asks about a SPECIFIC property from our database
-- Use when user clicks "Ask AI" button for a property
-- Use when user questions a property's room type, price, amenities, etc.
-- Example: {{"property_name": "Scape Bloomsbury", "property_address": "Woburn Place"}}
-- IMPORTANT: Use THIS tool instead of web_search when asking about properties we recommended
+### 🔍 search_properties - ONLY for finding specific properties
+- Use ONLY when user explicitly asks to FIND/SHOW/SEARCH properties
+- Examples: "find me a flat", "show me properties", "search for accommodation"
+- DO NOT use for: advice, comparisons, "should I...", "help me decide..."
+
+### 💡 web_search - For information, advice, comparisons
+- Use for: general info, advice, consultations, comparisons, "should I..."
+- Examples: "should I choose X or Y?", "what's better?", "help me decide"
+- 🆕 For FACTUAL queries, add "gov.uk" or "official" to query to get authoritative sources
+- Example: "tenant rights UK gov.uk" instead of "tenant rights UK"
+- Example: "London crime statistics police.uk" instead of "is London safe"
+- DO NOT use for properties in our database - use get_property_details instead
+- 🆕 System automatically filters results to authoritative sources for factual queries
+
+### reasoning_property (HIGHEST PRIORITY - for explaining/reasoning about a specific property)
+- Use when user clicks "Ask AI" button for a property (property context is provided)
+- Use when user asks WHY we recommended a property, or asks to EXPLAIN property details
+- Use when user asks about room types (e.g., "What is Twin en-suite?"), policies, or specific features of a property
+- Examples: "Why did you recommend Scape Bloomsbury?", "Does Scape have guest policy?", "What's Twin en-suite?"
+- This tool reads the property's description, amenities, policies from our DATABASE - NO external search needed
+- Output: Direct answer based on database info (property_address, description, amenities, policies, etc.)
+
+### get_property_details (DEPRECATED - use reasoning_property instead)
+- Legacy tool - prefer reasoning_property for property-specific questions
 
 ### multi_search (for complex multi-topic questions)
 - Executes multiple tool calls in parallel
 - Use when question has 2+ sub-topics
 - Returns combined Observation from all tools
 
-### web_search (USE ENGLISH QUERIES ONLY)
-- Query MUST be in English, short: 3-8 words
-- Example: "London student room rent 2024"
-- DO NOT use for properties in our database - use get_property_details instead
-
 ### get_weather
 - Example: {{"location": "London"}}
 - For comparing cities, use multi_search with multiple get_weather calls
 
-### search_properties, calculate_commute, check_safety, search_nearby_pois
+### calculate_commute, check_safety, search_nearby_pois
+- For specific location-based queries
 
 ## Rules
 1. Reply in user's language (Chinese if they speak Chinese)
 2. MUST call tool first - no direct answers
 3. Use ONLY Observation data - NO fabrication
 4. For multi-topic questions, ALWAYS use multi_search
+5. 🆕 For factual claims, cite the source URL from web_search results
+6. 🆕 If web_search returns no authoritative sources, say "I couldn't find official information on this"
 
 ## Context
 {context_info}
@@ -420,6 +489,7 @@ class ReActAgent:
         """
         解析 LLM 输出，提取 Thought、Action、Action Input
         增强版：能够从不规范的输出中提取工具名
+        特别优化：支持 gpt-oss:20b-cloud 等模型的非标准格式
         """
         result = {
             'thought': None,
@@ -436,6 +506,11 @@ class ReActAgent:
         output = re.sub(r'\*\*([A-Za-z ]+):\*\*', r'\1:', output)
         output = re.sub(r'\*\*([A-Za-z ]+):', r'\1:', output)  # **Final Answer: 没有结束的 **
         
+        # 🔧 特别处理：清理多余的空行和格式标记
+        output = re.sub(r'```json\s*', '', output)  # 移除 ```json 标记
+        output = re.sub(r'```\s*', '', output)  # 移除 ``` 标记
+        output = output.strip()
+        
         # 🆕 特别处理：如果输出以 **Final Answer: 或 Final Answer: 开头，直接提取
         final_answer_match = re.match(r'^\s*(?:\*\*)?Final Answer:?(?:\*\*)?\s*(.+)', output, re.DOTALL | re.IGNORECASE)
         if final_answer_match:
@@ -443,6 +518,59 @@ class ReActAgent:
             result['action_input'] = final_answer_match.group(1).strip()
             print(f"  🔧 [PARSE] 直接提取 Final Answer")
             return result
+        
+        # 🔧 GPT-OSS 特殊处理：如果整个输出就是一个 JSON 对象（没有 Action: 前缀）
+        # 例如：直接输出 {"query": "London rent prices"} 而不是 Action: web_search\nAction Input: {...}
+        if output.strip().startswith('{'):
+            try:
+                # 提取完整的 JSON
+                brace_count = 0
+                for i, char in enumerate(output):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            json_str = output[:i+1]
+                            parsed_json = json.loads(json_str)
+                            
+                            # 从 JSON 结构推断工具类型
+                            if isinstance(parsed_json, dict):
+                                # 检查是否包含 tool/action 字段
+                                if 'tool' in parsed_json or 'action' in parsed_json:
+                                    tool_name = parsed_json.get('tool') or parsed_json.get('action')
+                                    result['action'] = tool_name
+                                    # 移除 tool/action 字段，剩下的就是参数
+                                    params = {k: v for k, v in parsed_json.items() if k not in ['tool', 'action']}
+                                    result['action_input'] = params if params else parsed_json
+                                    print(f"  🔧 [PARSE] 从JSON提取工具: {tool_name}")
+                                    return result
+                                
+                                # 根据字段推断工具类型
+                                if 'query' in parsed_json:
+                                    result['action'] = 'web_search'
+                                    result['action_input'] = parsed_json
+                                    print(f"  🔧 [PARSE] 推断工具为 web_search (含query字段)")
+                                    return result
+                                elif 'location' in parsed_json and 'destination' not in parsed_json:
+                                    result['action'] = 'get_weather'
+                                    result['action_input'] = parsed_json
+                                    print(f"  🔧 [PARSE] 推断工具为 get_weather (含location字段)")
+                                    return result
+                                elif 'origin' in parsed_json or 'destination' in parsed_json:
+                                    result['action'] = 'calculate_commute'
+                                    result['action_input'] = parsed_json
+                                    print(f"  🔧 [PARSE] 推断工具为 calculate_commute (含origin/destination)")
+                                    return result
+                                elif 'searches' in parsed_json:
+                                    result['action'] = 'multi_search'
+                                    result['action_input'] = parsed_json
+                                    print(f"  🔧 [PARSE] 推断工具为 multi_search (含searches数组)")
+                                    return result
+                            break
+            except (json.JSONDecodeError, ValueError) as e:
+                print(f"  ⚠️ [PARSE] JSON解析失败: {str(e)[:100]}")
+                # 继续尝试其他解析方法
         
         # 已知的工具列表（用于智能匹配）
         known_tools = ['search_properties', 'calculate_commute', 'check_safety', 
@@ -894,6 +1022,53 @@ class ReActAgent:
         elif tool_decision['tool'] == 'direct_answer':
             # 不需要工具，直接让 LLM 回答（简单问候等）
             pass
+        
+        elif tool_decision['tool'] == 'reasoning_property':
+            # 🆕 基于本地数据库解释房源信息（不调用外部API）
+            if self.verbose:
+                print(f"\n🏠 [Reasoning Property] 使用数据库信息解释房源...")
+            
+            # 从 extracted_context 收集所有可用的房源信息
+            property_info = []
+            property_info.append(f"Property: {self.extracted_context.get('property_address', 'N/A')}")
+            
+            if self.extracted_context.get('property_price'):
+                property_info.append(f"Price: {self.extracted_context['property_price']}")
+            
+            if self.extracted_context.get('room_type'):
+                property_info.append(f"Room Type: {self.extracted_context['room_type']}")
+            
+            if self.extracted_context.get('property_travel_time'):
+                property_info.append(f"Commute Time: {self.extracted_context['property_travel_time']}")
+            
+            if self.extracted_context.get('description'):
+                property_info.append(f"\nDescription:\n{self.extracted_context['description']}")
+            
+            if self.extracted_context.get('amenities'):
+                property_info.append(f"\nAmenities:\n{self.extracted_context['amenities']}")
+            
+            if self.extracted_context.get('guest_policy'):
+                property_info.append(f"\nGuest Policy:\n{self.extracted_context['guest_policy']}")
+            
+            if self.extracted_context.get('payment_rules'):
+                property_info.append(f"\nPayment Rules:\n{self.extracted_context['payment_rules']}")
+            
+            if self.extracted_context.get('excluded_features'):
+                property_info.append(f"\nNOT Included:\n{self.extracted_context['excluded_features']}")
+            
+            if self.extracted_context.get('property_url'):
+                property_info.append(f"\nBooking URL: {self.extracted_context['property_url']}")
+            
+            observation = "\n".join(property_info)
+            
+            if self.verbose:
+                print(f"   📄 收集到的房源信息:")
+                print(f"   {'-'*50}")
+                print(f"   {observation}")
+                print(f"   {'-'*50}")
+            
+            # 直接使用这些信息，不调用外部工具
+            raw_data = {'property_info': observation}
             
         elif tool_decision['tool'] == 'search_properties':
             # 执行房产搜索
@@ -960,12 +1135,20 @@ class ReActAgent:
             # 执行其他单个工具
             observation, raw_data = await self._execute_tool(tool_decision['tool'], tool_decision['params'])
             
-            # 处理特定工具的直接返回
-            if tool_decision['tool'] == 'check_safety' and raw_data and raw_data.get('safety_score') is not None:
-                return self._format_safety_response(raw_data)
+            # 🆕 处理 ToolResult 对象：提取 .data 属性
+            actual_data = None
+            if raw_data:
+                if hasattr(raw_data, 'data'):
+                    actual_data = raw_data.data  # ToolResult 对象
+                elif isinstance(raw_data, dict):
+                    actual_data = raw_data  # 已经是字典
             
-            if tool_decision['tool'] == 'search_nearby_pois' and raw_data and raw_data.get('pois'):
-                return self._format_poi_response(raw_data)
+            # 处理特定工具的直接返回
+            if tool_decision['tool'] == 'check_safety' and actual_data and isinstance(actual_data, dict) and actual_data.get('safety_score') is not None:
+                return self._format_safety_response(actual_data)
+            
+            if tool_decision['tool'] == 'search_nearby_pois' and actual_data and isinstance(actual_data, dict) and actual_data.get('pois'):
+                return self._format_poi_response(actual_data)
         
         if self.verbose and observation:
             print(f"\n📊 [Step 2 Result] 工具执行完成，获取到的数据:")
@@ -979,8 +1162,48 @@ class ReActAgent:
             print(f"\n💬 [Step 3] 基于真实数据生成回答...")
         
         if observation:
-            # 构建包含真实数据的 prompt - 强调只使用真实数据，避免幻觉
-            data_prompt = f"""You are a helpful assistant for UK student housing.
+            # 🆕 为 reasoning_property 使用专门的 prompt
+            if tool_decision['tool'] == 'reasoning_property':
+                data_prompt = f"""You are Alex, a friendly rental assistant helping explain property details from our DATABASE.
+
+User Question: {user_query}
+
+=== PROPERTY INFORMATION FROM DATABASE ===
+
+{observation}
+
+=== YOUR TASK ===
+
+Answer the user's question using ONLY the property information above from our database.
+
+CRITICAL RULES:
+1. 🚫 DO NOT call any external APIs or search tools - we already have all the info
+2. 🚫 DO NOT say "I don't have access" or "unverified" - this is from our trusted database
+3. ✅ Explain room types (e.g., "Twin en-suite means 2 people share a bedroom, each has private bathroom")
+4. ✅ Explain policies clearly (guest policy, payment rules, etc.)
+5. ✅ If user asks "Why recommend this?", mention: location/commute, price, amenities, room type
+6. ✅ If info is missing from database, say "This specific detail isn't in our database for this property"
+7. ✅ If user asks about booking, provide the Booking URL from above
+
+=== RESPONSE LANGUAGE ===
+- If user asks in ENGLISH → Reply in ENGLISH
+- If user asks in CHINESE → Reply in CHINESE
+
+=== EXAMPLES ===
+
+Q: "What is Twin en-suite?"
+A: "Twin en-suite means you'll share a bedroom with one other person (twin beds), but each of you will have your own private bathroom (en-suite). It's a good balance between privacy and affordability!"
+
+Q: "Why did you recommend Scape Bloomsbury?"
+A: "I recommended Scape Bloomsbury because: 1) Great location with only [X] min commute to [destination], 2) Reasonable price at £[X]/week, 3) Modern amenities including [list], 4) [room type] suits your needs. Check the full details above!"
+
+Q: "Does this property allow guests?"
+A: [Check Guest Policy field above and explain clearly]
+
+Your response:"""
+            else:
+                # 原有的通用 prompt（用于 web_search 等）
+                data_prompt = f"""You are a helpful assistant for UK student housing.
 
 {context_info}
 
@@ -989,6 +1212,44 @@ User Question: {user_query}
 I have already gathered the following REAL DATA for you:
 
 {observation}
+
+=== 🧙‍♂️ YOUR ROLE: SENIOR HOUSING CONSULTANT ===
+
+You are NOT a search engine summary bot. You are a **Senior Consultant** helping international students.
+User does NOT want a list of links. User wants **ACTIONABLE ANSWERS**.
+
+✅ **BAD Response Style** (Do NOT do this):
+- "According to Website A, rent is £x. You can verify at link."
+- "Search results say students might be exempt from tax. Check gov.uk." (Lazy! No synthesis!)
+- "I found these resources..." (User wants answers, not homework!)
+
+✅ **GOOD Response Style** (DO this):
+- "Rents vary by zone. In Zone 2 (UCL area), expect £650-900/month for a studio. This is affordable for most students with part-time work..."
+- "Good news: Full-time students are EXEMPT from Council Tax. You don't pay this £150-200/month cost, but you must apply for the exemption through your council within 21 days..."
+- "Transport: Zone 1-2 student monthly pass is £114.80. If you live in Zone 6, it's £210.40 - a £100/month difference. Net savings living far: minimal after transport costs."
+
+=== 📝 INSTRUCTIONS FOR SYNTHESIS ===
+
+1. **Synthesize, Don't Just List**: Read ALL search results and form a **coherent narrative**. Combine data from multiple sources into integrated paragraphs.
+   - ❌ DON'T: "Source 1 says X. Source 2 says Y. Source 3 says Z."
+   - ✅ DO: "Based on multiple sources, here's what you need to know: [integrated summary]..."
+
+2. **Be Direct and Specific**: If gov.uk says "students are exempt", tell the user **"You are exempt"** with clear next steps. Don't say "The guide discusses exemption".
+   - ❌ DON'T: "Search results mention exemptions."
+   - ✅ DO: "You qualify for Council Tax exemption. Apply via your local council website within 21 days of moving in."
+
+3. **Provide Decision Frameworks**: For comparison questions (Zone 2 vs Zone 6, far vs near), give:
+   - **Delta analysis**: "Zone 2 rent: £1,200-1,500. Zone 6 rent: £800-1,000. Difference: £300-500/month."
+   - **Trade-off summary**: "Living far saves £300/month but adds 1+ hour daily commute. Choose Zone 6 if budget is tight; choose Zone 2 if you value sleep/study time."
+
+4. **Handle Missing Data Gracefully**: 
+   - If specific zone/area data is unavailable, provide **estimated ranges** based on market logic (Zone 2 > Zone 6).
+   - Only if truly cannot estimate, suggest official sources ("Check Rightmove for current [area] listings").
+
+5. **Council Tax Rule**: If search results mention "student exemption" or "discounts", **explain this clearly**:
+   - What: "Full-time students don't pay Council Tax (£150-200/month saved)"
+   - How: "Apply through local council with student status certificate"
+   - When: "Within 21 days of tenancy start"
 
 === 🚨 STRICT GROUNDING RULES - ZERO TOLERANCE FOR FABRICATION 🚨 ===
 
@@ -1082,10 +1343,16 @@ I have already gathered the following REAL DATA for you:
 
 === 官方数据源（当搜索结果无具体数据时推荐）===
 
-- TfL 交通费: tfl.gov.uk/fares（Zone 1-2 学生月票约 £114）
+⚠️ CRITICAL: NEVER fabricate specific URLs or prices. Only mention:
+- TfL 交通费: 建议访问 tfl.gov.uk 查询最新票价（不要编造具体链接或价格）
 - 伦敦租金: rightmove.co.uk, zoopla.co.uk
 - 生活费指南: 各大学官网 Cost of Living 页面
 - 官方统计: ons.gov.uk
+- TfL PDF中“Pay as you go”“Monday to Sunday”表示按次/日封顶，不是月票！不要把 PAYG 日封顶写成月价格；如不确定，提示去 tfl.gov.uk 查看对应周/月票。
+
+DO NOT invent specific URLs like "tfl.gov.uk/fares/students-and-young-people/"
+DO NOT cite outdated prices (e.g., Zone 1-2 student £114 is WRONG)
+DO NOT state fares or rents unless the search result clearly gives the matching context (zone range, adult vs student, per property vs per room). If not explicit, say "请到 tfl.gov.uk/rightmove/zoopla 查看最新具体价格".
 
 === SELF-VERIFICATION CHECKLIST ===
 回答前，对每个数字检查：
@@ -1094,21 +1361,41 @@ I have already gathered the following REAL DATA for you:
 □ 如果只有链接没有数字，我是否正确地说"请访问官网"？
 □ 我有没有不小心用训练记忆"补充"了数字？
 □ 搜索结果中的年份是 2025 吗？如果是未来年份，我是否标注了？
+□ ⚠️ 如果用户问的是STUDENT租房，我引用的数字是"per room"还是"per property"？有没有误用整套房均价（£2,736）？
+□ ⚠️ 如果用户问的是COMPARISON（远vs近、Zone X vs Y），我是否提供了差价分析和权衡框架？还是只甩了个笼统平均数？
+□ ⚠️ 如果搜索结果没有具体区域数据，我是否基于常识（Zone 2 > Zone 6 rent）给出了估算范围？还是直接说"搜不到"就结束了？
+□ 🚫 如果我提到法律/政策（中介费、押金规则等），这是否在搜索结果中明确提到？如果没有，我是否说了"搜索结果未涉及，请查gov.uk"？
+□ 🚫 如果我引用了一个价格（如£38.70），我是否确认了它是周票还是月票、覆盖哪些Zone？
+□ 🚫 如果是 TfL PDF 的 “Pay as you go”/“Monday to Sunday daily cap”，我有没有误写成“月票”？（PAYG 是按次/日封顶，不是月价！）
+□ ✅ 逻辑检查：Zone 1-6票价 > Zone 1-2票价？远距离交通费 > 近距离交通费？如果我的计算显示相反，我肯定算错了！
 
 === 🌐 LANGUAGE RULE (CRITICAL) ===
 - If user asks in ENGLISH → Reply in ENGLISH
 - If user asks in CHINESE → Reply in CHINESE
 - 用户用什么语言问，就用什么语言答！
 
+=== 📊 DECISION/COMPARISON QUESTIONS (e.g., "far vs near", "should I...") ===
+When user asks for advice on trade-offs, you MUST provide:
+1. **Delta Analysis**: What's the DIFFERENCE in rent (Zone 2 - Zone 6)? What's the DIFFERENCE in transport cost?
+2. **Net Trade-off**: Which saves money overall? By how much?
+3. **Non-monetary factors**: Commute time difference (1+ hour daily? Sleep vs study time?)
+4. **Decision Framework**: "If you value X, choose Y. If you value Z, choose W."
+
+❌ DO NOT just list generic averages ("London average rent £2,736") and say "cannot find specific data".
+✅ DO provide estimated ranges when exact data unavailable: "Zone 2 rooms typically £1,200-1,500; Zone 6 rooms £800-1,000 based on market tier. Transport delta ~£220/month student fare."
+
 现在请严格按照以上规则回答：
 - MATCH THE USER'S LANGUAGE (English question = English answer)
 - 只使用搜索结果中**明确显示**的数字
 - 对于没有具体数据的项目，提供官方链接
 - 不要编造任何具体地点的价格！
+- ⚠️ 对于学生租房问题，永远区分"整套房 per property"和"单间 per room"
+- ⚠️ 对于对比/决策问题,提供差价分析和权衡框架,不要只甩笼统平均数
 
 Your response:"""
             
-            final_response = self.llm.generate_react_response(data_prompt)
+            # ❄️ Low Temperature (0.1) 确保基于事实,逻辑严密,减少幻觉
+            final_response = self.llm.generate_react_response(data_prompt, temperature=0.1)
             
             if final_response:
                 final_response = self._clean_response(final_response)
@@ -1161,17 +1448,45 @@ Your response:"""
     
     def _decide_tool(self, user_query: str) -> dict:
         """
-        使用 LLM 多数投票决定使用什么工具
+        决定使用什么工具(改进版)
         
-        核心原则：
-        1. 不使用关键词匹配 - 完全由 LLM 理解语义意图
-        2. 使用多数投票（5次）减少幻觉
-        3. 不确定时默认使用 web_search（更安全）
-        
-        Returns:
-            dict: {'tool': str, 'params': dict, 'reason': str}
+        逻辑:
+        1. 如果提到了房源上下文 (property_address),检查是否是POI查询
+           - 如果是POI查询("附近","超市","地铁"),放行到投票系统
+           - 否则使用 reasoning_property
+        2. 否则,使用 LLM 多数投票决定工具
         """
+        if self.verbose:
+            print(f"\n🤔 [Tool Decision] 决定使用什么工具...")
+        
         query_lower = user_query.lower()
+        
+        # 🆕 强化:检测房源上下文(当用户问具体房源的详情时)
+        if self.extracted_context.get('property_address'):
+            # 定义触发 POI 搜索的关键词
+            poi_keywords = [
+                'nearby', 'near', 'close to', 'distance', 'supermarket', 'station', 
+                'gym', 'shop', 'restaurant', 'cafe', 'park', 'tube', 'metro',
+                '超市', '地铁', '车站', '距离', '附近', '旁边', '周围', '周边',
+                'chinese supermarket', 'tesco', 'sainsbury', 'tfl', 'bus stop'
+            ]
+            
+            # 如果包含 POI 关键词,跳过强制拦截,让它进入投票流程
+            if any(kw in query_lower for kw in poi_keywords):
+                if self.verbose:
+                    print(f"   📍 检测到房源上下文,但用户询问周边设施 (POI)")
+                    print(f"   → 跳过 reasoning_property,进入投票流程选择 search_nearby_pois")
+                # 不返回,继续往下走到投票系统
+            else:
+                # 否则,如果是普通详情问题,才使用 reasoning_property
+                if self.verbose:
+                    print(f"   🏠 检测到房源上下文: {self.extracted_context.get('property_address')}")
+                    print(f"   → 使用 reasoning_property 工具(直接基于数据库数据回答)")
+                return {
+                    'tool': 'reasoning_property',
+                    'params': {},
+                    'reason': "检测到房源上下文,使用数据库解释房源详情"
+                }
         
         # 简单问候 -> 直接回答（这个规则保留，因为很明确）
         greetings = ['hi', 'hello', '你好', '您好', 'hey', 'thanks', '谢谢']
@@ -1207,22 +1522,40 @@ Your response:"""
 USER QUERY: "{user_query}"
 
 TOOLS:
-1. search_properties - User wants you to FIND/SHOW/GET properties from the database
-   ✓ "find me...", "show me...", "get me...", "search for..."
-   ✓ "can you find...", "based on X, find properties"
-   ✓ "帮我找", "给我推荐", "搜索房源"
-   ✓ User already provided context and NOW wants action
+1. reasoning_property - User asks about a SPECIFIC property's details/features/policies (property name mentioned)
+   ✓ "Why recommend Scape Bloomsbury?", "What is Twin en-suite?", "Does Scape have guest policy?"
+   ✓ "为什么推荐这个房子", "这个房子有什么政策", "Twin en-suite是什么意思"
+   ✓ Explaining property features, room types, amenities, policies
+   ✗ Finding NEW properties → use search_properties
+
+2. search_properties - User wants you to FIND/SHOW/GET specific properties from database
+   ✓ "find me a flat", "show me properties", "search for accommodation"
+   ✓ "can you find properties near...", "recommend properties for me"
+   ✓ "帮我找房子", "给我推荐房源", "搜索房产"
+   ✗ "should I choose...", "what's better...", "help me decide..." → use web_search
    
-2. web_search - User wants INFORMATION or has QUESTIONS
-   ✓ "what is...", "how much...", "which areas...", "is it possible..."
-   ✓ General information about rent, areas, costs
-   ✓ "介绍", "怎么样", "多少钱"
+3. web_search - User wants INFORMATION, ADVICE, COMPARISONS, or PRICES
+   ✓ "what is...", "how much...", "which is better...", "should I..."
+   ✓ "help me decide...", "what's the difference...", "is it worth..."
+   ✓ "transport cost", "tube fare", "living cost", "交通费多少", "通勤费"
+   ✓ Asking for advice, opinions, comparisons, general information, pricing
+   ✓ "应该", "怎么选", "哪个好", "值得吗", "帮我分析"
 
-3. check_safety - Safety/crime questions about specific location
-4. get_weather - Weather questions
+4. search_nearby_pois - Questions about SURROUNDINGS / NEARBY AMENITIES (OpenStreetMap data)
+   ✓ "Is there a supermarket nearby?", "How far is the tube station?"
+   ✓ "Nearby gym?", "Chinese supermarket?", "附近有超市吗"
+   ✓ "离地铁多远", "周边设施", "附近有什么"
+   ✓ Use when user asks about proximity to shops, transport, facilities
+   ✗ General area info → use web_search
+   
+5. check_safety - Safety/crime questions about specific location
+6. get_weather - Weather questions
 
-IMPORTANT: If user says "find", "show", "get", "search", "recommend properties" → search_properties
-If user asks a question without requesting action → web_search
+CRITICAL RULES:
+- Property name mentioned + asking about details/features → reasoning_property
+- "find/show/search properties" → search_properties
+- "should I...", "help me decide...", "what's better...", "how much...", "cost/price/fare" → web_search (advice/consultation/pricing)
+- General questions without action → web_search
 
 Output ONLY the tool name:
 Tool: '''
@@ -1236,26 +1569,72 @@ Tool: '''
             try:
                 # 🆕 使用高温度的分类函数，增加投票多样性
                 response = self.llm.generate_classification_response(classification_prompt)
+                if not response:
+                    # 🆕 严格模式重试（低温度、强制枚举输出），避免空响应
+                    strict_prompt = f"""Return EXACTLY one of: reasoning_property | search_properties | search_nearby_pois | web_search | check_safety | get_weather
+User query: "{user_query}"
+Tool:"""
+                    response = self.llm.generate_classification_response(strict_prompt, temperature=0.1)
+                
                 if response:
-                    tool = response.strip().lower().split()[0]  # Take first word
-                    tool = tool.replace(':', '').replace(',', '').replace('.', '')
+                    # 增强解析：清理各种格式
+                    response_clean = response.strip().lower()
+                    response_clean = response_clean.replace('tool:', '').replace('**', '').strip()
                     
-                    # Normalize tool names
-                    if 'search_prop' in tool or 'properties' in tool:
+                    # 尝试从响应中提取工具名（更鲁棒）
+                    tool = None
+                    
+                    # --- 🛠️ 方法1：检查是否包含完整工具名（优先级从具体到宽泛） ---
+                    
+                    # 🆕 最优先检查 search_nearby_pois（避免被 'search' 误判为 web_search）
+                    if 'search_nearby_pois' in response_clean or 'nearby_pois' in response_clean:
+                        tool = 'search_nearby_pois'
+                    elif 'poi' in response_clean and 'nearby' in response_clean:
+                        tool = 'search_nearby_pois'
+                    # 其次检查 reasoning_property
+                    elif 'reasoning_property' in response_clean or 'reasoning property' in response_clean:
+                        tool = 'reasoning_property'
+                    # 再检查 search_properties（注意：去掉宽泛的 'properties' 避免误判）
+                    elif 'search_properties' in response_clean:
                         tool = 'search_properties'
-                    elif 'web' in tool or tool == 'search':
-                        tool = 'web_search'
-                    elif 'safety' in tool or 'check' in tool:
+                    # 检查 check_safety
+                    elif 'check_safety' in response_clean or 'safety' in response_clean:
                         tool = 'check_safety'
-                    elif 'weather' in tool:
+                    # 检查 get_weather
+                    elif 'get_weather' in response_clean or 'weather' in response_clean:
                         tool = 'get_weather'
-                    else:
-                        tool = 'web_search'  # Default fallback for unknown
+                    # 最后检查 web_search（最宽泛）
+                    elif 'web_search' in response_clean or 'web search' in response_clean:
+                        tool = 'web_search'
+                    
+                    # 方法2：如果方法1没找到，取第一个词
+                    if not tool:
+                        first_word = response_clean.split()[0] if response_clean.split() else ''
+                        first_word = first_word.replace(':', '').replace(',', '').replace('.', '')
+                        
+                        # 🆕 优先检查完整的复合词
+                        if 'search_nearby_pois' in first_word or first_word == 'search_nearby_pois':
+                            tool = 'search_nearby_pois'
+                        elif 'poi' in first_word or 'nearby' in first_word:
+                            tool = 'search_nearby_pois'
+                        elif 'search_properties' in first_word or first_word == 'search_properties':
+                            tool = 'search_properties'
+                        elif 'safe' in first_word or first_word == 'check_safety':
+                            tool = 'check_safety'
+                        elif 'weather' in first_word:
+                            tool = 'get_weather'
+                        elif first_word in ['web', 'search']:
+                            tool = 'web_search'
+                        else:
+                            tool = 'web_search'  # Default fallback
                     
                     votes.append(tool)
                     
                     if self.verbose:
-                        print(f"   Vote {i+1}: {tool}")
+                        print(f"   Vote {i+1}: {tool} (from: {response.strip()[:50]})")
+                else:
+                    if self.verbose:
+                        print(f"   Vote {i+1}: 空响应，跳过 (严格重试后仍为空)")
             except Exception as e:
                 if self.verbose:
                     print(f"   Vote {i+1}: ERROR - {e}")
@@ -1263,7 +1642,40 @@ Tool: '''
         
         if not votes:
             if self.verbose:
-                print(f"   ⚠️ 没有有效投票，使用默认 web_search")
+                print(f"   ⚠️ 没有有效投票，使用启发式分类作为兜底")
+
+            query_lower = user_query.lower()
+            # 简单启发式：
+            # 1) 明确找房 → search_properties
+            property_indicators = ['find me a flat', 'show me properties', 'search for accommodation', '找房', '搜房', '房源', '租房', '房产']
+            if any(ind in query_lower for ind in property_indicators):
+                return {
+                    'tool': 'search_properties',
+                    'params': {'user_query': user_query},
+                    'reason': "启发式兜底: 检测到找房关键词，使用 search_properties"
+                }
+            # 2) 安全 → check_safety
+            safety_indicators = ['safe', 'safety', 'crime', '治安', '犯罪']
+            if any(ind in query_lower for ind in safety_indicators):
+                return {
+                    'tool': 'check_safety',
+                    'params': {'address': 'London', 'area': 'London'},
+                    'reason': "启发式兜底: 检测到安全关键词，使用 check_safety"
+                }
+            # 3) 天气 → get_weather
+            weather_indicators = ['weather', '天气', 'rain', 'temperature', '下雨']
+            if any(ind in query_lower for ind in weather_indicators):
+                location = 'London'
+                if 'manchester' in query_lower or '曼彻斯特' in user_query:
+                    location = 'Manchester'
+                elif 'birmingham' in query_lower or '伯明翰' in user_query:
+                    location = 'Birmingham'
+                return {
+                    'tool': 'get_weather',
+                    'params': {'location': location},
+                    'reason': "启发式兜底: 检测到天气关键词，使用 get_weather"
+                }
+            # 4) 默认 → web_search 规划
             return self._llm_plan_searches(user_query)  # Fallback
         
         # Count votes
@@ -1274,22 +1686,46 @@ Tool: '''
             print(f"   📊 投票结果: {dict(counter)}")
             print(f"   🏆 胜出: {winner} ({count}/{len(votes)} 票)")
         
-        # 🆕 如果投票结果平局或接近平局，检查用户查询中的动作词
+        # 🆕 如果投票结果平局或接近平局，检查用户查询的意图
         if len(counter) > 1:
-            # 检查是否有明确的动作请求词
-            action_indicators = ['find', 'show', 'get', 'search', '找', '搜索', '推荐', 'recommend', 'based on']
             query_lower = user_query.lower()
-            has_action_word = any(word in query_lower for word in action_indicators)
             
-            if has_action_word and 'search_properties' in counter:
-                # 用户明确请求行动，且有投票支持 search_properties
+            # 🆕 优先检查是否是咨询/建议类问题（应该用 web_search）
+            consultation_indicators = [
+                'should i', 'should we', 'help me decide', 'help me choose',
+                'which is better', "what's better", 'worth it', 'is it worth',
+                'advice', 'recommend', 'suggestion', 'compare',
+                '应该', '帮我选', '帮我决定', '哪个好', '值得吗', '怎么选',
+                '建议', '比较', '分析'
+            ]
+            is_consultation = any(indicator in query_lower for indicator in consultation_indicators)
+            
+            if is_consultation and 'web_search' in counter:
+                # 这是咨询类问题，应该用 web_search
                 if self.verbose:
-                    print(f"   🔍 检测到行动词，倾向使用 search_properties")
-                winner = 'search_properties'
-                count = counter.get('search_properties', 0)
+                    print(f"   💡 检测到咨询/建议类问题，优先使用 web_search")
+                winner = 'web_search'
+                count = counter.get('web_search', 0)
+            else:
+                # 检查是否有明确的动作请求词（找房子）
+                action_indicators = ['find me', 'show me', 'get me', 'search for', '帮我找房', '搜索房源', '推荐房源']
+                has_action_word = any(word in query_lower for word in action_indicators)
+                
+                if has_action_word and 'search_properties' in counter:
+                    # 用户明确请求搜索房产
+                    if self.verbose:
+                        print(f"   🔍 检测到房产搜索请求，使用 search_properties")
+                    winner = 'search_properties'
+                    count = counter.get('search_properties', 0)
         
         # Build appropriate params based on winner
-        if winner == 'search_properties':
+        if winner == 'reasoning_property':
+            return {
+                'tool': 'reasoning_property',
+                'params': {},
+                'reason': f"LLM投票决定: reasoning_property ({count}/{len(votes)}票)"
+            }
+        elif winner == 'search_properties':
             return {
                 'tool': 'search_properties', 
                 'params': {'user_query': user_query}, 
@@ -1298,6 +1734,20 @@ Tool: '''
         elif winner == 'web_search':
             # Use existing multi-search planning for web queries
             return self._llm_plan_searches(user_query)
+        elif winner == 'search_nearby_pois':
+            # 自动注入当前房源地址或默认London
+            address = self.extracted_context.get('property_address', 'London')
+            if self.verbose:
+                print(f"   📍 将使用地址: {address}")
+            return {
+                'tool': 'search_nearby_pois',
+                'params': {
+                    'address': address, 
+                    'user_query': user_query,
+                    'radius': 1000  # 默认搜1公里
+                },
+                'reason': f"LLM投票决定: search_nearby_pois ({count}/{len(votes)}票) - 查询周边设施"
+            }
         elif winner == 'check_safety':
             # Extract location from query if possible
             return {
@@ -1336,11 +1786,66 @@ Tool: '''
         if self.verbose:
             print(f"\n🧠 [LLM Planning] 让 LLM 自主规划搜索策略...")
         
-        planning_prompt = f"""You are a search query planner for UK student housing assistance.
+        planning_prompt = f"""You are a search query planner for a STUDENT housing assistant.
 
 USER QUESTION: {user_query}
 
-Your task: Plan the optimal search strategy to answer this question with ACCURATE, LONDON-SPECIFIC data.
+### 🚨 CRITICAL AUDIENCE RULE:
+- **Target Audience**: STUDENTS (NOT Investors/Landlords/Property Analysts).
+- **FORBIDDEN TOPICS**: Do NOT search for "investment volume", "cap rates", "market transaction values", "yields", "investor returns", "institutional investment".
+- **REQUIRED TOPICS**: Search for "average rent", "student experience", "living costs", "safety", "competition levels", "how to find accommodation".
+- **WHY**: Investment reports (£2.8bn deals, yield analysis) are USELESS to students. Students need practical info: "How much?", "Where to live?", "What to avoid?".
+
+### 🛠️ AVAILABLE TOOLS:
+
+1. **check_transport_cost** (Internal Tool - PRICES ONLY)
+   - USE THIS for: Ticket PRICES, monthly pass COST, "how much is transport".
+   - 🚫 DO NOT USE FOR: "How long", "Commute time", "Duration", "通勤时间". (This tool only knows £££, not minutes!)
+   - PARAMS: {{"end_zone": [Extract User Zone], "travel_type": "student"}}
+   - 🚨 ZONE EXTRACTION RULE:
+     * If user says "Zone 3", you MUST set "end_zone": 3.
+     * If user says "Zone 4/5/6", you MUST set "end_zone": 4/5/6.
+     * DO NOT default to Zone 2 if user explicitly said Zone 3/4/5/6!
+     * Only use Zone 2 if user asks generic "market overview" without specifying zone.
+   - Examples: "通勤费多少", "Zone 3 fare", "transport cost from Zone 4"
+
+2. **web_search** (External Search - For TIME/Duration + Guides/Reports/Advice)
+   - USE THIS for: 
+     * Commute DURATIONS/TIME: "How long from Zone 3 to UCL?", "通勤时间"
+     * Market trends, legal guides, scam warnings, area recommendations
+   - PARAMS: {{"query": "London specific query 2025"}}
+   - Examples: 
+     * "Average commute time from London Zone 3 to Central London via tube 2025"
+     * "London student housing average rent prices by zone 2025 guide"
+   - **QUERY ENGINEERING TIPS** (CRITICAL):
+     * ❌ BAD Query: "London student housing market overview report 2025" → Returns investment data (£Xbn deals, yields)
+     * ✅ GOOD Query: "London student rent prices by area 2025 guide for students" → Returns price trends for students
+     * ✅ GOOD Query: "Best affordable areas for international students London 2025 blog" → Returns area guides
+     * ✅ GOOD Query: "How hard is it to find student accommodation London 2025 news" → Returns competition/availability info
+     * ✅ GOOD Query: "London student housing average weekly rent 2025 statistics" → Returns rent data, not transaction volumes
+
+### 📝 PLANNING RULES:
+
+1. **Hybrid Strategy**: You can use BOTH tools in the same plan.
+   - Example: If user asks "Rent and transport costs", plan one `web_search` for rent and one `check_transport_cost` for transport.
+2. **Prioritize Internal Tools**: If the user asks about transport prices/fares, YOU MUST USE `check_transport_cost`. Do NOT use web_search for fares.
+3. **Format**: Return a JSON with a "searches" list (each item is a tool call).
+
+🏠 CRITICAL - PROPERTY SEARCH SOURCE POLICY:
+- **学生公寓 (Student Accommodation)**: When searching for student housing, include "Uhomes" in web_search query
+  * Keywords: "student accommodation", "学生公寓", "student halls", "PBSA"
+  * Example: "London student accommodation near UCL 2025 Uhomes"
+  * If user names a UNIVERSITY (e.g., UCL/KCL/Imperial/LSE/UoM etc.), include that university name in EVERY student accommodation query and do NOT mix other universities.
+  
+- **社会公寓 (Private Rental)**: When searching for private rentals, include "Zoopla Rightmove" in web_search query
+  * Keywords: "flat", "apartment", "private rental", "social housing"
+  * Example: "London flat rent 2025 Zoopla Rightmove"
+  
+- **咨询类问题 (Advice/Guide questions)**: When user asks "what should I know", "tips", "guide", "how to"
+  * Focus on PRACTICAL ADVICE, not just listings
+  * Search for: "UK student accommodation guide", "things to know renting UK", "student rental tips UK"
+  * Include: scams to avoid, documents needed, tenant rights, deposit protection
+  * Example: "UK international student renting guide what to know 2025 gov.uk"
 
 🚨 CRITICAL - AVOID UK-WIDE AVERAGES:
 - UK average data is MISLEADING for London (London is 50-100% more expensive!)
@@ -1355,36 +1860,104 @@ When user asks about rent/costs, ALWAYS consider these hidden costs that affect 
 4. Deposit Protection Schemes - legal requirements
 5. Agency Fees - some charge extra for non-UK students
 
+### 📝 PLANNING LOGIC & BEST PRACTICES:
+
+**Case A: User asks about "Commute TIME / Duration" (时间/需要多久):**
+- Query: "How long from Zone 3 to UCL?", "Zone 4通勤时间", "需要多久"
+- Action:
+  1. `web_search`: "Average commute time from London Zone [X] to [destination] via public transport 2025"
+  2. (Optional) `check_transport_cost`: Only if they ALSO asked about price in the same query.
+
+**Case B: User asks about "Transport COST / Price" (价格/多少钱):**
+- Query: "How much is travel from Zone 3?", "Zone 4交通费", "票价多少"
+- Action:
+  1. `check_transport_cost`: {{"end_zone": [User's Zone], "travel_type": "student"}} (MUST match user's zone!)
+  2. (Optional) `web_search`: Only if context needs explanation.
+
+**If user asks "Introduce the market / What to expect / Market overview":**
+1. `web_search`: "London student accommodation average rent prices by zone 2025 guide" (Price Ranges - NOT investment volumes)
+2. `web_search`: "London student housing shortage 2025 news competition" (Availability/Competition)
+3. `web_search`: "Best affordable areas for international students London 2025 blog" (Area Recommendations)
+4. `web_search`: "UK student council tax exemption rules 2025 gov.uk" (CRITICAL: International students often miss this - ALWAYS include for overview questions)
+5. `check_transport_cost`: {{"end_zone": 2, "travel_type": "student"}} (ALWAYS include this to set budget expectations for new students)
+
+**If user asks "Costs / How much to budget":**
+1. `check_transport_cost`: For exact transport fares (Zone 1-2, Zone 1-6, etc.)
+2. `web_search`: "London student cost of living breakdown 2025 food bills utilities" (Daily expenses)
+3. `web_search`: "London student accommodation average weekly rent 2025 statistics" (Rent data)
+4. `web_search`: "UK student council tax exemption how to apply 2025 gov.uk" (CRITICAL: Many students don't know they're exempt!)
+
+**If user asks "Tips / What should I know / Guide":**
+1. `web_search`: "UK international student renting guide what to know 2025 gov.uk" (Legal/Official Guide)
+2. `web_search`: "London student rental scams to avoid 2025 tips" (Scam Warnings)
+3. `web_search`: "UK tenant rights deposit protection 2025 shelter.org.uk" (Tenant Rights)
+
+🏠 PROPERTY SOURCE POLICY:
+- **学生公寓**: Add "Uhomes" to query (e.g., "London student accommodation near UCL 2025 Uhomes")
+- **社会公寓**: Add "Zoopla Rightmove" to query (e.g., "London flat rent Bloomsbury 2025 Zoopla Rightmove")
+
 REQUIREMENTS:
 1. ALL search queries MUST be in ENGLISH - translate Chinese queries to English
 2. ALL searches MUST include "London" + "2025" - we need CURRENT LONDON data
-3. PRIORITIZE OFFICIAL SOURCES:
-   - Rent: "London Rightmove" or "London Zoopla" 
-   - Transport: "TfL" or "tfl.gov.uk"
-   - Living costs: "London cost of living" (NOT "UK cost of living")
-4. For cost-related questions, ADD a search for international student hidden costs
-5. AVOID: blog posts, UK-wide averages, outdated data
-
-RULES:
-1. Decide how many searches are needed (minimum 1, maximum 10)
-2. Each query MUST include "London" + "2025"
-3. Each query should target authoritative sources
-4. For transport: search for SPECIFIC zones (Zone 1-2 vs Zone 1-6)
-5. For rent/cost questions: INCLUDE hidden costs search for international students
+3. **Hybrid Strategy**: Use BOTH `check_transport_cost` (for fares) AND `web_search` (for guides) when appropriate
+4. For "market overview" questions: AVOID "market report" (gets investment data), USE "rent prices guide for students" (gets practical data)
+5. DISTINGUISH "MARKET OVERVIEW" FROM "FINDING A FLAT":
+   - Overview: Search for "statistics", "average prices", "trends", "guides"
+   - Finding flats: Search on Uhomes/Zoopla with specific location
+6. AVOID: "investment", "yields", "transaction volume", UK-wide averages, blog posts
 
 OUTPUT FORMAT - STRICT JSON only:
-{{"searches": [{{"tool": "web_search", "params": {{"query": "London specific query 2025"}}}}], "reason": "brief reason"}}
+{{"searches": [{{"tool": "web_search", "params": {{"query": "..."}}}}], "reason": "brief reason"}}
 
-EXAMPLES:
-User: "伦敦租房多少钱" -> {{"searches": [{{"tool": "web_search", "params": {{"query": "London average rent price 2025 Rightmove"}}}}, {{"tool": "web_search", "params": {{"query": "London international student rent guarantor requirements 2025"}}}}, {{"tool": "web_search", "params": {{"query": "London rental scams international students avoid 2025"}}}}], "reason": "London rent + hidden costs"}}
-User: "通勤费用" -> {{"searches": [{{"tool": "web_search", "params": {{"query": "London TfL Zone 1-2 monthly travelcard 2025 official"}}}}], "reason": "London transport"}}
-User: "生活费用" -> {{"searches": [{{"tool": "web_search", "params": {{"query": "London student cost of living 2025"}}}}, {{"tool": "web_search", "params": {{"query": "London Council Tax student exemption 2025"}}}}, {{"tool": "web_search", "params": {{"query": "London international student deposit scheme 2025"}}}}], "reason": "London living costs + hidden costs"}}
+### 👇 EXAMPLES:
+
+User: "伦敦Zone 1-2的通勤费是多少？"
+JSON: {{"searches": [
+    {{"tool": "check_transport_cost", "params": {{"end_zone": 2, "travel_type": "student"}}}}
+], "reason": "Using internal tool for exact student fares"}}
+
+User: "生活费和交通费大概要多少？"
+JSON: {{"searches": [
+    {{"tool": "web_search", "params": {{"query": "London student monthly living costs 2025 food bills utilities guide"}}}},
+    {{"tool": "check_transport_cost", "params": {{"end_zone": 2, "travel_type": "student"}}}},
+    {{"tool": "check_transport_cost", "params": {{"end_zone": 6, "travel_type": "student"}}}}
+], "reason": "Hybrid: web search for living costs + internal tool for Zone 1-2 and Zone 1-6 transport"}}
+
+User: "介绍一下伦敦租房市场"
+JSON: {{"searches": [
+    {{"tool": "web_search", "params": {{"query": "London student accommodation average rent prices by zone 2025 guide"}}}},
+    {{"tool": "web_search", "params": {{"query": "London student housing shortage 2025 news competition"}}}},
+    {{"tool": "web_search", "params": {{"query": "Best affordable areas for international students London 2025 blog"}}}}
+], "reason": "Market overview for STUDENTS - rent prices, competition, area guides (NOT investment data)"}}
+
+User: "找UCL附近的学生公寓"
+JSON: {{"searches": [
+    {{"tool": "web_search", "params": {{"query": "London student accommodation near UCL 2025 Uhomes"}}}}
+], "reason": "Finding student properties - use Uhomes platform"}}
+
+User: "帮我找Bloomsbury的社会公寓"
+JSON: {{"searches": [
+    {{"tool": "web_search", "params": {{"query": "London flat Bloomsbury 2025 Zoopla Rightmove"}}}}
+], "reason": "Finding private rentals - use Zoopla and Rightmove"}}
+
+User: "租房需要知道什么"
+JSON: {{"searches": [
+    {{"tool": "web_search", "params": {{"query": "UK international student renting guide what to know 2025 gov.uk"}}}},
+    {{"tool": "web_search", "params": {{"query": "London student rental scams to avoid 2025 tips"}}}}
+], "reason": "Practical advice - official guide + scam warnings"}}
+
+User: "UCL附近房价和交通费"
+JSON: {{"searches": [
+    {{"tool": "web_search", "params": {{"query": "London Bloomsbury student accommodation average rent 2025 statistics"}}}},
+    {{"tool": "check_transport_cost", "params": {{"end_zone": 2, "travel_type": "student"}}}}
+], "reason": "Hybrid: rent statistics for UCL area + exact Zone 1-2 transport cost"}}
 
 Now output JSON for: "{user_query}"
 JSON:"""
 
         try:
-            response = self.llm.generate_react_response(planning_prompt)
+            # 🔥 High Temperature (0.8) 激发发散思维，让模型更有可能想出 "Council Tax exemption" 这种细分查询
+            response = self.llm.generate_react_response(planning_prompt, temperature=0.8)
             
             if response:
                 # 清理响应中的控制字符和非法字符
@@ -1549,8 +2122,13 @@ JSON:"""
                 response_parts.append(f"\n### {poi_type.replace('_', ' ').title()}")
                 for poi in poi_list[:5]:
                     name = poi.get('name', 'Unknown')
-                    distance = poi.get('distance', 'N/A')
-                    response_parts.append(f"- **{name}** - {distance}m")
+                    # 🆕 修复：使用正确的距离字段名
+                    distance = poi.get('distance_display') or poi.get('distance', 'N/A')
+                    # 如果 distance 已经包含 'm' 或 'km'，不再添加单位
+                    if isinstance(distance, str) and (distance.endswith('m') or distance.endswith('km')):
+                        response_parts.append(f"- **{name}** - {distance}")
+                    else:
+                        response_parts.append(f"- **{name}** - {distance}m")
         
         return {
             'success': True,

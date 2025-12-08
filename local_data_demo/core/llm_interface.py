@@ -5,7 +5,7 @@ import re
 import requests
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-MODEL_NAME = "ministral-3:3b-cloud"  # 使用 Ollama 云端模型，更强的推理能力
+MODEL_NAME = "gemma3:27b-cloud"  # 使用 Ollama 云端模型，更强的推理能力
 
 USE_FINETUNED_MODEL = False  # 禁用 fine-tuned model，统一使用主 LLM
 # ========================================
@@ -96,9 +96,9 @@ def generate_react_response(prompt: str, timeout: int = 120, temperature: float 
         return ""
 
 
-def generate_classification_response(prompt: str, timeout: int = 30) -> str:
+def generate_classification_response(prompt: str, timeout: int = 30, temperature: float = 0.7) -> str:
     """
-    专门用于工具分类的函数，使用更高的 temperature 增加多样性
+    专门用于工具分类的函数，可调整 temperature（默认较高增加多样性）
     """
     url = f"{OLLAMA_BASE_URL}/api/generate"
     
@@ -107,7 +107,7 @@ def generate_classification_response(prompt: str, timeout: int = 30) -> str:
         "prompt": prompt,
         "stream": False,
         "options": {
-            "temperature": 0.7,  # 更高的温度，增加投票多样性
+            "temperature": temperature,  # 可调节温度
             "top_p": 0.95,
             "top_k": 40,  # 添加 top_k 增加采样多样性
             "num_predict": 50,  # 只需要短回答
@@ -132,13 +132,20 @@ class LLMInterface:
         self.base_url = OLLAMA_BASE_URL
         self.model = MODEL_NAME
     
-    def generate_react_response(self, prompt: str) -> str:
-        """生成 ReAct 响应"""
-        return generate_react_response(prompt)
+    def generate_react_response(self, prompt: str, temperature: float = 0.5) -> str:
+        """生成 ReAct 响应
+        
+        Args:
+            prompt: 输入提示
+            temperature: 温度参数 (0.0-1.0)
+                - 规划阶段推荐 0.7-0.8 (发散思维,挖掘隐藏需求)
+                - 生成阶段推荐 0.1-0.2 (严谨准确,减少幻觉)
+        """
+        return generate_react_response(prompt, temperature=temperature)
     
-    def generate_classification_response(self, prompt: str) -> str:
-        """生成工具分类响应（高温度，增加多样性）"""
-        return generate_classification_response(prompt)
+    def generate_classification_response(self, prompt: str, timeout: int = 30, temperature: float = 0.7) -> str:
+        """生成工具分类响应（可指定温度）"""
+        return generate_classification_response(prompt, timeout, temperature)
 
 def extract_first_json(text: str) -> dict | None:
     """Extracts the first valid JSON object from a string"""
