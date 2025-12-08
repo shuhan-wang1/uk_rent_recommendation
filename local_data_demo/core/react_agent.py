@@ -413,7 +413,12 @@ class ReActAgent:
             info_parts.append(self.extracted_context['previous_search_results'])
             info_parts.append("=== END PREVIOUS RESULTS ===")
             info_parts.append("")
-            info_parts.append("NOTE: User already has these property recommendations. If they ask about safety/amenities/comparison, use these properties - don't start a new search!")
+            info_parts.append("NOTE: User already has these property recommendations.")
+            info_parts.append("If they ask about safety/amenities/comparison:")
+            info_parts.append("1. Find the property name in the list above")
+            info_parts.append("2. Extract the 'Full Address' field")
+            info_parts.append("3. Use that COMPLETE address when calling tools like check_safety")
+            info_parts.append("4. Do NOT use just the city name (e.g., 'London') - use the full street address!")
             info_parts.append("")
         
         # 🆕 设施搜索结果（优先显示）
@@ -996,6 +1001,18 @@ class ReActAgent:
         
         if self.verbose:
             print(f"   决定: {tool_decision['tool']} - {tool_decision['reason']}")
+        
+        # 🆕 处理需要澄清的情况（如 check_safety 无法确定地址）
+        if tool_decision['tool'] == 'clarification':
+            clarification_msg = tool_decision.get('clarification_message', '请提供更多信息。')
+            return {
+                'success': True,
+                'response': clarification_msg,
+                'response_type': 'clarification',
+                'turns': 1,
+                'extracted_context': self.extracted_context,
+                'tool_data': {}
+            }
         
         # 🆕 根据工具类型决定是否包含房产上下文
         # 对于一般信息查询（web_search, multi_search），不应该包含之前的房产搜索结果
@@ -1655,11 +1672,65 @@ Tool:"""
                     'reason': "启发式兜底: 检测到找房关键词，使用 search_properties"
                 }
             # 2) 安全 → check_safety
-            safety_indicators = ['safe', 'safety', 'crime', '治安', '犯罪']
+            safety_indicators = ['safe', 'safety', 'crime', '治安', '犯罪', '安全']
             if any(ind in query_lower for ind in safety_indicators):
+                # 优先从上下文获取地址
+                address = self.extracted_context.get('property_address')
+                
+                if not address:
+                    # 尝试从查询中提取房产名称
+                    import re
+                    property_name = None
+                    brand_patterns = [
+                        r'(Scape\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                        r'(iQ\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                        r'(Unite\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                        r'(Chapter\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                        r'(Nido\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                    ]
+                    for pattern in brand_patterns:
+                        match = re.search(pattern, user_query, re.IGNORECASE)
+                        if match:
+                            property_name = match.group(1).strip()
+                            break
+                    
+                    # 如果提取到房产名称，在数据库中查找完整地址
+                    if property_name:
+                        try:
+                            from core.data_loader import load_mock_properties_from_csv
+                            all_properties = load_mock_properties_from_csv()
+                            property_name_lower = property_name.lower()
+                            
+                            for prop in all_properties:
+                                prop_address = prop.get('Address', '')
+                                if property_name_lower in prop_address.lower():
+                                    address = prop_address
+                                    break
+                        except Exception:
+                            pass
+                
+                # 如果还是没有地址，返回澄清请求
+                if not address:
+                    is_chinese = any('\u4e00' <= char <= '\u9fff' for char in user_query)
+                    if is_chinese:
+                        clarification_msg = "我需要知道您想查询哪个具体位置的安全信息。请提供房产的邮编（如 WC1E 6BT），或者点击房产卡片上的 'AI 咨询' 按钮后再询问安全问题。"
+                    else:
+                        clarification_msg = "I need to know the specific location to check safety. Please provide the property's postcode (e.g., WC1E 6BT), or click the 'Ask AI' button on a property card before asking about safety."
+                    
+                    return {
+                        'tool': 'clarification',
+                        'params': {},
+                        'clarification_message': clarification_msg,
+                        'reason': "启发式兜底: 无法确定具体地址，需要用户提供邮编"
+                    }
+                
                 return {
                     'tool': 'check_safety',
-                    'params': {'address': 'London', 'area': 'London'},
+                    'params': {
+                        'address': address, 
+                        'area': address,
+                        'user_query': user_query
+                    },
                     'reason': "启发式兜底: 检测到安全关键词，使用 check_safety"
                 }
             # 3) 天气 → get_weather
@@ -1749,10 +1820,88 @@ Tool:"""
                 'reason': f"LLM投票决定: search_nearby_pois ({count}/{len(votes)}票) - 查询周边设施"
             }
         elif winner == 'check_safety':
-            # Extract location from query if possible
+            # 优先从上下文提取房源地址
+            address = self.extracted_context.get('property_address')
+            
+            if address:
+                if self.verbose:
+                    print(f"   ✅ 从上下文获取到房产地址: {address}")
+            else:
+                # 步骤2: 从用户查询中提取房产名称，然后在数据库中查找完整地址
+                import re
+                property_name = None
+                
+                # 匹配常见的学生公寓品牌名称
+                brand_patterns = [
+                    r'(Scape\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                    r'(iQ\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                    r'(Unite\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                    r'(Chapter\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                    r'(Urbanest\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                    r'(Student\s+Roost\s+[A-Za-z]+)',
+                    r'(Nido\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)',
+                ]
+                for pattern in brand_patterns:
+                    match = re.search(pattern, user_query, re.IGNORECASE)
+                    if match:
+                        property_name = match.group(1).strip()
+                        if self.verbose:
+                            print(f"   🔍 从用户查询中提取到房产名称: {property_name}")
+                        break
+                
+                # 如果提取到房产名称，在数据库中查找完整地址
+                if property_name:
+                    try:
+                        from core.data_loader import load_mock_properties_from_csv
+                        all_properties = load_mock_properties_from_csv()
+                        property_name_lower = property_name.lower()
+                        
+                        for prop in all_properties:
+                            prop_address = prop.get('Address', '')
+                            # 检查房产地址是否包含这个名称
+                            if property_name_lower in prop_address.lower():
+                                address = prop_address
+                                if self.verbose:
+                                    print(f"   ✅ 在数据库中找到匹配房产: {address}")
+                                break
+                        
+                        if not address:
+                            if self.verbose:
+                                print(f"   ⚠️ 数据库中未找到 '{property_name}'")
+                    except Exception as e:
+                        if self.verbose:
+                            print(f"   ⚠️ 无法加载房产数据库: {e}")
+                
+                # 如果还是没有地址，返回澄清请求
+                if not address:
+                    if self.verbose:
+                        print(f"   ❓ 需要用户提供邮编")
+                    
+                    # 检测用户语言
+                    is_chinese = any('\u4e00' <= char <= '\u9fff' for char in user_query)
+                    
+                    if is_chinese:
+                        clarification_msg = f"我需要知道您想查询哪个具体位置的安全信息。请提供房产的邮编（如 WC1E 6BT），或者点击房产卡片上的 'AI 咨询' 按钮后再询问安全问题。"
+                    else:
+                        clarification_msg = f"I need to know the specific location to check safety. Please provide the property's postcode (e.g., WC1E 6BT), or click the 'Ask AI' button on a property card before asking about safety."
+                    
+                    return {
+                        'tool': 'clarification',
+                        'params': {},
+                        'clarification_message': clarification_msg,
+                        'reason': "无法确定具体地址，需要用户提供邮编"
+                    }
+            
+            if self.verbose:
+                print(f"   📍 check_safety 将使用地址: {address}")
+            
             return {
                 'tool': 'check_safety', 
-                'params': {'address': 'London', 'area': 'London'}, 
+                'params': {
+                    'address': address, 
+                    'area': address,
+                    'user_query': user_query
+                }, 
                 'reason': f"LLM投票决定: check_safety ({count}/{len(votes)}票)"
             }
         elif winner == 'get_weather':
@@ -2088,18 +2237,38 @@ JSON:"""
         address = raw_data.get('address', 'the area')
         score = raw_data.get('safety_score', 50)
         level = raw_data.get('safety_level', 'Moderate')
-        details = raw_data.get('details', '')
+        
+        # 获取详细的评分解释和安全分析
+        scoring_explanation = raw_data.get('scoring_explanation', '')
+        safety_analysis = raw_data.get('safety_analysis', '')
         
         emoji = "✅" if score >= 70 else "⚠️" if score >= 50 else "🚨"
         
-        response = f"""## {emoji} Safety Report for {address}
-
-**Safety Score:** {score}/100
-**Risk Level:** {level}
-
-{details}
-
-*Note: This is based on general area statistics. Always visit in person before making a decision.*"""
+        # 构建响应内容
+        response_parts = [f"## {emoji} Safety Report for {address}", ""]
+        response_parts.append(f"**Safety Score:** {score}/100")
+        response_parts.append(f"**Risk Level:** {level}")
+        response_parts.append("")
+        
+        # 添加评分解释
+        if scoring_explanation:
+            response_parts.append("---")
+            response_parts.append("")
+            response_parts.append(scoring_explanation)
+            response_parts.append("")
+        
+        # 添加详细安全分析
+        if safety_analysis:
+            response_parts.append("---")
+            response_parts.append("")
+            response_parts.append(safety_analysis)
+            response_parts.append("")
+        
+        response_parts.append("---")
+        response_parts.append("")
+        response_parts.append("*Note: This is based on general area statistics. Always visit in person before making a decision.*")
+        
+        response = "\n".join(response_parts)
         
         return {
             'success': True,

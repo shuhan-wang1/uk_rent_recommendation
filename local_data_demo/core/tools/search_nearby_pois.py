@@ -32,6 +32,8 @@ MAJOR_SUPERMARKET_BRANDS = [
 MAJOR_CONVENIENCE_BRANDS = [
     # Tesco/Sainsbury's 便利店
     'tesco express', "sainsbury's local", 'sainsburys local',
+    # Waitrose 便利店形式
+    'waitrose', 'waitrose local', 'Waitrose & Partners'
     # 连锁便利店
     'co-op', 'coop', 'nisa', 'spar', 'costcutter', 'londis', 'budgens', 'one stop',
     'premier', 'mace', 'best-one', 'bargain booze',
@@ -389,7 +391,7 @@ def _infer_poi_types_from_query(user_query: str) -> List[str]:
 async def search_nearby_pois_impl(
     address: str,
     poi_type: str = "all",
-    radius: int = 500,
+    radius: int = 300,
     user_query: str = ""
 ) -> ToolResult:
     """

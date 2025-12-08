@@ -33,6 +33,11 @@ print("[STARTUP] Initializing Tool System...")
 try:
     tool_registry = create_tool_registry()
     print(f"✓ [STARTUP] Tool System initialized with {len(tool_registry.tools)} tools")
+    
+    # 🆕 设置 tool_registry 到 web_search，让它可以调用其他工具
+    from core.tools.web_search import set_tool_registry
+    set_tool_registry(tool_registry)
+    
 except Exception as e:
     print(f"⚠️  [STARTUP] Warning: Tool System initialization failed: {e}")
     tool_registry = None
@@ -343,7 +348,14 @@ Current user message: {user_message}"""
                     full_prop = prop
                     break
             
-            prev_results_context += f"{i}. **{addr.split(',')[0]}**\n"
+            # 提取房产名称（用于用户引用）
+            property_name = addr.split(',')[0].strip()
+            
+            # 🆕 保存完整地址（用于 check_safety 等工具）
+            full_address = full_prop.get('Address', addr) if full_prop else addr
+            
+            prev_results_context += f"{i}. **{property_name}**\n"
+            prev_results_context += f"   - Full Address: {full_address}\n"  # 🆕 添加完整地址
             prev_results_context += f"   - Price: {price}\n"
             prev_results_context += f"   - Commute: {travel}\n"
             if full_prop:
