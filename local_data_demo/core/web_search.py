@@ -46,28 +46,49 @@ class SearXNGSearch:
     
     def _detect_query_intent(self, query: str) -> str:
         """
-        检测查询意图，判断是事实查询还是评价/反馈查询
-        
+        检测查询意图，判断是事实查询、评价/反馈查询还是 POI/设施查询
+
         Args:
             query: 搜索查询字符串
-            
+
         Returns:
-            str: 'factual' 或 'opinion'
+            str: 'factual' (需要过滤) 或 'opinion' (不过滤) 或 'poi' (不过滤)
         """
         query_lower = query.lower()
-        
-        # 评价/反馈类关键词
+
+        # POI/设施类关键词 - 这些查询允许所有来源（包括论坛、博客、评论）
+        poi_keywords = [
+            'chinese supermarket', 'chinese restaurant', 'chinese food', 'asian supermarket',
+            'supermarket', 'tesco', 'sainsbury', 'waitrose', 'aldi', 'lidl',
+            'restaurant', 'cafe', 'coffee', 'pub', 'bar',
+            'gym', 'fitness', 'sports', 'swimming pool',
+            'park', 'garden', 'playground',
+            'tube station', 'bus stop', 'metro', 'underground',
+            'pharmacy', 'hospital', 'clinic', 'gp',
+            'school', 'library', 'museum',
+            'shop', 'store', 'mall', 'shopping',
+            'nearby', 'near', 'around', 'close to',
+            'facilities', 'amenities', 'convenience'
+        ]
+
+        # 评价/反馈类关键词 - 这些查询也允许论坛等来源
         opinion_keywords = [
             'review', 'reviews', 'rating', 'experience', 'feedback',
             'opinion', 'recommend', 'worth', 'good or bad',
             'how is', 'what do people think', 'comments',
-            'forum', 'discussion', 'reddit', 'community'
+            'forum', 'discussion', 'reddit', 'community',
+            'student experience', 'living experience'
         ]
-        
-        # 如果包含这些关键词，则允许搜索论坛
+
+        # 优先检测 POI 查询（因为 POI 查询可能也包含 'experience' 等词）
+        if any(keyword in query_lower for keyword in poi_keywords):
+            return 'poi'
+
+        # 其次检测评价类查询
         if any(keyword in query_lower for keyword in opinion_keywords):
             return 'opinion'
-        
+
+        # 默认为事实查询（需要过滤）
         return 'factual'
     
     def search(
@@ -94,8 +115,9 @@ class SearXNGSearch:
         
         # 🆕 根据查询意图选择搜索引擎
         intent = self._detect_query_intent(query)
-        engines = self.forum_engines if intent == 'opinion' else self.authoritative_engines
-        
+        # POI 和 opinion 查询都允许使用论坛引擎
+        engines = self.forum_engines if intent in ['opinion', 'poi'] else self.authoritative_engines
+
         print(f"  -> [SearXNG] Query intent: {intent}, using engines: {engines}")
         
         params = {
@@ -133,10 +155,13 @@ class SearXNGSearch:
                 print(f"  ⚠️ [SearXNG] All engines unresponsive, no results")
             
             # 🆕 对于事实性查询，过滤结果，只保留权威来源
+            # POI 和 opinion 查询不过滤
             pre_filter_count = len(results)
             if intent == 'factual':
                 results = self._filter_authoritative_sources(results)
                 print(f"  -> [Filter] {pre_filter_count} → {len(results)} (kept authoritative sources)")
+            elif intent in ['opinion', 'poi']:
+                print(f"  -> [Filter] Skipping filter for {intent} query (allowing all sources)")
             
             # 提取并格式化结果
             formatted_results = []

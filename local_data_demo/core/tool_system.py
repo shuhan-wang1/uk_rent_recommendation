@@ -565,26 +565,26 @@ def create_tool_registry() -> ToolRegistry:
         get_weather_tool,
         web_search_tool,
         search_nearby_pois_tool,
-        get_property_details_tool
+        get_property_details_tool,
+        calculate_commute_cost_tool  # 🆕 综合通勤成本计算工具
     )
     from core.tools.check_transport_cost import check_transport_cost_tool
-    
+
     registry = ToolRegistry()
-    
+
     # 注册所有工具
     registry.register(search_properties_tool)
     registry.register(calculate_commute_tool)
+    registry.register(calculate_commute_cost_tool)  # 🆕 综合通勤成本计算工具（时间+费用）
     registry.register(check_safety_tool)
     registry.register(get_weather_tool)
     registry.register(web_search_tool)
     registry.register(search_nearby_pois_tool)
     registry.register(get_property_details_tool)
-    registry.register(check_transport_cost_tool)  # 🆕 交通费用查询工具
-    
+    registry.register(check_transport_cost_tool)  # 交通费用查询工具
+
     print(f"\n✅ 工具系统初始化完成！共注册 {len(registry.tools)} 个工具")
-    
-    return registry
-    
+
     return registry
 
 

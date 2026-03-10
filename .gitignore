@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ChromaDB runtime data
+chroma_db/
+chroma_db_area/
+local_data_demo/chroma_db/
+local_data_demo/chroma_db_area/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Model files (large)
+*.safetensors
+*.bin
+!requirements.txt

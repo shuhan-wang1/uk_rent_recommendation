@@ -10,6 +10,7 @@ from core.tools.web_search import web_search_tool
 from core.tools.search_nearby_pois import search_nearby_pois_tool
 from core.tools.get_property_details import get_property_details_tool
 from core.tools.check_transport_cost import check_transport_cost_tool
+from core.tools.calculate_commute_cost import calculate_commute_cost_tool
 
 __all__ = [
     'search_properties_tool',
@@ -19,5 +20,6 @@ __all__ = [
     'web_search_tool',
     'search_nearby_pois_tool',
     'get_property_details_tool',
-    'check_transport_cost_tool'
+    'check_transport_cost_tool',
+    'calculate_commute_cost_tool'
 ]

@@ -732,42 +732,61 @@ class ReActAgent:
     
     async def _execute_multi_search(self, searches: list) -> tuple:
         """
-        执行多个工具调用并合并结果
-        
+        执行多个工具调用并合并结果 - 支持真正的并行执行
+
         Args:
             searches: 搜索列表，格式为 [{"tool": "web_search", "params": {"query": "..."}}, ...]
-        
+
         Returns:
             tuple: (combined_observation, combined_raw_data)
         """
         if self.verbose:
             print(f"\n🔀 [MultiSearch] 开始执行 {len(searches)} 个并行搜索...")
-        
-        all_observations = []
-        all_raw_data = {}
-        
+
+        # 🆕 并行执行所有工具调用
+        tasks = []
         for i, search in enumerate(searches):
             tool_name = search.get('tool', 'web_search')
             params = search.get('params', {})
-            
+
             if self.verbose:
                 print(f"\n  {'='*50}")
                 print(f"  📍 [Sub-Query {i+1}/{len(searches)}]")
                 print(f"     Tool: {tool_name}")
                 print(f"     Params: {json.dumps(params, ensure_ascii=False)}")
-            
-            # 执行单个工具
-            observation, raw_data = await self._execute_tool(tool_name, params)
-            
+
+            # 创建异步任务
+            tasks.append(self._execute_tool(tool_name, params))
+
+        # 等待所有任务完成
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        all_observations = []
+        all_raw_data = {}
+
+        # 处理每个工具的返回结果
+        for i, (search, result) in enumerate(zip(searches, results)):
+            tool_name = search.get('tool', 'web_search')
+            params = search.get('params', {})
+
+            # 处理异常情况
+            if isinstance(result, Exception):
+                observation = f"Error executing {tool_name}: {str(result)}"
+                raw_data = None
+                if self.verbose:
+                    print(f"  ❌ [Sub-Query {i+1}] 失败: {result}")
+            else:
+                observation, raw_data = result
+
             # 🆕 确保 observation 是字符串
             if not isinstance(observation, str):
                 observation = str(observation)
-            
+
             # 🆕 对于 web_search，提取 results 字段（更简洁的显示）
             if tool_name == 'web_search' and raw_data and isinstance(raw_data, dict):
                 if 'results' in raw_data:
                     observation = raw_data['results']
-            
+
             # 🆕 详细打印 sub-observation
             if self.verbose:
                 print(f"  📄 [Sub-Observation {i+1}]:")
@@ -776,26 +795,26 @@ class ReActAgent:
                 for line in observation.split('\n'):
                     print(f"     {line}")
                 print(f"  {'-'*48}")
-            
+
             # 格式化这个子搜索的结果
             sub_result = f"### Sub-search {i+1}: {tool_name}\n"
             sub_result += f"Parameters: {json.dumps(params, ensure_ascii=False)}\n"
             sub_result += f"Result:\n{observation}\n"
-            
+
             all_observations.append(sub_result)
-            
+
             if raw_data:
                 all_raw_data[f"{tool_name}_{i+1}"] = raw_data
-        
+
         # 合并所有观察结果
         combined_observation = "\n" + "="*50 + "\n"
-        combined_observation += "## Combined Results from Multi-Search\n"
+        combined_observation += "## Combined Results from Multi-Tool Execution\n"
         combined_observation += "="*50 + "\n\n"
         combined_observation += "\n---\n".join(all_observations)
         combined_observation += "\n" + "="*50 + "\n"
-        combined_observation += f"Total: {len(searches)} searches completed.\n"
+        combined_observation += f"Total: {len(searches)} tools executed in parallel.\n"
         combined_observation += "Use ALL the above data to provide a comprehensive answer.\n"
-        
+
         if self.verbose:
             print(f"\n{'='*60}")
             print(f"✅ [MultiSearch] 完成! 共 {len(searches)} 个搜索")
@@ -804,7 +823,7 @@ class ReActAgent:
             print(f"{'-'*60}")
             print(combined_observation)
             print(f"{'-'*60}")
-        
+
         return (combined_observation, all_raw_data)
     
     async def _execute_tool(self, tool_name: str, params: Dict[str, Any]) -> tuple:
@@ -1151,7 +1170,7 @@ class ReActAgent:
         else:
             # 执行其他单个工具
             observation, raw_data = await self._execute_tool(tool_decision['tool'], tool_decision['params'])
-            
+
             # 🆕 处理 ToolResult 对象：提取 .data 属性
             actual_data = None
             if raw_data:
@@ -1159,13 +1178,17 @@ class ReActAgent:
                     actual_data = raw_data.data  # ToolResult 对象
                 elif isinstance(raw_data, dict):
                     actual_data = raw_data  # 已经是字典
-            
+
             # 处理特定工具的直接返回
             if tool_decision['tool'] == 'check_safety' and actual_data and isinstance(actual_data, dict) and actual_data.get('safety_score') is not None:
                 return self._format_safety_response(actual_data)
-            
+
             if tool_decision['tool'] == 'search_nearby_pois' and actual_data and isinstance(actual_data, dict) and actual_data.get('pois'):
                 return self._format_poi_response(actual_data)
+
+            # 🆕 处理 calculate_commute_cost 工具的直接返回
+            if tool_decision['tool'] == 'calculate_commute_cost' and actual_data and isinstance(actual_data, dict):
+                return self._format_commute_cost_response(actual_data, user_query)
         
         if self.verbose and observation:
             print(f"\n📊 [Step 2 Result] 工具执行完成，获取到的数据:")
@@ -1534,7 +1557,7 @@ Your response:"""
         from collections import Counter
         
         # 🆕 改进的 prompt：更平衡，更关注用户的实际意图
-        classification_prompt = f'''You are a tool router. Classify this query into ONE tool.
+        classification_prompt = f'''You are a tool router. Classify this query into ONE tool (or multi_search for complex queries).
 
 USER QUERY: "{user_query}"
 
@@ -1550,28 +1573,43 @@ TOOLS:
    ✓ "can you find properties near...", "recommend properties for me"
    ✓ "帮我找房子", "给我推荐房源", "搜索房产"
    ✗ "should I choose...", "what's better...", "help me decide..." → use web_search
-   
-3. web_search - User wants INFORMATION, ADVICE, COMPARISONS, or PRICES
+
+3. calculate_commute_cost - Calculate SPECIFIC commute cost (time + monthly transport fare) between two addresses
+   ✓ "从 XX 到 YY 的通勤成本是多少?", "每月通勤费用", "commute cost from A to B"
+   ✓ "住在这里到学校的交通费", "monthly transport cost to UCL"
+   ✓ Must have BOTH addresses (from and to) specified
+   ✗ General transport pricing → use web_search
+   ✗ Only asking about time (no cost) → use calculate_commute
+
+4. web_search - User wants INFORMATION, ADVICE, COMPARISONS, or GENERAL PRICING
    ✓ "what is...", "how much...", "which is better...", "should I..."
    ✓ "help me decide...", "what's the difference...", "is it worth..."
-   ✓ "transport cost", "tube fare", "living cost", "交通费多少", "通勤费"
+   ✓ "general transport cost", "tube fare zones", "living cost", "交通费一般多少"
    ✓ Asking for advice, opinions, comparisons, general information, pricing
    ✓ "应该", "怎么选", "哪个好", "值得吗", "帮我分析"
 
-4. search_nearby_pois - Questions about SURROUNDINGS / NEARBY AMENITIES (OpenStreetMap data)
+5. search_nearby_pois - Questions about SURROUNDINGS / NEARBY AMENITIES (OpenStreetMap data)
    ✓ "Is there a supermarket nearby?", "How far is the tube station?"
    ✓ "Nearby gym?", "Chinese supermarket?", "附近有超市吗"
    ✓ "离地铁多远", "周边设施", "附近有什么"
    ✓ Use when user asks about proximity to shops, transport, facilities
    ✗ General area info → use web_search
-   
-5. check_safety - Safety/crime questions about specific location
-6. get_weather - Weather questions
+
+6. check_safety - Safety/crime questions about specific location
+7. get_weather - Weather questions
+
+8. multi_search - User query has MULTIPLE independent sub-questions requiring different tools
+   ✓ "Find properties near UCL AND check safety AND nearby gyms"
+   ✓ "What's the rent cost, living expenses, and transport cost in London?"
+   ✓ Query explicitly asks for multiple pieces of information
+   ✗ Single question → use single tool above
 
 CRITICAL RULES:
 - Property name mentioned + asking about details/features → reasoning_property
 - "find/show/search properties" → search_properties
-- "should I...", "help me decide...", "what's better...", "how much...", "cost/price/fare" → web_search (advice/consultation/pricing)
+- SPECIFIC commute cost with both addresses → calculate_commute_cost
+- General pricing/advice/comparison → web_search
+- Multiple independent questions → multi_search
 - General questions without action → web_search
 
 Output ONLY the tool name:
@@ -1588,7 +1626,7 @@ Tool: '''
                 response = self.llm.generate_classification_response(classification_prompt)
                 if not response:
                     # 🆕 严格模式重试（低温度、强制枚举输出），避免空响应
-                    strict_prompt = f"""Return EXACTLY one of: reasoning_property | search_properties | search_nearby_pois | web_search | check_safety | get_weather
+                    strict_prompt = f"""Return EXACTLY one of: reasoning_property | search_properties | calculate_commute_cost | search_nearby_pois | web_search | check_safety | get_weather | multi_search
 User query: "{user_query}"
 Tool:"""
                     response = self.llm.generate_classification_response(strict_prompt, temperature=0.1)
@@ -1603,15 +1641,23 @@ Tool:"""
                     
                     # --- 🛠️ 方法1：检查是否包含完整工具名（优先级从具体到宽泛） ---
                     
-                    # 🆕 最优先检查 search_nearby_pois（避免被 'search' 误判为 web_search）
+                    # 🆕 最优先检查复合工具名（避免被部分匹配误判）
                     if 'search_nearby_pois' in response_clean or 'nearby_pois' in response_clean:
                         tool = 'search_nearby_pois'
                     elif 'poi' in response_clean and 'nearby' in response_clean:
                         tool = 'search_nearby_pois'
-                    # 其次检查 reasoning_property
+                    # 检查 calculate_commute_cost
+                    elif 'calculate_commute_cost' in response_clean or 'commute_cost' in response_clean:
+                        tool = 'calculate_commute_cost'
+                    elif 'commute' in response_clean and 'cost' in response_clean:
+                        tool = 'calculate_commute_cost'
+                    # 检查 multi_search
+                    elif 'multi_search' in response_clean or 'multi search' in response_clean:
+                        tool = 'multi_search'
+                    # 检查 reasoning_property
                     elif 'reasoning_property' in response_clean or 'reasoning property' in response_clean:
                         tool = 'reasoning_property'
-                    # 再检查 search_properties（注意：去掉宽泛的 'properties' 避免误判）
+                    # 检查 search_properties（注意：去掉宽泛的 'properties' 避免误判）
                     elif 'search_properties' in response_clean:
                         tool = 'search_properties'
                     # 检查 check_safety
@@ -1947,38 +1993,95 @@ USER QUESTION: {user_query}
 
 ### 🛠️ AVAILABLE TOOLS:
 
-1. **check_transport_cost** (Internal Tool - PRICES ONLY)
-   - USE THIS for: Ticket PRICES, monthly pass COST, "how much is transport".
-   - 🚫 DO NOT USE FOR: "How long", "Commute time", "Duration", "通勤时间". (This tool only knows £££, not minutes!)
-   - PARAMS: {{"end_zone": [Extract User Zone], "travel_type": "student"}}
-   - 🚨 ZONE EXTRACTION RULE:
-     * If user says "Zone 3", you MUST set "end_zone": 3.
-     * If user says "Zone 4/5/6", you MUST set "end_zone": 4/5/6.
-     * DO NOT default to Zone 2 if user explicitly said Zone 3/4/5/6!
-     * Only use Zone 2 if user asks generic "market overview" without specifying zone.
-   - Examples: "通勤费多少", "Zone 3 fare", "transport cost from Zone 4"
+1. **search_properties** (Local Database - For FINDING SPECIFIC PROPERTIES)
+   - USE THIS for: Finding actual properties/flats to rent from our database
+   - PARAMS: {{"location": "University name or area", "max_budget": 1500}}
+   - Examples: "Find flats near UCL under £1500", "Show me properties in Bloomsbury"
+   - ✅ Use when: User wants to SEE/FIND actual listings
+   - 🚫 Don't use when: User wants general market info/advice
 
-2. **web_search** (External Search - For TIME/Duration + Guides/Reports/Advice)
-   - USE THIS for: 
-     * Commute DURATIONS/TIME: "How long from Zone 3 to UCL?", "通勤时间"
+2. **get_property_details** (Local Database - For PROPERTY CONTEXT)
+   - USE THIS for: Getting details about a specific property the user is viewing
+   - PARAMS: {{"property_id": "property ID or name"}}
+   - ✅ Use when: User asks about a specific property in context
+   - 🚫 Don't use when: No property context available
+
+3. **check_safety** (Safety Data - For CRIME/SAFETY CHECKS)
+   - USE THIS for: Safety scores, crime rates for specific addresses
+   - PARAMS: {{"address": "Full street address with postcode"}}
+   - Examples: "Is Bloomsbury safe?", "Crime rate in Euston"
+   - ⚠️ CRITICAL: Requires FULL ADDRESS, not just area name
+   - ✅ Use when: User mentions safety concerns OR when recommending properties
+
+4. **search_nearby_pois** (POI Search - For AMENITIES/FACILITIES)
+   - USE THIS for: Finding nearby shops, restaurants, gyms, stations
+   - PARAMS: {{"address": "Full address", "poi_type": "supermarket"}}
+   - POI Types: "chinese_restaurant", "supermarket", "convenience_store", "cafe", "gym", "park", "tube_station", "pharmacy", "all"
+   - **IMPORTANT**: When searching for supermarkets, you should search BOTH "supermarket" AND "convenience_store" to get comprehensive results
+   - Examples: "Chinese supermarkets near Scape Bloomsbury" → Use poi_type="supermarket" AND poi_type="convenience_store"
+   - ⚠️ CRITICAL: Requires FULL ADDRESS from property context
+   - ⚠️ NOTE: Parameter is "poi_type" (SINGULAR), NOT "poi_types"
+   - ✅ Use when: User asks about "附近", "nearby", "超市", amenities
+
+5. **calculate_commute_cost** (Commute Analysis - For TIME + COST)
+   - USE THIS for: Complete commute analysis (time + monthly transport cost)
+   - PARAMS: {{"from_address": "Full property address", "to_address": "Destination", "travel_type": "student"}}
+   - ⚠️ CRITICAL: Requires BOTH full addresses (from property context)
+   - Examples: "Commute cost from City, Bastwick Street to UCL"
+   - ✅ Use when: User asks about specific property's commute cost
+
+6. **check_transport_cost** (Transport Fares - For PRICES ONLY)
+   - USE THIS for: General transport ticket PRICES (when no specific address)
+   - PARAMS: {{"end_zone": [1-6], "travel_type": "student"}}
+   - Examples: "Zone 1-3 student fare", "How much is Zone 2 monthly pass"
+   - ✅ Use when: User asks general transport prices
+   - 🚫 Don't use when: You have specific property addresses (use calculate_commute_cost)
+
+7. **web_search** (External Search - For INFO/ADVICE/GENERAL DATA)
+   - USE THIS for:
      * Market trends, legal guides, scam warnings, area recommendations
+     * When local tools can't answer (no property context, general questions)
    - PARAMS: {{"query": "London specific query 2025"}}
-   - Examples: 
-     * "Average commute time from London Zone 3 to Central London via tube 2025"
-     * "London student housing average rent prices by zone 2025 guide"
    - **QUERY ENGINEERING TIPS** (CRITICAL):
-     * ❌ BAD Query: "London student housing market overview report 2025" → Returns investment data (£Xbn deals, yields)
-     * ✅ GOOD Query: "London student rent prices by area 2025 guide for students" → Returns price trends for students
-     * ✅ GOOD Query: "Best affordable areas for international students London 2025 blog" → Returns area guides
-     * ✅ GOOD Query: "How hard is it to find student accommodation London 2025 news" → Returns competition/availability info
-     * ✅ GOOD Query: "London student housing average weekly rent 2025 statistics" → Returns rent data, not transaction volumes
+     * ❌ BAD Query: "London student housing market overview report 2025" → Returns investment data
+     * ✅ GOOD Query: "London student rent prices by area 2025 guide for students" → Returns practical data
+   - ⚠️ SOURCE FILTERING:
+     * For FACTUAL info (policies, costs): Results auto-filtered to authoritative sources
+     * For POI/REVIEWS/EXPERIENCES: Allow all sources (forums, reviews, blogs OK)
 
 ### 📝 PLANNING RULES:
 
-1. **Hybrid Strategy**: You can use BOTH tools in the same plan.
-   - Example: If user asks "Rent and transport costs", plan one `web_search` for rent and one `check_transport_cost` for transport.
-2. **Prioritize Internal Tools**: If the user asks about transport prices/fares, YOU MUST USE `check_transport_cost`. Do NOT use web_search for fares.
-3. **Format**: Return a JSON with a "searches" list (each item is a tool call).
+1. **🚫 NEVER Use web_search for Property Details**:
+   - If user asks about SPECIFIC properties they're already viewing (Scape Bloomsbury, City, etc.)
+   - ❌ DO NOT use web_search to find "rent prices" or "property info"
+   - ✅ USE get_property_details (our database has everything!)
+   - Example: User asks "compare Scape and City" → get_property_details for both, NOT web_search
+
+2. **Prioritize Local Tools First**:
+   - ✅ If property context available → Use check_safety, search_nearby_pois, calculate_commute_cost
+   - ✅ If user wants to find NEW properties → Use search_properties
+   - ✅ If user asks about SPECIFIC properties → Use get_property_details
+   - ✅ If user asks about safety → Use check_safety (requires full address)
+   - ✅ If user mentions "nearby", "附近" → Use search_nearby_pois
+   - ⚠️ Only use web_search for GENERAL info (market trends, policies, guides)
+
+3. **Property Context Awareness**:
+   - If previous_search_results exist, extract property names/addresses
+   - For rent/price/room types/amenities → ALWAYS use get_property_details (we have rent data in our database!)
+   - For safety → Use check_safety
+   - For commute cost → Use calculate_commute_cost
+   - For nearby POIs → Use search_nearby_pois
+   - Example: User asks "compare Scape Bloomsbury and City rent"
+     → get_property_details(Scape) + get_property_details(City)
+   - Example: User asks "compare costs of Scape and City"
+     → get_property_details(Scape) + get_property_details(City) + calculate_commute_cost(Scape) + calculate_commute_cost(City)
+   - ⚠️ NEVER say "I cannot get rent data" - we HAVE rent in our database via get_property_details!
+
+4. **Safety-Conscious Planning**:
+   - If user mentions "safe", "safety", "crime" → ALWAYS add check_safety for ALL properties
+   - Don't use web_search for safety - use check_safety tool
+
+5. **Format**: Return a JSON with a "searches" list (each item is a tool call).
 
 🏠 CRITICAL - PROPERTY SEARCH SOURCE POLICY:
 - **学生公寓 (Student Accommodation)**: When searching for student housing, include "Uhomes" in web_search query
@@ -2081,13 +2184,48 @@ JSON: {{"searches": [
 
 User: "找UCL附近的学生公寓"
 JSON: {{"searches": [
-    {{"tool": "web_search", "params": {{"query": "London student accommodation near UCL 2025 Uhomes"}}}}
-], "reason": "Finding student properties - use Uhomes platform"}}
+    {{"tool": "search_properties", "params": {{"location": "UCL", "max_budget": 1500}}}}
+], "reason": "Use local database to find actual properties near UCL"}}
 
 User: "帮我找Bloomsbury的社会公寓"
 JSON: {{"searches": [
-    {{"tool": "web_search", "params": {{"query": "London flat Bloomsbury 2025 Zoopla Rightmove"}}}}
-], "reason": "Finding private rentals - use Zoopla and Rightmove"}}
+    {{"tool": "search_properties", "params": {{"location": "Bloomsbury", "max_budget": 1500}}}}
+], "reason": "Use local database to find properties in Bloomsbury"}}
+
+User: "Scape Bloomsbury 和 City 的租金分别是多少？"
+[Context: previous_search_results contains "Scape Bloomsbury" and "City"]
+JSON: {{"searches": [
+    {{"tool": "get_property_details", "params": {{"property_name": "Scape Bloomsbury"}}}},
+    {{"tool": "get_property_details", "params": {{"property_name": "City"}}}}
+], "reason": "Get rent/price from our database using get_property_details - we HAVE this data!"}}
+
+User: "比较Scape Bloomsbury和City这两个房子，我注重安全和附近的中国超市"
+[Context: previous_search_results contains "Scape Bloomsbury, 19-29 Woburn Place, WC1H 0AQ" and "City, 11 Bastwick Street, EC1V 3AQ"]
+JSON: {{"searches": [
+    {{"tool": "get_property_details", "params": {{"property_name": "Scape Bloomsbury"}}}},
+    {{"tool": "get_property_details", "params": {{"property_name": "City"}}}},
+    {{"tool": "check_safety", "params": {{"address": "19-29 Woburn Place, London WC1H 0AQ"}}}},
+    {{"tool": "check_safety", "params": {{"address": "11 Bastwick Street, London EC1V 3AQ"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "19-29 Woburn Place, London WC1H 0AQ", "poi_type": "chinese_restaurant"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "11 Bastwick Street, London EC1V 3AQ", "poi_type": "chinese_restaurant"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "19-29 Woburn Place, London WC1H 0AQ", "poi_type": "supermarket"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "19-29 Woburn Place, London WC1H 0AQ", "poi_type": "convenience_store"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "11 Bastwick Street, London EC1V 3AQ", "poi_type": "supermarket"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "11 Bastwick Street, London EC1V 3AQ", "poi_type": "convenience_store"}}}}
+], "reason": "Use local tools ONLY: get_property_details + check_safety + search_nearby_pois (BOTH supermarket AND convenience_store for comprehensive results). NO web_search needed!"}}
+
+User: "对比这两个房子的所有成本，包括租金、通勤费、周边设施"
+[Context: previous_search_results contains "Scape Bloomsbury, 19-29 Woburn Place, WC1H 0AQ" and "City, 11 Bastwick Street, EC1V 3AQ"]
+JSON: {{"searches": [
+    {{"tool": "get_property_details", "params": {{"property_name": "Scape Bloomsbury"}}}},
+    {{"tool": "get_property_details", "params": {{"property_name": "City"}}}},
+    {{"tool": "calculate_commute_cost", "params": {{"from_address": "19-29 Woburn Place, London WC1H 0AQ", "to_address": "University College London, Gower Street, London WC1E 6BT", "travel_type": "student"}}}},
+    {{"tool": "calculate_commute_cost", "params": {{"from_address": "11 Bastwick Street, London EC1V 3AQ", "to_address": "University College London, Gower Street, London WC1E 6BT", "travel_type": "student"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "19-29 Woburn Place, London WC1H 0AQ", "poi_type": "supermarket"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "19-29 Woburn Place, London WC1H 0AQ", "poi_type": "convenience_store"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "11 Bastwick Street, London EC1V 3AQ", "poi_type": "supermarket"}}}},
+    {{"tool": "search_nearby_pois", "params": {{"address": "11 Bastwick Street, London EC1V 3AQ", "poi_type": "convenience_store"}}}}
+], "reason": "Comprehensive comparison using ONLY local tools: get_property_details for rent + calculate_commute_cost for transport + search_nearby_pois (supermarket + convenience_store) for amenities. NO web_search!"}}
 
 User: "租房需要知道什么"
 JSON: {{"searches": [
@@ -2283,9 +2421,9 @@ JSON:"""
         """格式化 POI 搜索响应"""
         pois = raw_data.get('pois') or raw_data.get('results', {})
         address = raw_data.get('address', 'the location')
-        
+
         response_parts = [f"## 📍 Nearby Facilities - {address}\n"]
-        
+
         for poi_type, poi_list in pois.items():
             if poi_list:
                 response_parts.append(f"\n### {poi_type.replace('_', ' ').title()}")
@@ -2298,7 +2436,7 @@ JSON:"""
                         response_parts.append(f"- **{name}** - {distance}")
                     else:
                         response_parts.append(f"- **{name}** - {distance}m")
-        
+
         return {
             'success': True,
             'response': '\n'.join(response_parts),
@@ -2306,6 +2444,71 @@ JSON:"""
             'turns': 1,
             'extracted_context': self.extracted_context,
             'tool_data': {'poi_results': raw_data}
+        }
+
+    def _format_commute_cost_response(self, raw_data: dict, user_query: str) -> dict:
+        """格式化通勤成本计算响应"""
+        if not raw_data.get('success'):
+            error_msg = raw_data.get('error', 'Unable to calculate commute cost')
+            return {
+                'success': True,
+                'response': f"抱歉，无法计算通勤成本：{error_msg}",
+                'response_type': 'answer',
+                'turns': 1,
+                'extracted_context': self.extracted_context,
+                'tool_data': {}
+            }
+
+        from_addr = raw_data.get('from_address', 'Starting point')
+        to_addr = raw_data.get('to_address', 'Destination')
+
+        # 构建响应
+        response_parts = [f"## 🚇 Commute Cost Analysis\n"]
+        response_parts.append(f"**From:** {from_addr}")
+        response_parts.append(f"**To:** {to_addr}\n")
+
+        # 通勤时间信息
+        commute = raw_data.get('commute', {})
+        if commute:
+            duration = commute.get('duration_minutes', 'N/A')
+            category = commute.get('duration_category', '')
+            response_parts.append(f"### ⏱️ Commute Time")
+            response_parts.append(f"- **Duration:** {duration} minutes ({category})")
+            response_parts.append(f"- **Daily round trip:** ~{duration * 2} minutes\n")
+
+        # 交通费用信息
+        transport_cost = raw_data.get('transport_cost', {})
+        if transport_cost and 'monthly_cost' in transport_cost:
+            response_parts.append(f"### 💷 Monthly Transport Cost")
+            response_parts.append(f"- **Recommended Pass:** {transport_cost.get('recommended_pass', 'N/A')}")
+            response_parts.append(f"- **User Type:** {transport_cost.get('user_type', 'N/A')}")
+            response_parts.append(f"- **Monthly Cost:** £{transport_cost.get('monthly_cost', 'N/A')}")
+            response_parts.append(f"- **Weekly Cost:** £{transport_cost.get('weekly_cost', 'N/A')}")
+            response_parts.append(f"- **Daily Cap (Pay As You Go):** £{transport_cost.get('daily_cap', 'N/A')}\n")
+
+            note = transport_cost.get('note', '')
+            if note:
+                response_parts.append(f"📝 **Note:** {note}\n")
+        elif transport_cost and 'error' in transport_cost:
+            response_parts.append(f"\n⚠️ {transport_cost['error']}\n")
+
+        # 总结信息
+        summary = raw_data.get('summary', {})
+        if summary:
+            response_parts.append(f"### 📊 Summary")
+            response_parts.append(f"- **Commute Time:** {summary.get('commute_time', 'N/A')}")
+            if 'monthly_transport_cost' in summary:
+                response_parts.append(f"- **Monthly Transport Cost:** {summary.get('monthly_transport_cost', 'N/A')}")
+            if 'total_commuting_cost_per_month' in summary:
+                response_parts.append(f"- **Time Investment:** {summary.get('total_commuting_cost_per_month', 'N/A')}")
+
+        return {
+            'success': True,
+            'response': '\n'.join(response_parts),
+            'response_type': 'answer',
+            'turns': 1,
+            'extracted_context': self.extracted_context,
+            'tool_data': {'commute_cost': raw_data}
         }
     
     def _clean_response(self, response: str) -> str:

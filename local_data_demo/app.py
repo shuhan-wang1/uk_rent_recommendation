@@ -1414,4 +1414,5 @@ def get_cached_pois():
 
     
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    # 允许所有来源访问(用于公网访问)
+    app.run(debug=True, host='0.0.0.0', port=5001)
