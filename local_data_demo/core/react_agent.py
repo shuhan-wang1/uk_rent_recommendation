@@ -1,14 +1,34 @@
 """
-True ReAct Agent - 完全基于 LLM 自主决策
+⚠️  DEPRECATED — This file is kept for reference only.
 
-核心原则：
-1. LLM 完全自主决定使用哪个工具
-2. LLM 完全自主生成工具参数
-3. 代码只负责：解析 LLM 输出 → 执行工具 → 返回观察结果
-4. 没有任何关键词匹配或硬编码规则
+The custom ReAct agent has been replaced by a LangGraph StateGraph
+implementation located at:
 
-这个版本兼容 app.py 的调用方式
+    core/langgraph_agent.py
+
+The new graph-based agent preserves all business logic (majority voting,
+accumulated criteria injection, Alex persona prompts, preference
+extraction, response formatting) while providing a cleaner, more
+maintainable architecture based on the LangGraph framework.
+
+If you need to understand the original logic for porting or debugging,
+this file remains available but is no longer imported by app.py.
+
+Original description:
+    True ReAct Agent - 完全基于 LLM 自主决策
+    核心原则：
+    1. LLM 完全自主决定使用哪个工具
+    2. LLM 完全自主生成工具参数
+    3. 代码只负责：解析 LLM 输出 → 执行工具 → 返回观察结果
+    4. 没有任何关键词匹配或硬编码规则
 """
+
+import warnings as _warnings
+_warnings.warn(
+    "core.react_agent is deprecated. Use core.langgraph_agent instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 import asyncio
 import json

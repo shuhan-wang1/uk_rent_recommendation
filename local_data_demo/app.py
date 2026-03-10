@@ -1,4 +1,4 @@
-# app.py - Enhanced with RAG and ReAct Agent Framework
+# app.py - Enhanced with RAG and LangGraph Agent Framework
 
 import asyncio
 from flask import Flask, request, jsonify, render_template
@@ -14,6 +14,7 @@ from core.data_loader import load_mock_properties_from_csv
 from core.enrichment_service import enrich_property_data
 from rag.rag_coordinator import RAGCoordinator
 from core.tool_system import create_tool_registry
+from core.langgraph_agent import build_agent_graph, create_initial_state
 
 app = Flask(__name__, template_folder='.')
 CORS(app)
@@ -21,8 +22,23 @@ CORS(app)
 # 统一 UI 模式标志
 USE_UNIFIED_UI = True  # 设置为 True 使用新的统一 Alex 界面
 
-# ReAct Agent 实例
-react_agent = None
+# LangGraph Agent — compiled graph (lazy-initialized)
+agent_graph = None
+
+# Persistent cross-turn state (preferences & accumulated search criteria)
+agent_persistent_state = {
+    'user_preferences': {
+        'hard_preferences': [], 'soft_preferences': [],
+        'excluded_areas': [], 'required_amenities': [],
+        'safety_concerns': [],
+    },
+    'accumulated_search_criteria': {
+        'destination': None, 'max_budget': None, 'max_travel_time': None,
+        'property_features': [], 'soft_preferences': [],
+        'amenities_of_interest': [],
+    },
+    'extracted_context': {},
+}
 
 # 对话历史存储 - 用于保持上下文记忆
 conversation_history = []
@@ -114,11 +130,11 @@ def generate_recommendations_with_rag(properties: list[dict], user_query: str, p
 
 
 # ============================================================================
-# 统一的 Alex API 端点 - 纯 ReAct Agent 架构
-# 
+# 统一的 Alex API 端点 - LangGraph StateGraph 架构
+#
 # 核心原则：
 # 1. 没有关键词匹配 - 完全由 LLM 决定使用哪个工具
-# 2. 所有请求都通过 ReAct Agent
+# 2. 所有请求都通过 LangGraph StateGraph Agent
 # 3. search_properties 工具内部整合了 Fine-tuned Model
 # ============================================================================
 
@@ -135,8 +151,8 @@ async def api_alex():
     - 是否需要搜索附近设施（调用 search_nearby_pois 工具）
     - 或者直接回答用户问题
     """
-    global last_search_results, react_agent
-    
+    global last_search_results
+
     data = request.get_json()
     if not data or not data.get('message'):
         return jsonify({"error": "Message is required"}), 400
@@ -146,7 +162,7 @@ async def api_alex():
     is_continuation = data.get('is_continuation', False)
     
     print(f"\n{'='*60}")
-    print(f"🤖 [ALEX - ReAct Agent] 收到消息: {user_message}")
+    print(f"🤖 [ALEX - LangGraph Agent] 收到消息: {user_message}")
     print(f"📋 [ALEX] is_continuation: {is_continuation}")
     print(f"📋 [ALEX] context: {context}")
     print(f"{'='*60}")
@@ -166,101 +182,86 @@ async def api_alex():
 
 async def handle_with_react_agent(user_message: str, context: dict, is_continuation: bool):
     """
-    使用 ReAct Agent 处理所有用户请求 - 纯 LLM 驱动
-    
-    ReAct Agent 会自主决定：
+    使用 LangGraph Agent 处理所有用户请求 - 纯 LLM 驱动
+
+    LangGraph Agent 会自主决定：
     1. 是否需要调用 search_properties 工具搜索房源
     2. 是否需要调用其他工具（安全检查、通勤计算等）
     3. 或者直接回答用户问题
-    
+
     没有任何关键词匹配 - 完全由 LLM 决策
     """
-    global react_agent, tool_registry, last_search_results, conversation_history
-    
+    global agent_graph, tool_registry, last_search_results, conversation_history, agent_persistent_state
+
     # 确保 tool_registry 已初始化
     if tool_registry is None:
-        print("[ReAct] tool_registry 为空，重新初始化...")
+        print("[LangGraph] tool_registry 为空，重新初始化...")
         tool_registry = create_tool_registry()
-    
-    # 初始化或获取 ReAct Agent
-    if react_agent is None:
-        from core.react_agent import ReActAgent
-        react_agent = ReActAgent(
-            tool_registry=tool_registry,
-            max_turns=5,
-            verbose=True
-        )
-    
-    # 如果有 property context，设置到 agent 的 extracted_context 中
-    # 并从数据库获取详细信息
+
+    # 懒加载编译 LangGraph
+    if agent_graph is None:
+        print("[LangGraph] 首次请求，编译 LangGraph StateGraph...")
+        agent_graph = build_agent_graph(tool_registry)
+        print("[LangGraph] ✓ LangGraph agent 编译完成")
+
+    # ── 构建本轮 extracted_context ──────────────────────────────
+    extracted_context = dict(agent_persistent_state.get('extracted_context', {}))
+
+    # 如果有 property context，设置到 extracted_context 中并从数据库获取详细信息
     if context and context.get('property'):
         property_info = context['property']
         property_address = property_info.get('address', '')
-        
-        react_agent.extracted_context['property_address'] = property_address
-        react_agent.extracted_context['property_price'] = property_info.get('price')
-        react_agent.extracted_context['property_travel_time'] = property_info.get('travel_time')
-        
-        # 🆕 从数据库中获取该房产的详细信息
-        print(f"[ReAct] 📍 已设置 property context: {property_address}")
-        print(f"[ReAct] 🔍 正在从数据库获取房产详细信息...")
-        
+
+        extracted_context['property_address'] = property_address
+        extracted_context['property_price'] = property_info.get('price')
+        extracted_context['property_travel_time'] = property_info.get('travel_time')
+
+        print(f"[LangGraph] 📍 已设置 property context: {property_address}")
+        print(f"[LangGraph] 🔍 正在从数据库获取房产详细信息...")
+
         # 在 all_properties 中查找匹配的房产
         matched_property = None
         for prop in all_properties:
             if prop.get('Address', '').lower().strip() == property_address.lower().strip():
                 matched_property = prop
                 break
-            # 也尝试部分匹配（地址可能被截断）
             if property_address.lower() in prop.get('Address', '').lower() or prop.get('Address', '').lower() in property_address.lower():
                 matched_property = prop
                 break
-        
+
         if matched_property:
-            print(f"[ReAct] ✅ 找到匹配房产，加载详细信息")
-            react_agent.extracted_context['room_type'] = matched_property.get('Room_Type_Category', '')
-            react_agent.extracted_context['amenities'] = matched_property.get('Detailed_Amenities', '')
-            react_agent.extracted_context['guest_policy'] = matched_property.get('Guest_Policy', '')
-            react_agent.extracted_context['payment_rules'] = matched_property.get('Payment_Rules', '')
-            react_agent.extracted_context['excluded_features'] = matched_property.get('Excluded_Features', '')
-            react_agent.extracted_context['description'] = matched_property.get('Description', '')
-            react_agent.extracted_context['enhanced_description'] = matched_property.get('Enhanced_Description', '')
-            # 🆕 添加 URL
-            react_agent.extracted_context['property_url'] = matched_property.get('URL', '')
-            print(f"[ReAct] 🔗 房产 URL: {matched_property.get('URL', 'N/A')}")
+            print(f"[LangGraph] ✅ 找到匹配房产，加载详细信息")
+            extracted_context['room_type'] = matched_property.get('Room_Type_Category', '')
+            extracted_context['amenities'] = matched_property.get('Detailed_Amenities', '')
+            extracted_context['guest_policy'] = matched_property.get('Guest_Policy', '')
+            extracted_context['payment_rules'] = matched_property.get('Payment_Rules', '')
+            extracted_context['excluded_features'] = matched_property.get('Excluded_Features', '')
+            extracted_context['description'] = matched_property.get('Description', '')
+            extracted_context['enhanced_description'] = matched_property.get('Enhanced_Description', '')
+            extracted_context['property_url'] = matched_property.get('URL', '')
+            print(f"[LangGraph] 🔗 房产 URL: {matched_property.get('URL', 'N/A')}")
         else:
-            print(f"[ReAct] ⚠️ 未在数据库中找到匹配房产: {property_address}")
-    
-    # 构建包含历史的查询
-    query_with_history = user_message
-    
-    # 检查是否有房产上下文（用户在询问特定房产的问题）
-    has_property_context = bool(react_agent.extracted_context.get('property_address'))
-    
-    # 🆕 检测对比查询 - 如果用户在比较两个房产
+            print(f"[LangGraph] ⚠️ 未在数据库中找到匹配房产: {property_address}")
+
+    # ── 检测对比查询 ─────────────────────────────────────────────
     comparison_keywords = ['compare', 'vs', 'versus', 'between', 'or', 'better', 'which one', 'deciding between']
     is_comparison_query = any(kw in user_message.lower() for kw in comparison_keywords)
-    
+
     if is_comparison_query:
-        # 尝试从用户查询中提取房产名称并加载它们的数据
-        print(f"[ReAct] 🔄 检测到对比查询，正在加载房产数据...")
-        
-        # 查找提到的房产
+        print(f"[LangGraph] 🔄 检测到对比查询，正在加载房产数据...")
         mentioned_properties = []
         for prop in all_properties:
             prop_name = prop.get('Address', '').split(',')[0].strip().lower()
-            # 检查房产名称的关键词是否在用户查询中
             name_words = prop_name.split()
             for word in name_words:
                 if len(word) > 3 and word.lower() in user_message.lower():
                     mentioned_properties.append(prop)
-                    print(f"[ReAct] ✅ 找到提及的房产: {prop.get('Address', '')[:50]}")
+                    print(f"[LangGraph] ✅ 找到提及的房产: {prop.get('Address', '')[:50]}")
                     break
-        
-        # 将对比房产的信息添加到上下文中
+
         if mentioned_properties:
             comparison_context = "\n=== Properties to Compare ===\n"
-            for i, prop in enumerate(mentioned_properties[:3], 1):  # 最多3个
+            for i, prop in enumerate(mentioned_properties[:3], 1):
                 comparison_context += f"\n**Property {i}: {prop.get('Address', '').split(',')[0]}**\n"
                 comparison_context += f"- Price: {prop.get('Price', 'N/A')}\n"
                 comparison_context += f"- Room Type: {prop.get('Room_Type_Category', 'N/A')}\n"
@@ -269,32 +270,27 @@ async def handle_with_react_agent(user_message: str, context: dict, is_continuat
                 comparison_context += f"- Payment Rules: {prop.get('Payment_Rules', 'N/A')}\n"
                 comparison_context += f"- NOT Included: {prop.get('Excluded_Features', 'N/A')}\n"
                 comparison_context += f"- Commute Info: {prop.get('Description', 'N/A')}\n"
-            
-            react_agent.extracted_context['comparison_properties'] = comparison_context
-            print(f"[ReAct] 📊 已加载 {len(mentioned_properties)} 个房产的对比数据")
-    
-    # Agent 自己决定是否需要设施搜索 - 不再使用关键词检测
-    # 设施搜索逻辑已移至 search_properties 工具内部
-    
+            extracted_context['comparison_properties'] = comparison_context
+            print(f"[LangGraph] 📊 已加载 {len(mentioned_properties)} 个房产的对比数据")
+
+    # ── 构建包含历史的查询 ───────────────────────────────────────
+    query_with_history = user_message
+    has_property_context = bool(extracted_context.get('property_address'))
+
     if has_property_context:
-        # 用户在询问关于特定房产的问题，不需要添加搜索提示
-        print(f"[ReAct] 📍 用户正在询问关于特定房产的问题，将使用房产上下文回答")
-        # 保持原始查询，不添加历史提示
+        print(f"[LangGraph] 📍 用户正在询问关于特定房产的问题，将使用房产上下文回答")
     elif conversation_history:
-        # 🆕 检查是否是对澄清问题的回复
         last_response = conversation_history[-1].get('assistant', '') if conversation_history else ''
         is_clarification_answer = any(q in last_response.lower() for q in [
-            'what is your', 'could you tell me', 'what\'s the maximum', 
+            'what is your', 'could you tell me', 'what\'s the maximum',
             'please provide', 'how many', 'which area', '?'
         ])
-        
+
         if is_clarification_answer and len(user_message.split()) <= 5:
-            # 这看起来是对澄清问题的回复（如 "30 minutes", "10", "no preference"）
-            # 需要保持完整的对话上下文
-            print(f"[ReAct] 🔄 检测到澄清回复，保持完整上下文")
+            print(f"[LangGraph] 🔄 检测到澄清回复，保持完整上下文")
             history_text = "\n".join([
-                f"User: {h['user']}\nAlex: {h['assistant']}" 
-                for h in conversation_history[-5:]  # 更多历史以保持上下文
+                f"User: {h['user']}\nAlex: {h['assistant']}"
+                for h in conversation_history[-5:]
             ])
             query_with_history = f"""Previous conversation (IMPORTANT - user is answering a clarification question):
 {history_text}
@@ -303,109 +299,123 @@ User's answer to the clarification question: {user_message}
 
 INSTRUCTIONS: The user just answered your clarification question. Use their answer to complete the ORIGINAL request. Do NOT ask more questions about the same thing. Do NOT treat their answer as a confusing new command."""
         else:
-            # 普通的对话延续
             history_text = "\n".join([
-                f"User: {h['user']}\nAlex: {h['assistant']}" 
+                f"User: {h['user']}\nAlex: {h['assistant']}"
                 for h in conversation_history[-3:]
             ])
             query_with_history = f"""Previous conversation:
 {history_text}
 
 Current user message: {user_message}"""
-    
-    # 运行 ReAct 循环
-    result = await react_agent.run(query_with_history, context, is_continuation=is_continuation)
-    
-    print(f"\n[ReAct] 完成! Turns: {result.get('turns')}, Success: {result.get('success')}")
-    print(f"[ReAct] Response Type: {result.get('response_type')}")
-    
-    # 保存对话历史
-    response_text = result.get('response', '')
+
+    # ── 构建 AgentState 并调用 LangGraph ─────────────────────────
+    initial_state = create_initial_state(
+        user_query=query_with_history,
+        extracted_context=extracted_context,
+        user_preferences=agent_persistent_state['user_preferences'],
+        accumulated_search_criteria=agent_persistent_state['accumulated_search_criteria'],
+    )
+
+    print(f"[LangGraph] ▶ 开始执行 graph.ainvoke() ...")
+    final_state = await agent_graph.ainvoke(initial_state)
+    print(f"[LangGraph] ✓ 完成!")
+
+    # ── 持久化跨轮状态 ──────────────────────────────────────────
+    agent_persistent_state['user_preferences'] = final_state.get('user_preferences', agent_persistent_state['user_preferences'])
+    agent_persistent_state['accumulated_search_criteria'] = final_state.get('accumulated_search_criteria', agent_persistent_state['accumulated_search_criteria'])
+
+    response_text = final_state.get('final_response', '')
+    response_type = final_state.get('response_type', 'answer')
+    tool_data = final_state.get('tool_data', {})
+
+    print(f"[LangGraph] Response Type: {response_type}")
+
+    # ── 保存对话历史 ────────────────────────────────────────────
     conversation_history.append({
         'user': user_message,
-        'assistant': response_text[:500]  # 限制长度
+        'assistant': response_text[:500]
     })
-    # 保持历史长度限制
     if len(conversation_history) > MAX_HISTORY_LENGTH:
         conversation_history = conversation_history[-MAX_HISTORY_LENGTH:]
-    
-    # 检查是否有房源搜索结果（从工具调用中获取）
-    tool_data = result.get('tool_data', {})
+
+    # ── 检查是否有房源搜索结果 ──────────────────────────────────
     if tool_data.get('recommendations'):
-        # 存储搜索结果供 UI 展示
         last_search_results = tool_data['recommendations']
-        
-        # 🆕 保存搜索结果到 extracted_context，供后续安全/设施问题使用
+
+        # 保存搜索结果到 persistent extracted_context 供后续安全/设施问题使用
         prev_results_context = "\n"
         for i, rec in enumerate(tool_data['recommendations'][:6], 1):
             addr = rec.get('address', 'Unknown')
             price = rec.get('price', 'N/A')
             travel = rec.get('travel_time', 'N/A')
-            # 从 all_properties 获取完整信息
             full_prop = None
             for prop in all_properties:
                 if prop.get('Address', '').startswith(addr.split(',')[0]):
                     full_prop = prop
                     break
-            
-            # 提取房产名称（用于用户引用）
+
             property_name = addr.split(',')[0].strip()
-            
-            # 🆕 保存完整地址（用于 check_safety 等工具）
             full_address = full_prop.get('Address', addr) if full_prop else addr
-            
+
             prev_results_context += f"{i}. **{property_name}**\n"
-            prev_results_context += f"   - Full Address: {full_address}\n"  # 🆕 添加完整地址
+            prev_results_context += f"   - Full Address: {full_address}\n"
             prev_results_context += f"   - Price: {price}\n"
             prev_results_context += f"   - Commute: {travel}\n"
             if full_prop:
                 prev_results_context += f"   - Amenities: {full_prop.get('Detailed_Amenities', 'N/A')}\n"
                 prev_results_context += f"   - URL: {full_prop.get('URL', 'N/A')}\n"
             prev_results_context += "\n"
-        
-        react_agent.extracted_context['previous_search_results'] = prev_results_context
-        print(f"[ReAct] 💾 已保存 {len(tool_data['recommendations'])} 个搜索结果到上下文")
-        
-        # 🆕 检查是否有安全警告需要记住
-        if react_agent.extracted_context.get('safety_warnings'):
-            print(f"[ReAct] ⚠️ 注意：有安全警告待处理")
-        
+
+        agent_persistent_state['extracted_context']['previous_search_results'] = prev_results_context
+        print(f"[LangGraph] 💾 已保存 {len(tool_data['recommendations'])} 个搜索结果到上下文")
+
         return jsonify({
             "response_type": "search",
-            "message": result.get('response'),
+            "message": response_text,
             "recommendations": tool_data['recommendations']
         })
-    
-    # 根据结果类型返回响应
-    if result.get('response_type') == 'question':
+
+    # ── 根据结果类型返回响应 ─────────────────────────────────────
+    if response_type == 'question' or response_type == 'clarification':
         return jsonify({
             "response_type": "clarification",
-            "message": result.get('response'),
+            "message": response_text,
             "agent_state": "waiting_for_input",
-            "extracted_context": result.get('extracted_context', {})
+            "extracted_context": extracted_context
         })
-    
-    elif result.get('response_type') == 'answer':
+
+    elif response_type == 'answer':
         return jsonify({
             "response_type": "chat",
-            "message": result.get('response'),
-            "turns_used": result.get('turns')
+            "message": response_text,
         })
-    
+
     else:
         return jsonify({
             "response_type": "chat",
-            "message": result.get('response', "I'm here to help! What would you like to know?")
+            "message": response_text or "I'm here to help! What would you like to know?"
         })
 
 
 @app.route('/api/clear_history', methods=['POST'])
 def clear_history():
     """清除对话历史，开始新对话"""
-    global conversation_history, react_agent
+    global conversation_history, agent_persistent_state
     conversation_history = []
-    if react_agent:
-        react_agent.reset()
+    # 重置跨轮持久状态
+    agent_persistent_state = {
+        'user_preferences': {
+            'hard_preferences': [], 'soft_preferences': [],
+            'excluded_areas': [], 'required_amenities': [],
+            'safety_concerns': [],
+        },
+        'accumulated_search_criteria': {
+            'destination': None, 'max_budget': None, 'max_travel_time': None,
+            'property_features': [], 'soft_preferences': [],
+            'amenities_of_interest': [],
+        },
+        'extracted_context': {},
+    }
     print("[ALEX] 对话历史已清除")
     return jsonify({"success": True, "message": "Conversation history cleared"})
 
